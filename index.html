@@ -16,7 +16,17 @@
         .logo { background-color: #dc2626; color: white; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-size: 20px; letter-spacing: 2px; }
         .title { font-size: 18px; font-weight: 600; }
         .subtitle { font-size: 12px; color: #cbd5e1; }
-        .header-actions { display: flex; align-items: center; gap: 10px; }
+        
+        /* 🎚️ 滑軌切換開關 (Slider Toggle Switch) */
+        .mode-slider-container { display: flex; align-items: center; gap: 10px; }
+        .slider-label { font-size: 12px; font-weight: 600; color: #cbd5e1; transition: color 0.3s; }
+        .slider-label.active { color: white; text-shadow: 0 0 8px rgba(255,255,255,0.6); }
+        .switch { position: relative; display: inline-block; width: 48px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #64748b; transition: .3s; border-radius: 24px; }
+        .slider-track:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider-track { background-color: #10b981; }
+        input:checked + .slider-track:before { transform: translateX(24px); }
 
         .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
         .tabs { display: flex; gap: 24px; border-bottom: 2px solid #e2e8f0; background: white; padding: 0 24px; border-radius: 8px 8px 0 0; }
@@ -65,16 +75,17 @@
         .btn-outline-primary:hover { background: #f8fafc; border-color: #003366; }
         .btn-outline-danger { background: white; border: 1px solid #fecaca; color: #ef4444; }
         .btn-outline-danger:hover { background: #fef2f2; border-color: #ef4444; }
-        .btn-outline-white { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: white; }
-        .btn-outline-white:hover { background: rgba(255,255,255,0.1); }
         
         .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 999; }
-        .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 900px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
+        .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
         .hidden { display: none !important; }
         
-        /* 💎 動態流程圖 (Pipeline Flowchart) 設計 */
-        .pipeline-container { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; position: relative; }
-        .pipeline-node { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.25s ease; position: relative; }
+        /* 🚀 結合動態光流與進度銜接的流程設計 */
+        .unified-flow-wrapper { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+        
+        /* 內部審核軌跡區塊 */
+        .pipeline-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .pipeline-node { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.25s ease; position: relative; }
         .pipeline-node:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,51,102,0.08); border-color: #003366; }
         .pipeline-node.active-stage { border-left: 4px solid #f59e0b; background: #fffdfa; }
         .pipeline-node.done-stage { border-left: 4px solid #10b981; background: #f6fdf9; }
@@ -92,13 +103,24 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
 
+        /* 🔗 橋接動畫導引線 (Connecting Flow Bridge) */
+        .flow-bridge-connector { display: flex; align-items: center; justify-content: center; position: relative; margin: 4px 0; }
+        .flow-bridge-line { width: 2px; height: 28px; background: linear-gradient(to bottom, #10b981, #003366); position: absolute; z-index: 1; }
+        .flow-bridge-badge { background: #003366; color: white; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 12px; z-index: 2; letter-spacing: 1px; box-shadow: 0 2px 6px rgba(0,51,102,0.2); animation: flow-pulse 2s infinite; }
+
+        @keyframes flow-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(0, 51, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0); }
+        }
+
         /* 💎 VMD 4 欄精緻動態卡片進度區塊 */
-        .vmd-pipeline-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 10px; }
-        .vmd-flow-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 10px; text-align: center; position: relative; transition: all 0.25s ease; }
+        .vmd-pipeline-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 4px; }
+        .vmd-flow-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 8px; text-align: center; position: relative; transition: all 0.25s ease; }
         .vmd-flow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .vmd-flow-card.completed { background: #f0fdf4; border-color: #86efac; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1); }
-        .vmd-flow-title { font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 8px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
-        .vmd-flow-time { font-size: 10px; color: #64748b; font-family: monospace; margin-top: 6px; }
+        .vmd-flow-title { font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 6px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
+        .vmd-flow-time { font-size: 10px; color: #64748b; font-family: monospace; margin-top: 4px; }
 
         .checkbox-only { width: 18px; height: 18px; cursor: pointer; margin: 0; }
 
@@ -148,8 +170,17 @@
                 <div class="subtitle" id="header-subtitle">Vendor Approval & Management Console (訪客申請模式)</div>
             </div>
         </div>
-        <div class="header-actions" id="header-actions-area">
-            <button class="btn btn-sm btn-outline-white" id="btn-login-modal" onclick="openLoginModal()">登入</button>
+        
+        <!-- 🎚️ 滑軌切換模式 (Slider Toggle) -->
+        <div class="header-actions">
+            <div class="mode-slider-container">
+                <span class="slider-label active" id="lbl-visitor">訪客</span>
+                <label class="switch">
+                    <input type="checkbox" id="mode-toggle-input" onchange="handleModeToggle(this)">
+                    <span class="slider-track"></span>
+                </label>
+                <span class="slider-label" id="lbl-admin">管理</span>
+            </div>
         </div>
     </header>
 
@@ -346,17 +377,17 @@
         </div>
     </div>
 
-    <!-- Login Modal -->
+    <!-- 🔐 管理者登入密碼 Modal -->
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
-            <h3 style="color: #003366; margin-bottom: 12px;">管理者登入</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請輸入管理者密碼。</p>
+            <h3 style="color: #003366; margin-bottom: 12px;">管理者權限驗證</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">切換至管理模式請輸入管理者密碼。</p>
             <input type="password" id="inp-admin-pwd" placeholder="密碼..." style="margin-bottom: 12px; text-align: center; font-size: 16px;">
             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 20px;">
                 <a href="javascript:void(0)" onclick="openForgotModal()" style="color: #003366; text-decoration: underline;">忘記密碼</a>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                <button class="btn btn-secondary" onclick="closeLoginModal()">取消</button>
+                <button class="btn btn-secondary" onclick="cancelModeToggle()">取消</button>
                 <button class="btn btn-primary" onclick="submitAdminLogin()">確認</button>
             </div>
         </div>
@@ -401,12 +432,23 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <h4 style="font-size: 14px; color: #334155; margin-bottom: 8px; font-weight: bold;">內部跨部門審核動態流程：</h4>
-            <div class="pipeline-container" id="det-pipeline"></div>
+            <!-- 🔄 結合動態光流與進度銜接的流程檢視 -->
+            <div class="unified-flow-wrapper">
+                <div>
+                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. 內部跨部門審核動態流程：</h4>
+                    <div class="pipeline-container" id="det-pipeline"></div>
+                </div>
 
-            <div style="margin-top: 24px;">
-                <h4 style="font-size: 14px; color: #003366; margin-bottom: 8px; font-weight: bold;">VMD 執行流程 (Vendor Master Data)：</h4>
-                <div class="vmd-pipeline-grid" id="vmd-cards-container"></div>
+                <!-- 🔗 銜接至 VMD 區塊的動態光流橋接器 -->
+                <div class="flow-bridge-connector">
+                    <div class="flow-bridge-line"></div>
+                    <div class="flow-bridge-badge">▼ 內部審核通過 ➔ 進入 VMD 執行管道 ▼</div>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 6px; font-weight: bold; text-transform: uppercase;">2. VMD 執行流程 (4 階段聯動管道)：</h4>
+                    <div class="vmd-pipeline-grid" id="vmd-cards-container"></div>
+                </div>
             </div>
 
             <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;" id="mail-section-box">
@@ -502,11 +544,28 @@
             setTimeout(() => toast.classList.add('hidden'), 2500);
         }
 
-        function openLoginModal() {
-            document.getElementById('inp-admin-pwd').value = '';
-            document.getElementById('modal-login').classList.remove('hidden');
-            document.getElementById('inp-admin-pwd').focus();
+        // 🎚️ 滑軌切換模式互動邏輯
+        function handleModeToggle(checkbox) {
+            if (checkbox.checked) {
+                // 欲切換至管理模式，彈出密碼驗證框
+                document.getElementById('inp-admin-pwd').value = '';
+                document.getElementById('modal-login').classList.remove('hidden');
+                document.getElementById('inp-admin-pwd').focus();
+            } else {
+                // 直接切回訪客模式
+                isAdmin = false;
+                updateUIPermissions();
+                switchTab('dash');
+                showToast("已切回訪客模式");
+            }
         }
+
+        function cancelModeToggle() {
+            // 取消切換時將滑軌推回訪客狀態
+            document.getElementById('mode-toggle-input').checked = false;
+            closeLoginModal();
+        }
+
         function closeLoginModal() { document.getElementById('modal-login').classList.add('hidden'); }
 
         function openForgotModal() {
@@ -539,11 +598,13 @@
                     openChangePwdModal(true);
                 } else {
                     isAdmin = true;
+                    document.getElementById('mode-toggle-input').checked = true;
                     updateUIPermissions();
                     showToast("管理者權限已解鎖");
                 }
             } else {
                 alert("密碼錯誤");
+                document.getElementById('mode-toggle-input').checked = false;
             }
         }
 
@@ -573,6 +634,7 @@
             localStorage.setItem('ceva_admin_pwd', currentPassword);
             localStorage.setItem('ceva_pwd_date', lastPwdChangeDate);
             isAdmin = true;
+            document.getElementById('mode-toggle-input').checked = true;
             closeChangePwdModal();
             updateUIPermissions();
             showToast("密碼更新成功");
@@ -580,31 +642,29 @@
         }
 
         function logoutAdmin() {
-            if (confirm("確定要登出管理者模式？")) {
-                isAdmin = false;
-                updateUIPermissions();
-                switchTab('dash');
-                showToast("已切回訪客模式");
-            }
+            isAdmin = false;
+            document.getElementById('mode-toggle-input').checked = false;
+            updateUIPermissions();
+            switchTab('dash');
+            showToast("已切回訪客模式");
         }
 
         function updateUIPermissions() {
             const adminElements = document.querySelectorAll('.admin-only');
-            const headerActions = document.getElementById('header-actions-area');
             const subtitle = document.getElementById('header-subtitle');
+            const lblVisitor = document.getElementById('lbl-visitor');
+            const lblAdmin = document.getElementById('lbl-admin');
 
             if (isAdmin) {
                 adminElements.forEach(el => el.classList.remove('hidden'));
                 subtitle.innerText = "Vendor Approval & Management Console (管理者 - Nicolas Wang)";
-                headerActions.innerHTML = `
-                    <button class="btn btn-sm btn-outline-white" onclick="openChangePwdModal(false)">修改密碼</button>
-                    <button class="btn btn-sm btn-outline-white" onclick="exportDataBackup()">備份</button>
-                    <button class="btn btn-sm btn-danger" onclick="logoutAdmin()">登出</button>
-                `;
+                lblVisitor.classList.remove('active');
+                lblAdmin.classList.add('active');
             } else {
                 adminElements.forEach(el => el.classList.add('hidden'));
                 subtitle.innerText = "Vendor Approval & Management Console (訪客申請模式)";
-                headerActions.innerHTML = `<button class="btn btn-sm btn-outline-white" onclick="openLoginModal()">登入</button>`;
+                lblVisitor.classList.add('active');
+                lblAdmin.classList.remove('active');
             }
             renderList();
         }
@@ -714,15 +774,6 @@
                     <td style="text-align: right;"><button class="btn btn-sm btn-outline-danger" onclick="delLog(${idx})">刪除</button></td>
                 </tr>
             `).join('');
-        }
-
-        function exportDataBackup() {
-            if(!isAdmin) return;
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ cases, systemLogs }, null, 2));
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `CEVA_Backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(dlAnchor); dlAnchor.click(); dlAnchor.remove();
         }
 
         function switchTab(tab) {
