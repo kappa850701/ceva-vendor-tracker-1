@@ -387,7 +387,7 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部部門簽核進度：</h4>
+            <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部部門與 VMD 簽核進度：</h4>
             <div class="timeline" id="det-timeline"></div>
 
             <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;" id="mail-section-box">
@@ -452,7 +452,10 @@
                     { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "2026-06-24" },
                     { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: true, time: "2026-06-24" },
                     { role: "A&O Product Head", name: "Warren WANG", title: "Air & Ocean Director", email: "Warren.Wang@cevalogistics.com", approved: true, time: "2026-06-25" },
-                    { role: "VMD", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" }
+                    { role: "VMD - 確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
+                    { role: "VMD - 要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
+                    { role: "VMD - 與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
+                    { role: "VMD - JDE建立完成", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" }
                 ]
             }
         ];
@@ -460,7 +463,6 @@
         window.onload = async function() {
             document.getElementById('inp-date').valueAsDate = new Date();
             
-            // 💡 讓管理者密碼輸入框支援 Enter 鍵直接登入
             document.getElementById('inp-admin-pwd').addEventListener('keydown', function(event) {
                 if (event.key === 'Enter') {
                     submitAdminLogin();
@@ -604,12 +606,16 @@
                     cases = data.map(item => {
                         if (item.data && item.data.steps) {
                             item.data.steps = item.data.steps.map(s => {
+                                // 💡 相容舊資料或進行 VMD 舊結構升級
+                                if (s.role === 'VMD') {
+                                    s.role = 'VMD - JDE建立完成';
+                                }
                                 if (!s.title) {
                                     if (s.role === 'OMC') s.title = "Operation Management Control Supervisor";
                                     else if (s.role === 'Compliance') s.title = "Ethics and Compliance Specialist";
                                     else if (s.role === 'Local Finance') s.title = "Business Controlling Manager Taiwan";
                                     else if (s.role.includes('Product Head')) s.title = s.role.includes('CL') ? "Contract Logistics Product Head" : "Air & Ocean Director";
-                                    else if (s.role === 'VMD') s.title = "Vendor Master Data Team";
+                                    else if (s.role.startsWith('VMD')) s.title = "Vendor Master Data Team";
                                 }
                                 return s;
                             });
@@ -703,6 +709,7 @@
             if (tab === 'logs') renderLogs();
         }
 
+        // 💡 矩陣定義：將 VMD 拆解為 4 個細分步驟
         function getMatrix(bu) {
             const isCL = (bu === 'CL');
             return [
@@ -710,7 +717,10 @@
                 { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: false, time: "N/A" },
                 { role: isCL ? "CL Product Head" : "A&O Product Head", name: isCL ? "Barry CHAN" : "Warren WANG", title: isCL ? "Contract Logistics Product Head" : "Air & Ocean Director", email: isCL ? "Barry.Chan@cevalogistics.com" : "Warren.Wang@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "VMD", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
+                { role: "VMD - 確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "VMD - 要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "VMD - 與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "VMD - JDE建立完成", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
             ];
         }
 
@@ -732,7 +742,6 @@
             return { text: `${days} 天`, days: days, isNA: false };
         }
 
-        // 💡 訪客新建申請時：建立單號並自動觸發 Outlook 寄信給內部審核矩陣
         async function handleCreate(e) {
             e.preventDefault();
             const bu = document.getElementById('inp-bu').value;
@@ -759,13 +768,10 @@
             await saveCloudData(cases);
             addSystemLog("Create Case", newCase.id, `訪客新建案件：${supplierName} (${bu} - ${vendorType})`);
 
-            // 💡 收件人 To：矩陣內審核主管（排除 VMD，包含 Tristan, Chris, Will, 以及 Barry 或 Warren）
-            const toEmails = matrixSteps.filter(s => s.role !== 'VMD').map(s => s.email).join("; ");
-            
-            // 💡 副本 CC：申請人 + 指定固定清單
+            // 💡 郵件收件人：排除 VMD 相關子項，發給核心審核人員
+            const toEmails = matrixSteps.filter(s => !s.role.startsWith('VMD')).map(s => s.email).join("; ");
             const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
             
-            // 💡 主旨與內文（refer to 帶入申請人 email）
             const subject = `【Seek Approval】Vendor Creation/Amendment - ${supplierName}`;
             const body = 
                 `Dear Approver,\r\n\r\n` +
@@ -779,7 +785,6 @@
 
             alert(`⚠️ 【申請建立成功 - 審核信件提醒】\n\n1. 請務必在即將彈出的 Outlook 信件中夾帶 **VMD Request Form** 與 **Supporting** 相關附件！\n2. 系統已自動將內部審核主管納入收件人 (To)，並將申請人及相關主管納入副本 (CC)。`);
 
-            // 💡 觸發 Outlook
             const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
 
             document.getElementById('form-create-vendor').reset();
@@ -872,7 +877,7 @@
             document.getElementById('dash-tbody').innerHTML = paginatedItems.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 let ageClass = ageInfo.isNA ? "age-na" : "age-normal";
-                const matrixStr = c.steps.map(s => s.role).join(' / ');
+                const matrixStr = c.steps.map(s => s.role.replace('VMD - ', 'VMD: ')).join(' / ');
 
                 return `
                     <tr>
@@ -881,7 +886,7 @@
                         <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
                         <td style="font-size:12px; color:#475569;">${c.applyDate}</td>
                         <td>${getStatusBadge(c.status)}</td>
-                        <td style="font-size:12px; color:#003366; font-weight:600;">${matrixStr}</td>
+                        <td style="font-size:11px; color:#003366; font-weight:600; line-height: 1.4;">${matrixStr}</td>
                         <td><span class="${ageClass}">${ageInfo.text}</span></td>
                     </tr>
                 `;
@@ -1004,8 +1009,8 @@
             }
         }
 
-        function getApproversToEmails(steps, vendorType) {
-            return steps.filter(s => s.role !== 'VMD').map(s => s.email).join("; ");
+        function getApproversToEmails(steps) {
+            return steps.filter(s => !s.role.startsWith('VMD')).map(s => s.email).join("; ");
         }
 
         function getFullCCList(req) { return [...new Set([req, ...FIXED_CC_LIST])].join("; "); }
@@ -1017,7 +1022,7 @@
             document.getElementById('det-title').innerText = `${c.supplierName} (${c.id})`;
             document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | Vendor Type: ${c.vendorType} | 申請日期: ${c.applyDate}`;
             
-            document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps, c.vendorType);
+            document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps);
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
             
             const adminButtons = document.getElementById('admin-action-buttons');
@@ -1037,8 +1042,8 @@
                         <div class="${dotClass}"></div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong style="color: #003366;">${s.role} - ${s.name}</strong>
-                                <div style="font-size: 12px; color: #475569; font-weight: bold; margin-top: 2px;">${s.title}</div>
+                                <strong style="color: #003366;">${s.role}</strong>
+                                <div style="font-size: 12px; color: #475569; font-weight: bold; margin-top: 2px;">${s.name} (${s.title})</div>
                                 <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Email: ${s.email}</div>
                                 <div style="font-size: 11px; color: #64748b; margin-top: 2px;">完成日期: ${s.time || 'N/A'}</div>
                             </div>
@@ -1061,6 +1066,7 @@
             if (isChecked) {
                 c.steps[stepIndex].approved = true;
                 c.steps[stepIndex].time = nowStr;
+                // 💡 只有當所有步驟 (包含 4 個 VMD 細分項) 全部打勾時，總狀態才會變成 Done
                 if (c.steps.every(s => s.approved)) {
                     c.status = "Done";
                     c.completedDate = nowStr;
@@ -1073,7 +1079,7 @@
             }
 
             await saveCloudData(cases);
-            addSystemLog("Approval Step", c.id, `部門 [${stepName}] 狀態更新`);
+            addSystemLog("Approval Step", c.id, `部門/階段 [${stepName}] 狀態更新`);
             openDetail(activeCaseId); renderDashboard(); renderList();
         }
 
@@ -1083,7 +1089,7 @@
             const nowStr = new Date().toISOString().substring(0,10);
 
             if (status === 'Done') {
-                if (!c.steps.every(s => s.approved)) { alert("須完成所有部門審核勾選方可 Approve！"); return; }
+                if (!c.steps.every(s => s.approved)) { alert("須完成所有內部審核與 4 個 VMD 階段勾選方可 Approve！"); return; }
                 c.completedDate = (c.completedDate === 'N/A') ? 'N/A' : nowStr;
             } else if (status === 'Reject') {
                 c.completedDate = nowStr;
@@ -1102,7 +1108,6 @@
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
-            const filteredSteps = c.steps.filter(s => s.role !== 'VMD');
 
             let printArea = document.getElementById('pdf-print-area');
             printArea.innerHTML = `
@@ -1153,19 +1158,19 @@
 
                     <!-- Internal Approval Workflow Table -->
                     <div style="margin-bottom: 14px;">
-                        <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 內部跨部門簽核軌跡與負責人資訊 (Internal Approval Audit Trail)</h3>
+                        <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 內部跨部門與 VMD 細分簽核軌跡 (Internal & VMD Audit Trail)</h3>
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                             <thead>
                                 <tr style="background-color: #003366; color: white;">
-                                    <th style="padding: 6px 8px; text-align: left; width: 15%;">審核部門</th>
-                                    <th style="padding: 6px 8px; text-align: left; width: 24%;">審核人姓名與職稱</th>
-                                    <th style="padding: 6px 8px; text-align: left; width: 27%;">電子郵件 (Email)</th>
+                                    <th style="padding: 6px 8px; text-align: left; width: 28%;">簽核階段與部門</th>
+                                    <th style="padding: 6px 8px; text-align: left; width: 24%;">負責人與職稱</th>
+                                    <th style="padding: 6px 8px; text-align: left; width: 22%;">電子郵件 (Email)</th>
                                     <th style="padding: 6px 8px; text-align: center; width: 13%;">簽核狀態</th>
                                     <th style="padding: 6px 8px; text-align: right; width: 13%;">完成日期</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${filteredSteps.map((s, idx) => `
+                                ${c.steps.map((s, idx) => `
                                     <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
                                         <td style="padding: 6px 8px; font-weight: bold; color: #475569;">${s.role}</td>
                                         <td style="padding: 6px 8px; color: #334155;">
