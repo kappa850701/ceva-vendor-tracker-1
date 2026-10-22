@@ -93,6 +93,9 @@
         .filter-row { display: flex; gap: 12px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .filter-row input, .filter-row select { margin-top: 0; }
 
+        .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #475569; }
+        .pagination-controls { display: flex; gap: 6px; align-items: center; }
+
         /* 🖨️ 強制將列印輸出控制在單一 A4 頁面內 */
         @media print {
             @page {
@@ -261,15 +264,15 @@
         <!-- List Panel -->
         <div id="panel-list" class="panel hidden">
             <div class="filter-row" style="margin-bottom: 20px;">
-                <input type="text" id="list-search" oninput="renderList()" placeholder="🔍 搜尋 Case ID 或 Supplier Name..." style="flex: 1; min-width: 250px;">
-                <select id="list-filter-status" onchange="renderList()" style="width: 180px;">
+                <input type="text" id="list-search" oninput="listCurrentPage=1; renderList()" placeholder="🔍 搜尋 Case ID 或 Supplier Name..." style="flex: 1; min-width: 250px;">
+                <select id="list-filter-status" onchange="listCurrentPage=1; renderList()" style="width: 180px;">
                     <option value="">🏷️ 所有狀態 (All)</option>
                     <option value="Waiting Internal Approval">Waiting Approval</option>
                     <option value="Done">Done (完成)</option>
                     <option value="Reject">Reject (退回)</option>
                     <option value="Hold">Hold (暫停)</option>
                 </select>
-                <select id="list-filter-bu" onchange="renderList()" style="width: 160px;">
+                <select id="list-filter-bu" onchange="listCurrentPage=1; renderList()" style="width: 160px;">
                     <option value="">🏢 所有 BU (All)</option>
                     <option value="AE">AE (Air Export)</option>
                     <option value="AI">AI (Air Import)</option>
@@ -297,6 +300,9 @@
                 </thead>
                 <tbody id="list-tbody"></tbody>
             </table>
+
+            <!-- 📄 分頁導覽列 -->
+            <div id="pagination-container"></div>
         </div>
 
         <!-- Logs Panel -->
@@ -495,6 +501,9 @@
         let listSortKey = null;
         let listSortAsc = true;
 
+        let listCurrentPage = 1;
+        const listPageSize = 20;
+
         const FIXED_CC_LIST = [
             "Christina.Chen@Cevalogistics.com",
             "Vicky.Liu@Cevalogistics.com",
@@ -651,7 +660,21 @@
                 const { data, error } = await supabaseClient.from('vendor_cases').select('*');
                 if (error) throw error;
                 if (data && data.length > 0) {
-                    cases = data.map(item => item.data);
+                    cases = data.map(item => {
+                        if (item.data && item.data.steps) {
+                            item.data.steps = item.data.steps.map(s => {
+                                if (!s.title) {
+                                    if (s.role === 'OMC') s.title = "Operation Management Control Supervisor";
+                                    else if (s.role === 'Compliance') s.title = "Ethics and Compliance Specialist";
+                                    else if (s.role === 'Local Finance') s.title = "Business Controlling Manager Taiwan";
+                                    else if (s.role.includes('Product Head')) s.title = s.role.includes('CL') ? "Contract Logistics Product Head" : "Air & Ocean Director";
+                                    else if (s.role === 'VMD') s.title = "Vendor Master Data Team";
+                                }
+                                return s;
+                            });
+                        }
+                        return item.data;
+                    });
                 } else {
                     cases = [...defaultCases];
                     for (let c of cases) { await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c }); }
@@ -748,7 +771,6 @@
             if (tab === 'logs') renderLogs();
         }
 
-        // 帶有正確職稱與 Email 的審核矩陣
         function getMatrix(bu) {
             const isCL = (bu === 'CL');
             return [
@@ -951,12 +973,21 @@
                 });
             }
 
-            if (filteredList.length === 0) {
+            const totalItems = filteredList.length;
+            const totalPages = Math.ceil(totalItems / listPageSize) || 1;
+            if (listCurrentPage > totalPages) listCurrentPage = totalPages;
+            if (listCurrentPage < 1) listCurrentPage = 1;
+
+            const startIndex = (listCurrentPage - 1) * listPageSize;
+            const paginatedItems = filteredList.slice(startIndex, startIndex + listPageSize);
+
+            if (paginatedItems.length === 0) {
                 document.getElementById('list-tbody').innerHTML = `<tr><td colspan="${isAdmin?7:6}" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">找不到相符案件</div></td></tr>`;
+                document.getElementById('pagination-container').innerHTML = '';
                 return;
             }
 
-            document.getElementById('list-tbody').innerHTML = filteredList.map(c => {
+            document.getElementById('list-tbody').innerHTML = paginatedItems.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 let actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>`;
                 if (isAdmin) {
@@ -977,6 +1008,22 @@
                     <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
                 </tr>`;
             }).join('');
+
+            document.getElementById('pagination-container').innerHTML = `
+                <div class="pagination-bar">
+                    <div>顯示第 ${startIndex + 1} 到 ${Math.min(startIndex + listPageSize, totalItems)} 筆，共 ${totalItems} 筆案件</div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-sm btn-outline-primary" ${listCurrentPage === 1 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeListPage(${listCurrentPage - 1})">◀ 上一頁</button>
+                        <span style="font-weight: bold; padding: 0 8px;">第 ${listCurrentPage} / ${totalPages} 頁</span>
+                        <button class="btn btn-sm btn-outline-primary" ${listCurrentPage === totalPages ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeListPage(${listCurrentPage + 1})">下一頁 ▶</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changeListPage(targetPage) {
+            listCurrentPage = targetPage;
+            renderList();
         }
 
         async function delCase(id) {
@@ -1022,7 +1069,6 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 💡 在介面中的時間軸也完整帶入職稱與 Email 資訊
             document.getElementById('det-timeline').innerHTML = c.steps.map((s, idx) => {
                 let dotClass = "timeline-dot" + (s.approved ? " approved" : (idx === c.currentStep && c.status === "Waiting Internal Approval" ? " active-breathing" : ""));
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled`;
@@ -1108,7 +1154,7 @@
             const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
         }
 
-        // 📄 強制一頁且完整呈現職稱與 Email 的專業外商正式表單 PDF
+        // 📄 強制一頁且帶有您的簽名圖檔 (Operation Control Executive - Nicolas Wang) 的 PDF
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
@@ -1161,7 +1207,7 @@
                         </table>
                     </div>
 
-                    <!-- Internal Approval Workflow Table (含正確職稱與 Email) -->
+                    <!-- Internal Approval Workflow Table -->
                     <div style="margin-bottom: 14px;">
                         <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 內部跨部門簽核軌跡與負責人資訊 (Internal Approval Audit Trail)</h3>
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
@@ -1193,15 +1239,18 @@
                         </table>
                     </div>
 
-                    <!-- Sign-off / Footer Section -->
-                    <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; border-top: 1px solid #cbd5e1; padding-top: 10px;">
+                    <!-- Sign-off / Footer Section with Nicolas's Signature -->
+                    <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; border-top: 1px solid #cbd5e1; padding-top: 8px;">
                         <div>
                             <div><strong>CEVA Logistics (Taiwan) - OMC Operations Control</strong></div>
                             <div>This is a system-generated compliance audit report. All rights reserved.</div>
                         </div>
-                        <div style="text-align: right; width: 180px;">
-                            <div style="margin-bottom: 14px;">Authorized Signature:</div>
-                            <div style="border-bottom: 1px solid #94a3b8;"></div>
+                        <div style="text-align: right; width: 220px;">
+                            <div style="margin-bottom: 2px;">Authorized Signature:</div>
+                            <div style="height: 45px; display: flex; align-items: center; justify-content: flex-end;">
+                                <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAmAMgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigD//2Q==" style="max-height: 42px; max-width: 140px; mix-blend-mode: multiply;" alt="Nicolas Signature">
+                            </div>
+                            <div style="border-top: 1px solid #94a3b8; padding-top: 2px; font-weight: bold; color: #0f172a;">Nicolas Wang (Operation Control Executive)</div>
                         </div>
                     </div>
                 </div>
