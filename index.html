@@ -98,15 +98,6 @@
             #pdf-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; color: black; }
         }
     </style>
-
-<!--[if gte mso 9]><xml>
-<mso:CustomDocumentProperties>
-<mso:_ApprovalStatus msdt:dt="string">0</mso:_ApprovalStatus>
-<mso:_ApprovalAssignedTo msdt:dt="string"></mso:_ApprovalAssignedTo>
-<mso:_ApprovalRespondedBy msdt:dt="string"></mso:_ApprovalRespondedBy>
-<mso:_ApprovalSentBy msdt:dt="string"></mso:_ApprovalSentBy>
-</mso:CustomDocumentProperties>
-</xml><![endif]-->
 </head>
 <body>
 
@@ -181,7 +172,7 @@
             </table>
         </div>
 
-        <!-- Create Case Panel (Admin Only) -->
+        <!-- Create Case Panel -->
         <div id="panel-create" class="panel hidden">
             <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">【申請】新建/修改供應商</h2>
             <form id="form-create-vendor" onsubmit="handleCreate(event)">
@@ -274,7 +265,7 @@
             </table>
         </div>
 
-        <!-- Logs Panel (Admin Only) -->
+        <!-- Logs Panel -->
         <div id="panel-logs" class="panel hidden">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
                 <div>
@@ -306,11 +297,47 @@
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">🔐 管理者權限解鎖</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">請輸入管理者密碼以解鎖簽核、編輯與新建功能。</p>
-            <input type="password" id="inp-admin-pwd" placeholder="請輸入密碼..." style="margin-bottom: 20px; text-align: center; font-size: 16px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請輸入管理者密碼以解鎖系統功能。</p>
+            <input type="password" id="inp-admin-pwd" placeholder="請輸入密碼..." style="margin-bottom: 12px; text-align: center; font-size: 16px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 20px;">
+                <a href="javascript:void(0)" onclick="openForgotModal()" style="color: #003366; text-decoration: underline;">❓ 忘記密碼？</a>
+            </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px;">
                 <button class="btn btn-secondary" onclick="closeLoginModal()">取消</button>
                 <button class="btn btn-primary" onclick="submitAdminLogin()">確認解鎖</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1️⃣ 主動修改密碼 Modal -->
+    <div id="modal-change-pwd" class="modal-overlay hidden">
+        <div class="modal" style="max-width: 400px;">
+            <h3 style="color: #003366; margin-bottom: 12px;">🔑 修改管理者密碼</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;" id="pwd-change-notice">基於資安考量，請定期變更您的管理者密碼。</p>
+            <div style="margin-bottom: 12px;">
+                <label><strong>新密碼</strong></label>
+                <input type="password" id="inp-new-pwd" placeholder="請輸入新密碼...">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label><strong>確認新密碼</strong></label>
+                <input type="password" id="inp-confirm-pwd" placeholder="請再次輸入新密碼...">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-secondary" id="btn-cancel-change-pwd" onclick="closeChangePwdModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitChangePwd()">確認更新</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2️⃣ 忘記密碼 Modal -->
+    <div id="modal-forgot-pwd" class="modal-overlay hidden">
+        <div class="modal" style="max-width: 400px; text-align: center;">
+            <h3 style="color: #003366; margin-bottom: 12px;">❓ 密碼重設與救援</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請輸入您的授權管理者 Email 進行驗證信發送：</p>
+            <input type="email" id="inp-forgot-email" placeholder="Nicolas.Wang@cevalogistics.com" style="margin-bottom: 20px; text-align: center;">
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-secondary" onclick="closeForgotModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitForgotPwd()">發送重設信件</button>
             </div>
         </div>
     </div>
@@ -476,7 +503,9 @@
     <div id="pdf-print-area" class="hidden"></div>
 
     <script>
-        const ADMIN_PASSWORD = ""; 
+        // 🔐 密碼與資安原則設定
+        let currentPassword = localStorage.getItem('ceva_admin_pwd') || "REMOVED";
+        let lastPwdChangeDate = localStorage.getItem('ceva_pwd_date') || new Date().toISOString();
         let isAdmin = false;
 
         const SUPABASE_URL = "https://vwuctilkidzpkrtkkrmb.supabase.co";
@@ -487,7 +516,6 @@
         let cases = [];
         let systemLogs = [];
 
-        // 排序狀態變數
         let dashSortKey = null;
         let dashSortAsc = true;
         let listSortKey = null;
@@ -510,17 +538,6 @@
                     { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
                     { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
                 ]
-            },
-            {
-                id: "CEVA-202606-002", supplierName: "木崧企業有限公司", bu: "CL", action: "New", vendorType: "Trade",
-                applyDate: "2026-06-12", completedDate: "N/A", requesterEmail: "Alisa.Hsu@cevalogistics.com", status: "Done", currentStep: 5,
-                steps: [
-                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "CL Product Head", name: "Barry CHAN", email: "Barry.Chan@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
-                ]
             }
         ];
 
@@ -541,26 +558,111 @@
             setTimeout(() => toast.classList.add('hidden'), 2500);
         }
 
+        // 登入 Modal 控制
         function openLoginModal() {
             document.getElementById('inp-admin-pwd').value = '';
             document.getElementById('modal-login').classList.remove('hidden');
             document.getElementById('inp-admin-pwd').focus();
         }
-
         function closeLoginModal() {
             document.getElementById('modal-login').classList.add('hidden');
         }
 
+        // 忘記密碼 Modal 控制
+        function openForgotModal() {
+            closeLoginModal();
+            document.getElementById('inp-forgot-email').value = "Nicolas.Wang@cevalogistics.com";
+            document.getElementById('modal-forgot-pwd').classList.remove('hidden');
+        }
+        function closeForgotModal() {
+            document.getElementById('modal-forgot-pwd').classList.add('hidden');
+        }
+        function submitForgotPwd() {
+            const email = document.getElementById('inp-forgot-email').value;
+            if(!email) { alert("請輸入 Email！"); return; }
+            closeForgotModal();
+            
+            // 透過 mailto 自動觸發發送重設需求信件至 IT/OMC 團隊或自身
+            const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent("【CEVA System】Admin Password Reset Request")}&body=${encodeURIComponent("請協助重設管理者密碼。申請人: " + email)}`;
+            const a = document.createElement('a');
+            a.href = mailtoUrl;
+            a.click();
+            a.remove();
+            
+            showToast("📧 已透過 Outlook 觸發密碼重設通知信！");
+            addSystemLog("Security", "Admin", `發送密碼重設申請至：${email}`);
+        }
+
+        // 驗證登入與檢查是否超過一個月強制修改
         function submitAdminLogin() {
             const pwd = document.getElementById('inp-admin-pwd').value;
-            if (pwd === ADMIN_PASSWORD) {
-                isAdmin = true;
+            if (pwd === currentPassword) {
                 closeLoginModal();
-                updateUIPermissions();
-                showToast("🔓 管理者權限已解鎖！");
+
+                // 檢查是否超過 30 天未修改密碼
+                const lastDate = new Date(lastPwdChangeDate);
+                const now = new Date();
+                const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
+
+                if (diffDays >= 30) {
+                    alert("⚠️ 為了符合資安規範，您的管理者密碼已超過一個月未修改，請立即更新密碼！");
+                    openChangePwdModal(true); // 強制修改模式
+                } else {
+                    isAdmin = true;
+                    updateUIPermissions();
+                    showToast("🔓 管理者權限已解鎖！");
+                }
             } else {
                 alert("❌ 密碼錯誤！");
             }
+        }
+
+        // 主動或強制修改密碼 Modal
+        function openChangePwdModal(isForced = false) {
+            document.getElementById('inp-new-pwd').value = '';
+            document.getElementById('inp-confirm-pwd').value = '';
+            
+            const cancelBtn = document.getElementById('btn-cancel-change-pwd');
+            const notice = document.getElementById('pwd-change-notice');
+            
+            if (isForced) {
+                cancelBtn.style.display = 'none'; // 強制時不給取消
+                notice.innerText = "⚠️ 密碼已屆滿一個月，必須變更後才能繼續操作系統。";
+            } else {
+                cancelBtn.style.display = 'inline-block';
+                notice.innerText = "基於資安考量，建議您定期變更密碼。";
+            }
+            document.getElementById('modal-change-pwd').classList.remove('hidden');
+        }
+
+        function closeChangePwdModal() {
+            document.getElementById('modal-change-pwd').classList.add('hidden');
+        }
+
+        function submitChangePwd() {
+            const newPwd = document.getElementById('inp-new-pwd').value;
+            const confirmPwd = document.getElementById('inp-confirm-pwd').value;
+
+            if (!newPwd || newPwd.length < 6) {
+                alert("❌ 新密碼長度至少需要 6 個字元以上！");
+                return;
+            }
+            if (newPwd !== confirmPwd) {
+                alert("❌ 兩次輸入的新密碼不相符！");
+                return;
+            }
+
+            currentPassword = newPwd;
+            lastPwdChangeDate = new Date().toISOString();
+            
+            localStorage.setItem('ceva_admin_pwd', currentPassword);
+            localStorage.setItem('ceva_pwd_date', lastPwdChangeDate);
+
+            isAdmin = true;
+            closeChangePwdModal();
+            updateUIPermissions();
+            showToast("🔑 管理者密碼已成功更新！");
+            addSystemLog("Security", "Admin", "管理者成功修改密碼");
         }
 
         function logoutAdmin() {
@@ -581,6 +683,7 @@
                 adminElements.forEach(el => el.classList.remove('hidden'));
                 subtitle.innerText = "Vendor Approval & Management Console (管理者模式 - Nicolas Wang)";
                 headerActions.innerHTML = `
+                    <button class="btn btn-sm btn-outline-white" onclick="openChangePwdModal(false)">🔑 修改密碼</button>
                     <button class="btn btn-sm btn-outline-white" onclick="openManualPasteModal()">✍️ 快速建檔</button>
                     <button class="btn btn-sm btn-outline-white" onclick="exportDataBackup()">📥 備份 JSON</button>
                     <button class="btn btn-sm btn-outline-white" onclick="triggerImport()">📤 匯入 JSON</button>
@@ -608,7 +711,6 @@
             try {
                 const { data, error } = await supabaseClient.from('vendor_cases').select('*');
                 if (error) throw error;
-
                 if (data && data.length > 0) {
                     cases = data.map(item => item.data);
                 } else {
@@ -618,7 +720,6 @@
                     }
                 }
             } catch (err) {
-                console.error("雲端載入錯誤:", err);
                 cases = [...defaultCases];
             }
         }
@@ -627,8 +728,7 @@
             cases = updatedCases;
             try {
                 for (let c of cases) {
-                    const { error } = await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c });
-                    if (error) throw error;
+                    await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c });
                 }
                 showToast("☁️ 雲端同步成功！");
             } catch (err) {
@@ -896,14 +996,9 @@
             showToast(`✅ Case ${newCase.id} 建立成功！`);
         }
 
-        // 📊 儀表板表格排序邏輯
         function sortDashTable(key) {
-            if (dashSortKey === key) {
-                dashSortAsc = !dashSortAsc;
-            } else {
-                dashSortKey = key;
-                dashSortAsc = true;
-            }
+            if (dashSortKey === key) dashSortAsc = !dashSortAsc;
+            else { dashSortKey = key; dashSortAsc = true; }
             renderDashboard();
         }
 
@@ -919,7 +1014,6 @@
                 return matchKey && matchStatus && matchBu;
             });
 
-            // 執行排序
             if (dashSortKey) {
                 filteredTable.sort((a, b) => {
                     let valA, valB;
@@ -971,14 +1065,9 @@
             }).join('');
         }
 
-        // 📋 案件追蹤清單表格排序邏輯
         function sortListTable(key) {
-            if (listSortKey === key) {
-                listSortAsc = !listSortAsc;
-            } else {
-                listSortKey = key;
-                listSortAsc = true;
-            }
+            if (listSortKey === key) listSortAsc = !listSortAsc;
+            else { listSortKey = key; listSortAsc = true; }
             renderList();
         }
 
@@ -997,7 +1086,6 @@
                 return matchKey && matchStatus && matchBu;
             });
 
-            // 執行排序
             if (listSortKey) {
                 filteredList.sort((a, b) => {
                     let valA, valB;
@@ -1022,9 +1110,7 @@
             document.getElementById('list-tbody').innerHTML = filteredList.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 
-                let actionButtons = `
-                    <button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>
-                `;
+                let actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>`;
                 if (isAdmin) {
                     actionButtons = `
                         <button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視 / 簽核</button>
@@ -1167,10 +1253,7 @@
 
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
-            if (!c) {
-                alert("請先開啟要匯出的案件詳細資料！");
-                return;
-            }
+            if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
 
             const filteredSteps = c.steps.filter(s => s.role !== 'VMD');
 
@@ -1219,7 +1302,6 @@
                     </table>
                 </div>
             `;
-
             window.print();
         }
     </script>
