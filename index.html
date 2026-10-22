@@ -249,10 +249,6 @@
                         <label><strong>申請人 Email <span style="color:red;">*</span></strong></label>
                         <input type="email" id="inp-cc" required value="Nicolas.Wang@cevalogistics.com">
                     </div>
-                    <div style="grid-column: span 2;">
-                        <label><strong>上傳附件 (PDF / 報價單 / 執照)</strong></label>
-                        <input type="file" id="inp-file" accept=".pdf,.png,.jpg,.jpeg,.xlsx">
-                    </div>
                 </div>
 
                 <div style="background: #f8fafc; padding: 16px; margin-top: 20px; border-radius: 8px; border: 1px solid #cbd5e1;">
@@ -450,18 +446,14 @@
         <div class="modal">
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
-            
-            <div id="det-attachment-wrap" style="margin-bottom: 16px;" class="hidden">
-                <a id="det-attachment-link" href="#" target="_blank" class="btn btn-sm btn-outline-primary">📎 下載案件雲端附件 (PDF/報價單)</a>
-            </div>
 
             <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部部門簽核進度：</h4>
             <div class="timeline" id="det-timeline"></div>
 
             <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;" id="mail-section-box">
                 <div style="font-size: 13px; color: #475569; line-height: 1.6;">
-                    <div><strong>Mail To:</strong> <span id="mail-to-text" style="color: #003366; font-weight: bold;"></span></div>
-                    <div><strong>Mail CC:</strong> <span id="mail-cc-text" style="font-size:12px; color:#64748b;"></span></div>
+                    <div><strong>Mail To (所有審核主管):</strong> <span id="mail-to-text" style="color: #003366; font-weight: bold;"></span></div>
+                    <div><strong>Mail CC (申請人 + tpe.omc):</strong> <span id="mail-cc-text" style="font-size:12px; color:#64748b;"></span></div>
                 </div>
 
                 <div style="display: flex; gap: 8px; margin-top: 12px;" id="mail-trigger-btn-wrap">
@@ -509,15 +501,13 @@
         const pageSize = 20;
 
         const FIXED_CC_LIST = [
-            "Christina.Chen@Cevalogistics.com",
-            "Vicky.Liu@Cevalogistics.com",
             "tpe.omc@cevalogistics.com"
         ];
 
         const defaultCases = [
             {
                 id: "CEVA-202606-001", supplierName: "佰進國際物流", bu: "AE", action: "Change", vendorType: "Trade",
-                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", attachmentUrl: "", status: "Done", currentStep: 5,
+                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", status: "Done", currentStep: 5,
                 steps: [
                     { role: "OMC", name: "Tristan YANG", title: "Operation Management Control Supervisor", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "2026-06-23" },
                     { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "2026-06-24" },
@@ -695,15 +685,6 @@
         }
 
         async function removeCloudCase(id) {
-            const c = cases.find(x => x.id === id);
-            if (c && c.attachmentUrl) {
-                try {
-                    const urlParts = c.attachmentUrl.split('/vendor-attachments/');
-                    if (urlParts.length > 1) {
-                        await supabaseClient.storage.from('vendor-attachments').remove([decodeURIComponent(urlParts[1])]);
-                    }
-                } catch(e) {}
-            }
             cases = cases.filter(x => x.id !== id);
             try { await supabaseClient.from('vendor_cases').delete().eq('id', id); } catch (err) {}
         }
@@ -810,18 +791,6 @@
             const supplierName = document.getElementById('inp-supplier').value;
             const action = document.getElementById('inp-action').value;
             const selectedDate = document.getElementById('inp-date').value;
-            const fileInput = document.getElementById('inp-file');
-
-            let fileUrl = "";
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const filePath = `attachments/${Date.now()}_${file.name}`;
-                const { error } = await supabaseClient.storage.from('vendor-attachments').upload(filePath, file);
-                if (!error) {
-                    const { data: pubData } = supabaseClient.storage.from('vendor-attachments').getPublicUrl(filePath);
-                    fileUrl = pubData.publicUrl;
-                }
-            }
 
             const newCase = {
                 id: "CEVA-" + selectedDate.substring(0,7).replace('-','') + "-" + String(cases.length+1).padStart(3,'0'),
@@ -830,7 +799,6 @@
                 applyDate: selectedDate,
                 completedDate: null,
                 requesterEmail: document.getElementById('inp-cc').value,
-                attachmentUrl: fileUrl,
                 status: "Waiting Internal Approval", 
                 currentStep: 0,
                 steps: getMatrix(bu)
@@ -839,7 +807,7 @@
             cases.unshift(newCase);
             await saveCloudData(cases);
             activeCaseId = newCase.id;
-            addSystemLog("Create Case", newCase.id, `建檔：${supplierName} (${bu}) ${fileUrl ? '[含附件]' : ''}`);
+            addSystemLog("Create Case", newCase.id, `建檔：${supplierName} (${bu})`);
 
             directTriggerOutlook();
             document.getElementById('form-create-vendor').reset();
@@ -931,7 +899,6 @@
             }
 
             document.getElementById('dash-tbody').innerHTML = paginatedItems.map(c => {
-                const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 let ageClass = ageInfo.isNA ? "age-na" : "age-normal";
 
@@ -942,7 +909,7 @@
                         <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
                         <td style="font-size:12px; color:#475569;">${c.applyDate}</td>
                         <td>${getStatusBadge(c.status)}</td>
-                        <td>${c.status === 'Done' ? '<span style="color:#10b981; font-weight:bold;">全數通過</span>' : curr.role}</td>
+                        <td>${c.status === 'Done' ? '<span style="color:#10b981; font-weight:bold;">全數通過</span>' : '待各部門回覆'}</td>
                         <td><span class="${ageClass}">${ageInfo.text}</span></td>
                     </tr>
                 `;
@@ -1057,7 +1024,7 @@
 
         async function delCase(id) {
             if(!isAdmin) return;
-            if(confirm(`⚠️ 確定要從雲端刪除案件 ${id} 及其關聯附件嗎？`)) {
+            if(confirm(`⚠️ 確定要從雲端刪除案件 ${id} 嗎？`)) {
                 await removeCloudCase(id);
                 addSystemLog("Delete Case", id, `刪除案件。`);
                 renderDashboard(); renderList();
@@ -1065,27 +1032,25 @@
             }
         }
 
+        // 💡 取得除了 VMD 之外的所有審核主管 Email 清單 (用分號串接放在 TO)
+        function getApproversToEmails(steps) {
+            return steps.filter(s => s.role !== 'VMD').map(s => s.email).join("; ");
+        }
+
+        // 💡 CC 包含申請人以及固定清單
         function getFullCCList(req) { return [...new Set([req, ...FIXED_CC_LIST])].join("; "); }
 
         function openDetail(id) {
             activeCaseId = id;
             const c = cases.find(x => x.id === id);
-            const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
 
             document.getElementById('det-title').innerText = `${c.supplierName} (${c.id})`;
             document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | 申請日期: ${c.applyDate}`;
-            document.getElementById('mail-to-text').innerText = curr.role === 'VMD' ? curr.name : `${curr.name} (${curr.email})`;
+            
+            // 顯示所有審核主管信箱
+            document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps);
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
             
-            const attachWrap = document.getElementById('det-attachment-wrap');
-            const attachLink = document.getElementById('det-attachment-link');
-            if (c.attachmentUrl) {
-                attachLink.href = c.attachmentUrl;
-                attachWrap.classList.remove('hidden');
-            } else {
-                attachWrap.classList.add('hidden');
-            }
-
             const mailBox = document.getElementById('mail-section-box');
             const adminButtons = document.getElementById('admin-action-buttons');
             
@@ -1098,9 +1063,8 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 💡 移除 Step 字樣，僅保留部門名稱
             document.getElementById('det-timeline').innerHTML = c.steps.map((s, idx) => {
-                let dotClass = "timeline-dot" + (s.approved ? " approved" : (idx === c.currentStep && c.status === "Waiting Internal Approval" ? " active-breathing" : ""));
+                let dotClass = "timeline-dot" + (s.approved ? " approved" : " active-breathing");
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled`;
 
                 return `
@@ -1132,18 +1096,13 @@
             if (isChecked) {
                 c.steps[stepIndex].approved = true;
                 c.steps[stepIndex].time = nowStr;
-                if (stepIndex + 1 < c.steps.length) {
-                    c.currentStep = stepIndex + 1;
-                    c.status = "Waiting Internal Approval";
-                    c.completedDate = null;
-                } else {
+                if (c.steps.every(s => s.approved)) {
                     c.status = "Done";
                     c.completedDate = nowStr;
                 }
             } else {
                 c.steps[stepIndex].approved = false;
                 c.steps[stepIndex].time = "N/A";
-                c.currentStep = stepIndex;
                 c.status = "Waiting Internal Approval";
                 c.completedDate = null;
             }
@@ -1174,17 +1133,29 @@
             showToast(`✅ 狀態已更新為 ${c.status}`);
         }
 
+        // 💡 參考截圖 2 的精準郵件格式與內容
         function directTriggerOutlook() {
             if(!isAdmin) return;
             const c = cases.find(x => x.id === activeCaseId);
-            const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
-            const bodyText = `Please approve.\n\n相關附件下載：${c.attachmentUrl || '無'}`;
-            const mailtoUrl = `mailto:${encodeURIComponent(curr.email)}?cc=${encodeURIComponent(getFullCCList(c.requesterEmail))}&subject=${encodeURIComponent(`【Seek Approval】Vendor - ${c.supplierName}`)}&body=${encodeURIComponent(bodyText)}`;
+            
+            const toEmails = getApproversToEmails(c.steps);
+            const ccEmails = getFullCCList(c.requesterEmail);
+            const subject = `【Seek Approval】Vendor Creation/Amendment - ${c.supplierName}`;
+            
+            const body = 
+                `Dear Approver,\r\n\r\n` +
+                `We are seeking your approval to proceed with the vendor onboarding/amendment for the following supplier in our system:\r\n\r\n` +
+                `Supplier Name: ${c.supplierName}\r\n\r\n` +
+                `Please review the attached details and reply to this email with either “Approved” or “Not approved”.\r\n\r\n` +
+                `If you have any questions or require additional information, please feel free to reach out to the requester (cc'd in this email).\r\n\r\n` +
+                `Your confirmation within 3 business days would be greatly appreciated to facilitate a timely setup.`;
+
+            const mailtoUrl = `mailto:${encodeURIComponent(toEmails)}?cc=${encodeURIComponent(ccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             
             const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
         }
 
-        // 📄 強制單頁且具備正確簽名圖檔 (Operation Control Executive - Nicolas Wang) 的 PDF
+        // 📄 強制單頁且具備透明簽名圖檔 (Operation Control Executive - Nicolas Wang) 的 PDF
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
@@ -1237,7 +1208,7 @@
                         </table>
                     </div>
 
-                    <!-- Internal Approval Workflow Table (部門排序，無 Step 字樣) -->
+                    <!-- Internal Approval Workflow Table -->
                     <div style="margin-bottom: 14px;">
                         <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 內部跨部門簽核軌跡與負責人資訊 (Internal Approval Audit Trail)</h3>
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
@@ -1269,7 +1240,7 @@
                         </table>
                     </div>
 
-                    <!-- Sign-off / Footer Section with Nicolas's Signature -->
+                    <!-- Sign-off / Footer Section with Fixed Clean Signature -->
                     <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; border-top: 1px solid #cbd5e1; padding-top: 8px;">
                         <div>
                             <div><strong>CEVA Logistics (Taiwan) - OMC Operations Control</strong></div>
@@ -1278,7 +1249,8 @@
                         <div style="text-align: right; width: 220px;">
                             <div style="margin-bottom: 2px;">Authorized Signature:</div>
                             <div style="height: 45px; display: flex; align-items: center; justify-content: flex-end;">
-                                <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAmAMgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigD//2Q==" style="max-height: 42px; max-width: 140px; mix-blend-mode: multiply; filter: contrast(150%);" alt="Nicolas Signature">
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" style="display:none;" />
+                                <span style="font-family: 'Brush Script MT', cursive, sans-serif; font-size: 26px; color: #1e293b; font-weight: bold; font-style: italic; letter-spacing: 1px;">Nicolas</span>
                             </div>
                             <div style="border-top: 1px solid #94a3b8; padding-top: 2px; font-weight: bold; color: #0f172a;">Nicolas Wang (Operation Control Executive)</div>
                         </div>
