@@ -765,14 +765,14 @@
             // 💡 副本 CC：申請人 + 指定固定清單
             const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
             
-            // 💡 主旨與內文（將 requester 直接寫入內文）
+            // 💡 主旨與內文（refer to 帶入申請人 email）
             const subject = `【Seek Approval】Vendor Creation/Amendment - ${supplierName}`;
             const body = 
                 `Dear Approver,\r\n\r\n` +
                 `We are seeking your approval to proceed with the vendor onboarding/amendment for the following supplier in our system:\r\n\r\n` +
                 `Supplier Name: ${supplierName}\r\n\r\n` +
                 `Please review the attached details and reply to this email with either “Approved” or “Not approved”.\r\n\r\n` +
-                `If you have any questions or require additional information, please feel free to reach out to the requester (${requesterEmail}).\r\n\r\n` +
+                `If you have any questions or require additional information, please feel free to refer to the requester (${requesterEmail}).\r\n\r\n` +
                 `Your confirmation within 3 business days would be greatly appreciated to facilitate a timely setup.`;
 
             const mailtoUrl = `mailto:${encodeURIComponent(toEmails)}?cc=${encodeURIComponent(ccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
