@@ -87,7 +87,7 @@
         .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; border: 1px solid #e2e8f0; }
         .hidden { display: none !important; }
         
-        /* 💡 流程圖與精緻高雅的呼吸燈動畫 (1.6秒循環) + 恢復俐落連接箭頭 */
+        /* 💡 強制啟動的高雅呼吸燈動畫 (1.6秒循環) */
         .unified-flow-wrapper { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
         
         .pipeline-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
@@ -97,13 +97,18 @@
 
         .pipeline-left { display: flex; align-items: center; gap: 14px; }
         
-        .pipeline-dot { width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; position: relative; flex-shrink: 0; border: 1px solid #94a3b8; }
-        .pipeline-dot.approved { background: #10b981; border-color: #047857; }
-        .pipeline-dot.active-breathing { background: #f59e0b; border-color: #b45309; animation: pulse-luxury-orange 1.6s infinite ease-in-out; }
+        .pipeline-dot { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; position: relative; flex-shrink: 0; border: 2px solid #94a3b8; }
+        .pipeline-dot.approved { background: #10b981 !important; border-color: #047857 !important; animation: none !important; }
+        
+        .pipeline-dot.active-breathing { 
+            background-color: #f59e0b !important; 
+            border-color: #b45309 !important; 
+            animation: pulse-luxury-orange 1.6s infinite ease-in-out !important; 
+        }
 
         @keyframes pulse-luxury-orange {
-            0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8), 0 0 0 rgba(245, 158, 11, 0); }
-            50% { transform: scale(1.18); box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.25), 0 0 10px rgba(245, 158, 11, 0.5); }
+            0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.9), 0 0 0 rgba(245, 158, 11, 0); }
+            50% { transform: scale(1.25); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.3), 0 0 14px rgba(245, 158, 11, 0.6); }
             100% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), 0 0 0 rgba(245, 158, 11, 0); }
         }
 
@@ -248,7 +253,7 @@
             <div id="dash-pagination-container"></div>
         </div>
 
-        <!-- Create Case Panel (正確採用 Trade / Non-Trade 大寫) -->
+        <!-- Create Case Panel -->
         <div id="panel-create" class="panel hidden">
             <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">新建 / 修改供應商申請</h2>
             <form id="form-create-vendor" onsubmit="handleCreate(event)">
@@ -325,7 +330,7 @@
                 </select>
             </div>
 
-            <!-- 🗑️ 批次刪除工具列 (唯有刪除模式開啟時顯示) -->
+            <!-- 🗑️ 批次刪除工具列 -->
             <div id="batch-action-bar" class="hidden" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #fef2f2; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 6px;">
                 <span style="font-size: 13px; color: #b91c1c; font-weight: bold;" id="selected-count-text">已選取 0 項案件</span>
                 <div style="display: flex; gap: 8px;">
@@ -365,7 +370,6 @@
                 </div>
             </div>
 
-            <!-- 🗑️ 日誌批次刪除工具列 (唯有刪除模式開啟時顯示) -->
             <div id="batch-logs-bar" class="hidden" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #fef2f2; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 6px;">
                 <span style="font-size: 13px; color: #b91c1c; font-weight: bold;" id="selected-logs-count-text">已選取 0 項日誌</span>
                 <div style="display: flex; gap: 8px;">
@@ -464,7 +468,6 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <!-- 🔄 具備動態呼吸燈與精緻連接箭頭的流程圖 -->
             <div class="unified-flow-wrapper">
                 <div>
                     <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. Internal Cross-Department Approval Flow :</h4>
@@ -1407,12 +1410,26 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 1. 渲染內部審核動態流程圖 (具備 1.6秒循環呼吸燈動畫)
+            // 1. 內部審核流程渲染（智慧判定：前面已審核完畢顯示綠燈，當前等待審核的關卡自動套用 .active-breathing 呼吸燈動畫）
             const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
-            document.getElementById('det-pipeline').innerHTML = internalSteps.map((s) => {
+            
+            // 找出第一個尚未核准的關卡索引
+            let firstPendingIdx = internalSteps.findIndex(s => !s.approved);
+
+            document.getElementById('det-pipeline').innerHTML = internalSteps.map((s, idx) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
-                let dotClass = "pipeline-dot" + (s.approved ? " approved" : " active-breathing");
-                let nodeClass = s.approved ? "pipeline-node done-stage" : "pipeline-node active-stage";
+                
+                let dotClass = "pipeline-dot";
+                let nodeClass = "pipeline-node";
+                
+                if (s.approved) {
+                    dotClass += " approved";
+                    nodeClass += " done-stage";
+                } else if (idx === firstPendingIdx) {
+                    dotClass += " active-breathing"; // 🔴 強制觸發呼吸燈動畫
+                    nodeClass += " active-stage";
+                }
+
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${globalIdx}, this.checked)"` : `disabled title="僅限管理者操作核准勾選"`;
 
                 return `
@@ -1431,7 +1448,7 @@
                     </div>`;
             }).join('');
 
-            // 2. 渲染 VMD 4 欄精緻卡片 (維持 JDE 在最後一步正常順序)
+            // 2. VMD 4 欄精緻卡片渲染
             const vmdSteps = c.steps.filter(s => vmdRoleNames.includes(s.role));
             document.getElementById('vmd-cards-container').innerHTML = vmdSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
