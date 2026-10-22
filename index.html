@@ -436,7 +436,10 @@
         let listCurrentPage = 1;
         const pageSize = 20;
 
+        // 💡 您指定的固定 CC 清單
         const FIXED_CC_LIST = [
+            "Christina.Chen@Cevalogistics.com",
+            "Vicky.Liu@Cevalogistics.com",
             "tpe.omc@cevalogistics.com"
         ];
 
@@ -729,7 +732,7 @@
             return { text: `${days} 天`, days: days, isNA: false };
         }
 
-        // 💡 建立單號時自動觸發發信 / 彈窗提醒與引導（Trade 走 Bizagi，Non-trade 走 Outlook 郵件）
+        // 💡 建立單號並完成申請時自動觸發寄信（對齊截圖格式與您的收件人/CC矩陣規則）
         async function handleCreate(e) {
             e.preventDefault();
             const bu = document.getElementById('inp-bu').value;
@@ -739,6 +742,8 @@
             const requesterEmail = document.getElementById('inp-cc').value;
             const vendorType = document.getElementById('inp-type').value;
 
+            const matrixSteps = getMatrix(bu);
+
             const newCase = {
                 id: "CEVA-" + selectedDate.substring(0,7).replace('-','') + "-" + String(cases.length+1).padStart(3,'0'),
                 supplierName, bu, action,
@@ -747,42 +752,45 @@
                 completedDate: null,
                 requesterEmail: requesterEmail,
                 status: "Waiting Internal Approval",
-                steps: getMatrix(bu)
+                steps: matrixSteps
             };
 
             cases.unshift(newCase);
             await saveCloudData(cases);
             addSystemLog("Create Case", newCase.id, `訪客新建案件：${supplierName} (${bu} - ${vendorType})`);
 
-            // 💡 自動發信與流程提醒邏輯
-            if (vendorType === 'Trade') {
-                alert(`⚠️ 【申請建立成功 - Trade 流程提醒】\n\n1. 請務必確認信件或案件中已夾帶 **VMD Request Form** 與 **Supporting** 相關附件。\n2. 內部審核完畢後，後續將引導至 **Bizagi 平台**由申請人自行提交正式申請。`);
-            } else {
-                const toEmails = "SH-AP-VMD-GBSC@Cevalogistics.com";
-                const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
-                const subject = `【Seek Approval】Vendor Creation/Amendment - ${supplierName}`;
-                const body = 
-                    `Dear VMD Team,\r\n\r\n` +
-                    `We are submitting a Non-trade vendor onboarding/amendment request for your review and system setup:\r\n\r\n` +
-                    `Supplier Name: ${supplierName}\r\n` +
-                    `Business Unit: ${bu}\r\n` +
-                    `Action Type: ${action}\r\n\r\n` +
-                    `Please find attached the required VMD Request Form and Supporting documents for your processing.\r\n\r\n` +
-                    `Should you require any further clarification, please feel free to contact the requester (cc'd in this email).\r\n\r\n` +
-                    `Your prompt assistance in this matter would be greatly appreciated.`;
+            // 💡 組合收件人 To：矩陣內的人（排除 VMD，納入 Tristan, Chris, Will, 以及 Barry 或 Warren）
+            const toEmails = matrixSteps.filter(s => s.role !== 'VMD').map(s => s.email).join("; ");
+            
+            // 💡 組合副本 CC：申請人 Email + 您指定的固定清單
+            const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
+            
+            // 💡 組合主旨與內文（完全對齊您提供的截圖樣式）
+            const subject = `【Seek Approval】Vendor Creation/Amendment - ${supplierName}`;
+            const body = 
+                `Dear Approver,\r\n\r\n` +
+                `We are seeking your approval to proceed with the vendor onboarding/amendment for the following supplier in our system:\r\n\r\n` +
+                `Supplier Name: ${supplierName}\r\n\r\n` +
+                `Please review the attached details and reply to this email with either “Approved” or “Not approved”.\r\n\r\n` +
+                `If you have any questions or require additional information, please feel free to reach out to the requester (cc'd in this email).\r\n\r\n` +
+                `Your confirmation within 3 business days would be greatly appreciated to facilitate a timely setup.`;
 
-                const mailtoUrl = `mailto:${encodeURIComponent(toEmails)}?cc=${encodeURIComponent(ccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                
-                alert(`⚠️ 【申請建立成功 - Non-trade 流程提醒】\n\n1. 請務必在即將開啟的 Outlook 郵件中夾帶 **VMD Request Form** 與 **Supporting** 相關附件！\n2. 內部審核完畢後，將透過 Outlook 直接發送郵件至 SH-AP-VMD-GBSC@Cevalogistics.com 提交申請。`);
-                
-                const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
+            const mailtoUrl = `mailto:${encodeURIComponent(toEmails)}?cc=${encodeURIComponent(ccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            if (vendorType === 'Trade') {
+                alert(`⚠️ 【申請建立成功 - Trade 流程提醒】\n\n1. 請務必確認信件或案件中已夾帶 **VMD Request Form** 與 **Supporting** 相關附件！\n2. 內部審核完畢後，後續將引導至 **Bizagi 平台**由申請人自行提交正式申請。`);
+            } else {
+                alert(`⚠️ 【申請建立成功 - Non-trade 流程提醒】\n\n1. 請務必在即將開啟的 Outlook 郵件中夾帶 **VMD Request Form** 與 **Supporting** 相關附件！\n2. 內部審核完畢後，將直接發送郵件至 SH-AP-VMD-GBSC@Cevalogistics.com 提交申請。`);
             }
+
+            // 💡 自動觸發 Outlook 郵件視窗
+            const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
 
             document.getElementById('form-create-vendor').reset();
             document.getElementById('inp-date').valueAsDate = new Date();
             document.getElementById('matrix-preview').innerText = "請先選擇 BU...";
             switchTab('list');
-            showToast(`✅ Case ${newCase.id} 建立成功！`);
+            showToast(`✅ Case ${newCase.id} 建立成功並已自動觸發郵件！`);
         }
 
         function renderDashboardAnalytics() {
