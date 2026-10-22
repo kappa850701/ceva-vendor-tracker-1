@@ -84,7 +84,8 @@
             100% { transform: translateY(-50%) scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
 
-        .checkbox-only { width: 22px; height: 22px; cursor: pointer; margin: 0; accent-color: #10b981; }
+        /* 移除勾勾綠底，改為標準白色底與預設勾選框 */
+        .checkbox-only { width: 20px; height: 20px; cursor: pointer; margin: 0; }
 
         .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
         .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.8; }
@@ -156,7 +157,7 @@
                 <div class="card"><div class="card-title">暫停 (Hold)</div><div id="cnt-hold" class="card-val">0</div></div>
             </div>
 
-            <!-- 📈 營運效率與瓶頸分析區塊 (Analytics & Bottleneck Tracking) -->
+            <!-- 📈 核心效率指標 (KPI Cards) -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
                 <div class="card" style="border-left-color: #003366;">
                     <div class="card-title">平均審核週期 (Lead Time)</div>
@@ -165,15 +166,6 @@
                 <div class="card" style="border-left-color: #f59e0b;">
                     <div class="card-title">目前最大滯留天數 (Max Active Age)</div>
                     <div id="stat-max-age" class="card-val" style="color: #b45309;">0 天</div>
-                </div>
-            </div>
-
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                <h4 style="font-size: 14px; color: #003366; margin-bottom: 14px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                    <span>🔍 目前各部門審核瓶頸分析 (Department Bottleneck Tracking)</span>
-                </h4>
-                <div id="bottleneck-container" style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
-                    <!-- 動態渲染 -->
                 </div>
             </div>
 
@@ -457,15 +449,15 @@
                     <button class="btn btn-danger" onclick="setGlobalStatus('Reject')">Reject</button>
                     <button class="btn btn-secondary" onclick="setGlobalStatus('Hold')">Hold</button>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-outline-primary" onclick="exportPDF()">📄 匯出 PDF (排除VMD)</button>
+                <div style="display: flex; gap: 8px; margin-left: auto;">
+                    <button class="btn btn-outline-primary" onclick="exportPDF()">📄 匯出 PDF</button>
                     <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 用於列印 PDF 的專用容器 -->
+    <!-- 用於列印 PDF 的專業外商正式表單容器 -->
     <div id="pdf-print-area" class="hidden"></div>
 
     <script>
@@ -497,11 +489,11 @@
                 id: "CEVA-202606-001", supplierName: "佰進國際物流", bu: "AE", action: "Change", vendorType: "Trade",
                 applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", attachmentUrl: "", status: "Done", currentStep: 5,
                 steps: [
-                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
+                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "2026-06-23" },
+                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "2026-06-24" },
+                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "2026-06-24" },
+                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "2026-06-25" },
+                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" }
                 ]
             }
         ];
@@ -715,6 +707,15 @@
             `).join('');
         }
 
+        function exportDataBackup() {
+            if(!isAdmin) return;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ cases, systemLogs }, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `CEVA_Cloud_Backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dlAnchor); dlAnchor.click(); dlAnchor.remove();
+        }
+
         function switchTab(tab) {
             if (!isAdmin && (tab === 'create' || tab === 'logs')) { alert("⚠️ 此分頁需要管理者權限才能檢視！"); return; }
             ['dash', 'create', 'list', 'logs'].forEach(t => {
@@ -805,7 +806,6 @@
             showToast(`✅ Case ${newCase.id} 建立成功！`);
         }
 
-        // 📈 渲染儀表板與營運效率/瓶頸分析
         function renderDashboardAnalytics() {
             const doneCases = cases.filter(c => c.status === 'Done' && c.completedDate && c.completedDate !== 'N/A');
             let totalDays = 0;
@@ -823,35 +823,6 @@
                 if (info.days > maxAge) maxAge = info.days;
             });
             document.getElementById('stat-max-age').innerText = `${maxAge} 天`;
-
-            // 統計各部門卡住數量
-            const roleCounts = { "OMC": 0, "Compliance": 0, "Local Finance": 0, "Product Head": 0, "VMD": 0 };
-            waitingCases.forEach(c => {
-                const currStep = c.steps[c.currentStep];
-                if (currStep) {
-                    let rName = currStep.role;
-                    if (rName.includes("Product Head")) rName = "Product Head";
-                    if (roleCounts[rName] !== undefined) roleCounts[rName]++;
-                }
-            });
-
-            const totalWaiting = waitingCases.length || 1;
-            let bottleneckHtml = '';
-            for (let [role, count] of Object.entries(roleCounts)) {
-                const pct = Math.round((count / totalWaiting) * 100);
-                bottleneckHtml += `
-                    <div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                            <span><strong>${role}</strong> 審核中案件</span>
-                            <span style="color: #64748b; font-weight: bold;">${count} 件 (${pct}%)</span>
-                        </div>
-                        <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
-                            <div style="background: #003366; width: ${pct}%; height: 100%; transition: width 0.3s;"></div>
-                        </div>
-                    </div>
-                `;
-            }
-            document.getElementById('bottleneck-container').innerHTML = bottleneckHtml;
         }
 
         function sortDashTable(key) {
@@ -1116,6 +1087,7 @@
             const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
         }
 
+        // 📄 更具外商正式與專業質感的 PDF 匯出格式
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
@@ -1123,47 +1095,91 @@
 
             let printArea = document.getElementById('pdf-print-area');
             printArea.innerHTML = `
-                <div style="font-family: Calibri, sans-serif; padding: 20px; color: #334155;">
-                    <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 20px;">
+                <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1e293b; max-width: 800px; margin: 0 auto; background: white;">
+                    <!-- Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #003366; padding-bottom: 16px; margin-bottom: 24px;">
                         <div>
-                            <h2 style="color: #003366; margin: 0;">CEVA Logistics (Taiwan)</h2>
-                            <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Vendor Approval Summary Report</p>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                <span style="background-color: #dc2626; color: white; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-size: 16px; letter-spacing: 2px;">CEVA</span>
+                                <h1 style="color: #003366; font-size: 20px; margin: 0; font-weight: 700;">CEVA Logistics (Taiwan) Co., Ltd.</h1>
+                            </div>
+                            <p style="font-size: 13px; color: #64748b; margin: 0;">Operation Management Control (OMC) Department | Vendor Approval Summary Report</p>
                         </div>
-                        <div style="text-align: right; font-size: 12px; color: #64748b;">
-                            <div>列印日期：${new Date().toISOString().slice(0,10)}</div>
+                        <div style="text-align: right; font-size: 12px; color: #475569; line-height: 1.5;">
+                            <div><strong>Case ID:</strong> <span style="color: #003366; font-family: monospace; font-size: 14px;">${c.id}</span></div>
+                            <div><strong>Generated Date:</strong> ${new Date().toISOString().slice(0,10)}</div>
                         </div>
                     </div>
 
-                    <h3 style="color: #1e293b; margin-bottom: 8px;">${c.supplierName} (${c.id})</h3>
-                    <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">
-                        <strong>BU:</strong> ${c.bu} &nbsp;|&nbsp; 
-                        <strong>Action:</strong> ${c.action} &nbsp;|&nbsp; 
-                        <strong>Type:</strong> ${c.vendorType} &nbsp;|&nbsp; 
-                        <strong>申請日期:</strong> ${c.applyDate} &nbsp;|&nbsp;
-                        <strong>狀態:</strong> ${c.status}
-                    </p>
-
-                    <h4 style="font-size: 14px; color: #003366; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; margin-bottom: 12px;">內部簽核進度（已排除 VMD）</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                        <thead>
-                            <tr style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">
-                                <th style="padding: 8px; text-align: left;">關卡角色</th>
-                                <th style="padding: 8px; text-align: left;">審核人</th>
-                                <th style="padding: 8px; text-align: center;">簽核狀態</th>
-                                <th style="padding: 8px; text-align: right;">完成日期</th>
+                    <!-- Vendor Basic Info Box -->
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
+                        <h3 style="font-size: 14px; color: #003366; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">1. 供應商基本與申請資訊 (Vendor Profile)</h3>
+                        <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 6px 0; width: 20%; color: #64748b;">Supplier Name:</td>
+                                <td style="padding: 6px 0; width: 30%; font-weight: bold; color: #0f172a;">${c.supplierName}</td>
+                                <td style="padding: 6px 0; width: 20%; color: #64748b;">Business Unit (BU):</td>
+                                <td style="padding: 6px 0; width: 30%; font-weight: bold; color: #0f172a;">${c.bu}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${filteredSteps.map((s, idx) => `
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
-                                    <td style="padding: 8px;">Step ${idx+1}: ${s.role}</td>
-                                    <td style="padding: 8px;">${s.name}</td>
-                                    <td style="padding: 8px; text-align: center;">${s.approved ? '<span style="color: #10b981; font-weight: bold;">✔ Approved</span>' : '<span style="color: #f59e0b;">Waiting</span>'}</td>
-                                    <td style="padding: 8px; text-align: right; font-family: monospace;">${s.time || 'N/A'}</td>
+                            <tr>
+                                <td style="padding: 6px 0; color: #64748b;">Action Type:</td>
+                                <td style="padding: 6px 0; font-weight: bold; color: #0f172a;">${c.action}</td>
+                                <td style="padding: 6px 0; color: #64748b;">Vendor Category:</td>
+                                <td style="padding: 6px 0; font-weight: bold; color: #0f172a;">${c.vendorType}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #64748b;">Request Date:</td>
+                                <td style="padding: 6px 0; font-family: monospace;">${c.applyDate}</td>
+                                <td style="padding: 6px 0; color: #64748b;">Requester Email:</td>
+                                <td style="padding: 6px 0; font-family: monospace; font-size: 12px;">${c.requesterEmail}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #64748b;">Overall Status:</td>
+                                <td style="padding: 6px 0;" colspan="3"><strong style="color: ${c.status==='Done'?'#047857':(c.status==='Reject'?'#b91c1c':'#b45309')};">${c.status}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Internal Approval Workflow Table -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="font-size: 14px; color: #003366; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">2. 內部跨部門簽核軌跡 (Internal Approval Audit Trail)</h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <thead>
+                                <tr style="background-color: #003366; color: white;">
+                                    <th style="padding: 10px 12px; text-align: left; width: 15%;">關卡順序</th>
+                                    <th style="padding: 10px 12px; text-align: left; width: 25%;">部門 / 角色</th>
+                                    <th style="padding: 10px 12px; text-align: left; width: 30%;">審核代表</th>
+                                    <th style="padding: 10px 12px; text-align: center; width: 15%;">簽核狀態</th>
+                                    <th style="padding: 10px 12px; text-align: right; width: 15%;">完成日期</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${filteredSteps.map((s, idx) => `
+                                    <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                                        <td style="padding: 10px 12px; font-weight: bold; color: #475569;">Step ${idx+1}</td>
+                                        <td style="padding: 10px 12px; color: #334155;">${s.role}</td>
+                                        <td style="padding: 10px 12px; color: #334155;">${s.name}</td>
+                                        <td style="padding: 10px 12px; text-align: center;">
+                                            ${s.approved ? '<span style="color: #047857; font-weight: bold; background: #d1fae5; padding: 2px 8px; border-radius: 4px; font-size: 11px;">APPROVED</span>' : '<span style="color: #b45309; font-weight: bold; background: #fef3c7; padding: 2px 8px; border-radius: 4px; font-size: 11px;">PENDING</span>'}
+                                        </td>
+                                        <td style="padding: 10px 12px; text-align: right; font-family: monospace; color: #64748b;">${s.time || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Sign-off / Footer Section -->
+                    <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; border-top: 1px solid #cbd5e1; padding-top: 16px;">
+                        <div>
+                            <div><strong>CEVA Logistics (Taiwan) - OMC Operations Control</strong></div>
+                            <div>This is a system-generated compliance audit report.</div>
+                        </div>
+                        <div style="text-align: right; width: 200px;">
+                            <div style="margin-bottom: 30px;">Authorized Signature:</div>
+                            <div style="border-bottom: 1px solid #94a3b8;"></div>
+                        </div>
+                    </div>
                 </div>
             `;
             window.print();
