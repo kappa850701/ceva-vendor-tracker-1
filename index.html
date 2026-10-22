@@ -11,46 +11,48 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
         body { background-color: #f8fafc; color: #334155; padding-bottom: 40px; }
         
-        header { background-color: #003366; color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        header { background-color: #003366; color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-bottom: 1px solid #002244; }
         .logo-title { display: flex; align-items: center; gap: 12px; }
         .logo { background-color: #dc2626; color: white; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-size: 20px; letter-spacing: 2px; }
         .title { font-size: 18px; font-weight: 600; }
         .subtitle { font-size: 12px; color: #cbd5e1; }
         
-        /* 🎚️ 滑軌切換開關 (Slider Toggle Switch) */
+        /* 🎚️ 滑軌切換開關 */
         .mode-slider-container { display: flex; align-items: center; gap: 10px; }
         .slider-label { font-size: 12px; font-weight: 600; color: #cbd5e1; transition: color 0.3s; }
         .slider-label.active { color: white; text-shadow: 0 0 8px rgba(255,255,255,0.6); }
         .switch { position: relative; display: inline-block; width: 48px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #64748b; transition: .3s; border-radius: 24px; }
+        .slider-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #64748b; transition: .3s; border-radius: 24px; border: 1px solid #475569; }
         .slider-track:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         input:checked + .slider-track { background-color: #10b981; }
         input:checked + .slider-track:before { transform: translateX(24px); }
 
         .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
         
-        /* 🧭 導覽列與質感 Icon 樣式 */
-        .tabs { display: flex; gap: 16px; border-bottom: 2px solid #e2e8f0; background: white; padding: 0 20px; border-radius: 8px 8px 0 0; }
-        .tab-btn { padding: 14px 12px; border: none; background: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, background-color 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .tab-btn:hover { color: #003366; background-color: #f8fafc; }
-        .tab-btn.active { color: #003366; border-bottom-color: #003366; background-color: #fff; }
+        /* 🧭 導覽列 */
+        .tabs { display: flex; gap: 16px; border-bottom: 2px solid #cbd5e1; background: white; padding: 0 20px; border-radius: 8px 8px 0 0; border: 1px solid #cbd5e1; border-bottom: none; }
+        .tab-btn { padding: 14px 16px; border: none; background: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, background-color 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .tab-btn:hover { color: #003366; background-color: #f1f5f9; }
+        .tab-btn.active { color: #003366; border-bottom-color: #003366; background-color: #fff; font-weight: bold; }
         .tab-icon { font-size: 16px; }
 
-        .panel { background: white; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0; border-top: none; min-height: 500px; }
+        .panel { background: white; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #cbd5e1; border-top: none; min-height: 500px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .card { background: white; border: 1px solid #e2e8f0; border-left: 4px solid #64748b; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card { background: white; border: 1px solid #cbd5e1; border-left: 4px solid #64748b; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .card.waiting { border-left-color: #f59e0b; }
         .card.done { border-left-color: #10b981; }
         .card.reject { border-left-color: #ef4444; }
         .card-title { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #64748b; }
         .card-val { font-size: 28px; font-weight: 800; margin-top: 8px; color: #1e293b; }
 
-        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-top: 4px; transition: border-color 0.2s; }
+        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-top: 4px; transition: border-color 0.2s; background: #fff; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #003366; box-shadow: 0 0 0 3px rgba(0,51,102,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
-        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; cursor: pointer; user-select: none; transition: background-color 0.2s; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; }
+        th:last-child, td:last-child { border-right: none; }
+        th { background-color: #f1f5f9; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; cursor: pointer; user-select: none; transition: background-color 0.2s; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; }
         th:hover { background-color: #e2e8f0; color: #003366; }
         tr:hover td { background-color: #f8fafc; }
 
@@ -60,19 +62,19 @@
         .status-reject { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
         .status-hold { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
-        #status-toast { position: fixed; top: 20px; right: 20px; background-color: #003366; color: white; padding: 12px 24px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); font-weight: bold; font-size: 14px; z-index: 1000; transition: opacity 0.3s, transform 0.3s; transform: translateY(0); }
+        #status-toast { position: fixed; top: 20px; right: 20px; background-color: #003366; color: white; padding: 12px 24px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); font-weight: bold; font-size: 14px; z-index: 1000; transition: opacity 0.3s, transform 0.3s; transform: translateY(0); border: 1px solid #002244; }
         #status-toast.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
 
         .age-normal { color: #334155; font-family: monospace; font-weight: bold; }
-        .age-na { color: #94a3b8; font-style: italic; font-weight: normal; background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+        .age-na { color: #94a3b8; font-style: italic; font-weight: normal; background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
 
-        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid transparent; font-weight: 600; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn-sm { padding: 6px 12px; font-size: 12px; }
-        .btn-primary { background-color: #003366; color: white; }
+        .btn-primary { background-color: #003366; color: white; border-color: #002244; }
         .btn-primary:hover { background-color: #002244; box-shadow: 0 4px 6px rgba(0,51,102,0.2); }
-        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger { background-color: #ef4444; color: white; border-color: #dc2626; }
         .btn-danger:hover { background-color: #dc2626; }
-        .btn-secondary { background-color: #64748b; color: white; }
+        .btn-secondary { background-color: #64748b; color: white; border-color: #475569; }
         .btn-secondary:hover { background-color: #475569; }
         .btn-outline-primary { background: white; border: 1px solid #cbd5e1; color: #003366; }
         .btn-outline-primary:hover { background: #f8fafc; border-color: #003366; }
@@ -80,82 +82,69 @@
         .btn-outline-danger:hover { background: #fef2f2; border-color: #ef4444; }
         
         .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 999; }
-        .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
+        .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; border: 1px solid #cbd5e1; }
         .hidden { display: none !important; }
         
-        /* 🚀 結合完美呼吸燈效與流暢過渡的流程設計 */
-        .unified-flow-wrapper { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+        /* 🚀 頂級動態呼吸燈與質感光流連接器 */
+        .unified-flow-wrapper { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; border: 1px solid #cbd5e1; padding: 16px; border-radius: 8px; background: #fafafa; }
         
         .pipeline-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
-        .pipeline-node { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.25s ease; position: relative; }
+        .pipeline-node { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.25s ease; position: relative; }
         .pipeline-node:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,51,102,0.08); border-color: #003366; }
         .pipeline-node.active-stage { border-left: 4px solid #f59e0b; background: #fffdfa; }
         .pipeline-node.done-stage { border-left: 4px solid #10b981; background: #f6fdf9; }
 
         .pipeline-left { display: flex; align-items: center; gap: 14px; }
         
-        /* 💡 完美的動態呼吸燈號 (Pulse Breathing Effect) */
-        .pipeline-dot { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; position: relative; flex-shrink: 0; transition: all 0.3s; }
-        .pipeline-dot.approved { background: #10b981; box-shadow: 0 0 0 4px #d1fae5; }
-        .pipeline-dot.active-breathing { background: #f59e0b; animation: pulse-orange 1.8s infinite; }
+        /* 💡 精緻高科技動態呼吸燈光暈效果 */
+        .pipeline-dot { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; position: relative; flex-shrink: 0; transition: all 0.3s; border: 1px solid #94a3b8; }
+        .pipeline-dot.approved { background: #10b981; border-color: #047857; box-shadow: 0 0 0 4px #d1fae5, 0 0 10px rgba(16, 185, 129, 0.4); }
+        .pipeline-dot.active-breathing { background: #f59e0b; border-color: #b45309; animation: pulse-luxury-orange 1.6s infinite ease-in-out; }
 
-        @keyframes pulse-orange {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-            70% { transform: scale(1.2); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        @keyframes pulse-luxury-orange {
+            0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8), 0 0 0 rgba(245, 158, 11, 0); }
+            50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.25), 0 0 12px rgba(245, 158, 11, 0.6); }
+            100% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), 0 0 0 rgba(245, 158, 11, 0); }
         }
 
-        /* 🔗 橋接動畫導引線 */
+        /* 🔗 帶光流的橋接器 */
         .flow-bridge-connector { display: flex; align-items: center; justify-content: center; position: relative; margin: 4px 0; }
-        .flow-bridge-line { width: 2px; height: 28px; background: linear-gradient(to bottom, #10b981, #003366); position: absolute; z-index: 1; }
-        .flow-bridge-badge { background: #003366; color: white; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 12px; z-index: 2; letter-spacing: 1px; box-shadow: 0 2px 6px rgba(0,51,102,0.2); animation: flow-pulse 2s infinite; }
+        .flow-bridge-line { width: 2px; height: 32px; background: linear-gradient(to bottom, #10b981, #003366); position: absolute; z-index: 1; }
+        .flow-bridge-badge { background: #003366; color: white; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 12px; z-index: 2; letter-spacing: 1px; box-shadow: 0 2px 6px rgba(0,51,102,0.3); animation: flow-badge-glow 2s infinite ease-in-out; border: 1px solid #002244; }
 
-        @keyframes flow-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(0, 51, 102, 0); }
+        @keyframes flow-badge-glow {
+            0% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(0, 51, 102, 0); }
             100% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0); }
         }
 
-        /* 💎 VMD 4 欄動態卡片進度區塊（呼吸燈同步套用） */
+        /* 💎 VMD 4 欄精緻動態卡片 */
         .vmd-pipeline-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 4px; }
-        .vmd-flow-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 8px; text-align: center; position: relative; transition: all 0.25s ease; }
-        .vmd-flow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .vmd-flow-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 8px; text-align: center; position: relative; transition: all 0.25s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .vmd-flow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-color: #003366; }
         .vmd-flow-card.completed { background: #f0fdf4; border-color: #86efac; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1); }
         .vmd-flow-title { font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 6px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
         .vmd-flow-time { font-size: 10px; color: #64748b; font-family: monospace; margin-top: 4px; }
 
-        .checkbox-only { width: 18px; height: 18px; cursor: pointer; margin: 0; }
+        .checkbox-only { width: 18px; height: 18px; cursor: pointer; margin: 0; accent-color: #003366; }
 
         .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
         .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.8; }
         .empty-state-title { font-size: 16px; font-weight: bold; color: #334155; margin-bottom: 4px; }
 
-        .filter-row { display: flex; gap: 12px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .filter-row { display: flex; gap: 12px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #cbd5e1; }
         .filter-row input, .filter-row select { margin-top: 0; }
 
-        .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #475569; }
+        .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 12px 16px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; color: #475569; }
         .pagination-controls { display: flex; gap: 6px; align-items: center; }
 
-        /* 🖨️ 強制將列印輸出控制在單一 A4 頁面內 (嚴格排除 VMD 流程) */
         @media print {
-            @page {
-                size: A4 portrait;
-                margin: 8mm;
-            }
+            @page { size: A4 portrait; margin: 8mm; }
             body > * { display: none !important; }
             #pdf-print-area {
-                display: block !important;
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background: white !important;
-                color: black !important;
-                page-break-inside: avoid !important;
-                page-break-after: avoid !important;
+                display: block !important; position: absolute !important; left: 0 !important; top: 0 !important;
+                width: 100% !important; height: 100% !important; padding: 0 !important; margin: 0 !important;
+                background: white !important; color: black !important; page-break-inside: avoid !important; page-break-after: avoid !important;
             }
         }
     </style>
@@ -173,7 +162,7 @@
             </div>
         </div>
         
-        <!-- 🎚️ 滑軌切換模式 (Slider Toggle) -->
+        <!-- 🎚️ 滑軌切換模式 -->
         <div class="header-actions">
             <div class="mode-slider-container">
                 <span class="slider-label active" id="lbl-visitor">訪客</span>
@@ -187,7 +176,7 @@
     </header>
 
     <div class="container">
-        <!-- 🧭 導覽列 (加入精緻 Icon) -->
+        <!-- 🧭 導覽列 -->
         <div class="tabs">
             <button class="tab-btn active" id="btn-tab-dash" onclick="switchTab('dash')">
                 <span class="tab-icon">📊</span> 儀表板
@@ -342,9 +331,16 @@
                 </select>
             </div>
 
+            <!-- 🗑️ 批次刪除工具列 (管理者模式限定) -->
+            <div id="batch-action-bar" class="hidden" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #fef2f2; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 6px;">
+                <span style="font-size: 13px; color: #b91c1c; font-weight: bold;" id="selected-count-text">已選取 0 項案件</span>
+                <button class="btn btn-sm btn-danger" onclick="batchDeleteCases()">批次刪除選取案件</button>
+            </div>
+
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 40px; text-align: center;" id="th-select-all"><input type="checkbox" class="checkbox-only" id="chk-select-all" onclick="toggleSelectAll(this)"></th>
                         <th onclick="sortListTable('id')">Case ID ↕</th>
                         <th onclick="sortListTable('supplierName')">Supplier Name ↕</th>
                         <th onclick="sortListTable('bu')">BU / Action / Type ↕</th>
@@ -372,10 +368,17 @@
                     <button class="btn btn-sm btn-outline-danger" onclick="clearAllLogs()" style="height: 38px;">清空</button>
                 </div>
             </div>
+
+            <!-- 🗑️ 日誌批次刪除工具列 -->
+            <div id="batch-logs-bar" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #fef2f2; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 6px;">
+                <span style="font-size: 13px; color: #b91c1c; font-weight: bold;" id="selected-logs-count-text">已選取 0 項日誌</span>
+                <button class="btn btn-sm btn-danger" onclick="batchDeleteLogs()">批次刪除選取日誌</button>
+            </div>
             
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 40px; text-align: center;"><input type="checkbox" class="checkbox-only" id="chk-logs-all" onclick="toggleSelectAllLogs(this)"></th>
                         <th style="width: 150px;">時間</th>
                         <th style="width: 140px;">事件</th>
                         <th style="width: 160px;">項目</th>
@@ -388,7 +391,7 @@
         </div>
     </div>
 
-    <!-- 🔐 管理者登入密碼 Modal -->
+    <!-- 🔐 管理者登入 Modal -->
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">管理者權限驗證</h3>
@@ -443,14 +446,14 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <!-- 🔄 結合呼吸燈效與進度銜接的流程檢視 -->
+            <!-- 🔄 結合精緻動態呼吸燈與流程銜接 -->
             <div class="unified-flow-wrapper">
                 <div>
                     <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. 內部跨部門審核動態流程：</h4>
                     <div class="pipeline-container" id="det-pipeline"></div>
                 </div>
 
-                <!-- 🔗 銜接至 VMD 區塊的動態光流橋接器 -->
+                <!-- 🔗 帶光流的橋接器 -->
                 <div class="flow-bridge-connector">
                     <div class="flow-bridge-line"></div>
                     <div class="flow-bridge-badge">▼ 內部審核通過 ➔ 進入 VMD 執行管道 ▼</div>
@@ -462,14 +465,14 @@
                 </div>
             </div>
 
-            <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;" id="mail-section-box">
+            <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #cbd5e1;" id="mail-section-box">
                 <div style="font-size: 13px; color: #475569; line-height: 1.6;">
                     <div><strong>Mail To:</strong> <span id="mail-to-text" style="color: #003366; font-weight: bold;"></span></div>
                     <div><strong>Mail CC:</strong> <span id="mail-cc-text" style="font-size:12px; color:#64748b;"></span></div>
                 </div>
             </div>
 
-            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #cbd5e1; padding-top: 16px;">
                 <div style="display: flex; gap: 8px;" id="admin-action-buttons">
                     <button class="btn btn-success" id="btn-approve-action" onclick="setGlobalStatus('Done')">Approve</button>
                     <button class="btn btn-danger" onclick="setGlobalStatus('Reject')">Reject</button>
@@ -498,6 +501,8 @@
         let activeCaseId = null;
         let cases = [];
         let systemLogs = [];
+        let selectedCaseIds = [];
+        let selectedLogIndices = [];
 
         let dashSortKey = null;
         let dashSortAsc = true;
@@ -546,6 +551,17 @@
             renderDashboard();
             renderList();
             renderLogs();
+
+            // ⏱️ 背景定時同步 (每 30 秒自動重新整理，智慧防打擾：若使用者正在編輯或打字則暫停)
+            setInterval(async () => {
+                const activeEl = document.activeElement;
+                const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+                const isModalOpen = !document.getElementById('modal-detail').classList.contains('hidden') || !document.getElementById('modal-login').classList.contains('hidden');
+
+                if (!isTyping && !isModalOpen) {
+                    await backgroundSyncCloudData();
+                }
+            }, 30000);
         };
 
         function showToast(msg) {
@@ -555,7 +571,7 @@
             setTimeout(() => toast.classList.add('hidden'), 2500);
         }
 
-        // 🎚️ 滑軌切換模式互動邏輯
+        // 🎚️ 滑軌切換模式
         function handleModeToggle(checkbox) {
             if (checkbox.checked) {
                 document.getElementById('inp-admin-pwd').value = '';
@@ -563,6 +579,7 @@
                 document.getElementById('inp-admin-pwd').focus();
             } else {
                 isAdmin = false;
+                selectedCaseIds = [];
                 updateUIPermissions();
                 switchTab('dash');
                 showToast("已切回訪客模式");
@@ -676,15 +693,6 @@
             return `<span class="status-badge status-waiting">Waiting</span>`;
         }
 
-        // 🔄 統一對應 VMD 4 階段舊命名轉為新命名
-        function migrateVmdRoleName(role) {
-            if (role === '確認完畢文件') return '確認完畢文件';
-            if (role === '要求相關單位核准中') return '要求相關單位核准中';
-            if (role === '與供應商確認相關訊息中') return '與供應商確認相關訊息中';
-            if (role === 'JDE建立完成' || role === 'JDE代碼建立中') return 'JDE代碼建立中';
-            return role;
-        }
-
         async function loadCloudData() {
             try {
                 const { data, error } = await supabaseClient.from('vendor_cases').select('*');
@@ -692,7 +700,6 @@
                 if (data && data.length > 0) {
                     cases = data.map(item => {
                         if (item.data && item.data.steps) {
-                            // 統一進行 VMD 欄位名稱對應與更新
                             item.data.steps = item.data.steps.map(s => {
                                 if (s.role === 'JDE建立完成') s.role = 'JDE代碼建立中';
                                 if (!s.title) {
@@ -731,6 +738,21 @@
             } catch (err) { cases = [...defaultCases]; }
         }
 
+        // ⏱️ 背景自動重新整理 (Background Sync)
+        async function backgroundSyncCloudData() {
+            try {
+                const { data, error } = await supabaseClient.from('vendor_cases').select('*');
+                if (!error && data && data.length > 0) {
+                    let remoteCases = data.map(item => item.data);
+                    if (JSON.stringify(remoteCases) !== JSON.stringify(cases)) {
+                        cases = remoteCases;
+                        if (!document.getElementById('panel-dash').classList.contains('hidden')) renderDashboard();
+                        if (!document.getElementById('panel-list').classList.contains('hidden')) renderList();
+                    }
+                }
+            } catch (e) {}
+        }
+
         async function saveCloudData(updatedCases) {
             cases = updatedCases;
             try {
@@ -767,24 +789,77 @@
             if(confirm("確定刪除此日誌？")) { systemLogs.splice(index, 1); saveStoredLogs(); renderLogs(); showToast("日誌已刪除"); }
         }
         function clearAllLogs() {
-            if(confirm("確定清空所有日誌？")) { systemLogs = []; saveStoredLogs(); renderLogs(); showToast("日誌已清空"); }
+            if(confirm("確定清空所有日誌？")) { systemLogs = []; selectedLogIndices = []; saveStoredLogs(); renderLogs(); showToast("日誌已清空"); }
         }
+
+        // 🗑️ 日誌批次選取與刪除
+        function toggleSelectAllLogs(masterChk) {
+            const checkboxes = document.querySelectorAll('.log-checkbox');
+            selectedLogIndices = [];
+            checkboxes.forEach(chk => {
+                chk.checked = masterChk.checked;
+                if(masterChk.checked) selectedLogIndices.push(parseInt(chk.value));
+            });
+            updateBatchLogsBar();
+        }
+
+        function toggleLogSelection(chk, idx) {
+            if(chk.checked) {
+                if(!selectedLogIndices.includes(idx)) selectedLogIndices.push(idx);
+            } else {
+                selectedLogIndices = selectedLogIndices.filter(i => i !== idx);
+            }
+            updateBatchLogsBar();
+        }
+
+        function updateBatchLogsBar() {
+            const bar = document.getElementById('batch-logs-bar');
+            const countText = document.getElementById('selected-logs-count-text');
+            if(selectedLogIndices.length > 0 && isAdmin) {
+                bar.classList.remove('hidden');
+                countText.innerText = `已選取 ${selectedLogIndices.length} 項日誌`;
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+
+        function batchDeleteLogs() {
+            if(!isAdmin || selectedLogIndices.length === 0) return;
+            if(confirm(`確定批次刪除選取的 ${selectedLogIndices.length} 項日誌？`)) {
+                selectedLogIndices.sort((a, b) => b - a);
+                selectedLogIndices.forEach(idx => { systemLogs.splice(idx, 1); });
+                selectedLogIndices = [];
+                document.getElementById('chk-logs-all').checked = false;
+                saveStoredLogs();
+                renderLogs();
+                showToast("批次刪除日誌成功");
+            }
+        }
+
         function renderLogs() {
             const key = document.getElementById('logs-search').value.toLowerCase();
-            const filtered = systemLogs.filter(l => l.detail.toLowerCase().includes(key) || l.target.toLowerCase().includes(key) || l.type.toLowerCase().includes(key));
+            const filtered = systemLogs.map((l, originalIdx) => ({...l, originalIdx})).filter(l => l.detail.toLowerCase().includes(key) || l.target.toLowerCase().includes(key) || l.type.toLowerCase().includes(key));
+            
+            updateBatchLogsBar();
+
             if (filtered.length === 0) {
-                document.getElementById('logs-tbody').innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">無日誌紀錄</div></td></tr>`;
+                document.getElementById('logs-tbody').innerHTML = `<tr><td colspan="6" class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">無日誌紀錄</div></td></tr>`;
                 return;
             }
-            document.getElementById('logs-tbody').innerHTML = filtered.map((l, idx) => `
-                <tr>
-                    <td style="font-size:12px; color:#64748b; font-family:monospace;">${l.time}</td>
-                    <td><strong>${l.type}</strong></td>
-                    <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#003366;">${l.target}</code></td>
-                    <td style="color:#334155;">${l.detail}</td>
-                    <td style="text-align: right;"><button class="btn btn-sm btn-outline-danger" onclick="delLog(${idx})">刪除</button></td>
-                </tr>
-            `).join('');
+            document.getElementById('logs-tbody').innerHTML = filtered.map(l => {
+                const isChecked = selectedLogIndices.includes(l.originalIdx);
+                const checkboxAttr = isAdmin ? `onchange="toggleLogSelection(this, ${l.originalIdx})" ${isChecked?'checked':''}` : `disabled`;
+                return `
+                    <tr>
+                        <td style="text-align: center;"><input type="checkbox" class="checkbox-only log-checkbox" value="${l.originalIdx}" ${checkboxAttr}></td>
+                        <td style="font-size:12px; color:#64748b; font-family:monospace;">${l.time}</td>
+                        <td><strong>${l.type}</strong></td>
+                        <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#003366; border:1px solid #cbd5e1;">${l.target}</code></td>
+                        <td style="color:#334155;">${l.detail}</td>
+                        <td style="text-align: right;"><button class="btn btn-sm btn-outline-danger" onclick="delLog(${l.originalIdx})">刪除</button></td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function switchTab(tab) {
@@ -1009,13 +1084,63 @@
             renderList();
         }
 
+        // 🗑️ 案件批次選取與刪除
+        function toggleSelectAll(masterChk) {
+            const checkboxes = document.querySelectorAll('.case-checkbox');
+            selectedCaseIds = [];
+            checkboxes.forEach(chk => {
+                chk.checked = masterChk.checked;
+                if(masterChk.checked) selectedCaseIds.push(chk.value);
+            });
+            updateBatchActionBar();
+        }
+
+        function toggleCaseSelection(chk, id) {
+            if(chk.checked) {
+                if(!selectedCaseIds.includes(id)) selectedCaseIds.push(id);
+            } else {
+                selectedCaseIds = selectedCaseIds.filter(cid => cid !== id);
+            }
+            updateBatchActionBar();
+        }
+
+        function updateBatchActionBar() {
+            const bar = document.getElementById('batch-action-bar');
+            const countText = document.getElementById('selected-count-text');
+            if(selectedCaseIds.length > 0 && isAdmin) {
+                bar.classList.remove('hidden');
+                countText.innerText = `已選取 ${selectedCaseIds.length} 項案件`;
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+
+        async function batchDeleteCases() {
+            if(!isAdmin || selectedCaseIds.length === 0) return;
+            if(confirm(`確定批次刪除選取的 ${selectedCaseIds.length} 項案件？`)) {
+                for(let id of selectedCaseIds) {
+                    await removeCloudCase(id);
+                    addSystemLog("Delete Case", id, `批次刪除案件`);
+                }
+                selectedCaseIds = [];
+                document.getElementById('chk-select-all').checked = false;
+                renderDashboard();
+                renderList();
+                showToast("批次刪除案件成功");
+            }
+        }
+
         function renderList() {
             const key = document.getElementById('list-search').value.toLowerCase();
             const statusFilter = document.getElementById('list-filter-status').value;
             const buFilter = document.getElementById('list-filter-bu').value;
             const thAction = document.getElementById('th-action-col');
+            const thSelect = document.getElementById('th-select-all');
 
             if (thAction) thAction.style.display = isAdmin ? '' : 'none';
+            if (thSelect) thSelect.style.display = isAdmin ? '' : 'none';
+
+            updateBatchActionBar();
 
             let filteredList = cases.filter(c => {
                 const matchKey = c.id.toLowerCase().includes(key) || c.supplierName.toLowerCase().includes(key);
@@ -1049,7 +1174,7 @@
             const paginatedItems = filteredList.slice(startIndex, startIndex + pageSize);
 
             if (paginatedItems.length === 0) {
-                document.getElementById('list-tbody').innerHTML = `<tr><td colspan="${isAdmin?7:6}" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">無相符案件</div></td></tr>`;
+                document.getElementById('list-tbody').innerHTML = `<tr><td colspan="${isAdmin?8:6}" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">無相符案件</div></td></tr>`;
                 document.getElementById('pagination-container').innerHTML = '';
                 return;
             }
@@ -1057,7 +1182,11 @@
             document.getElementById('list-tbody').innerHTML = paginatedItems.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 let actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>`;
+                let selectCheckboxCell = '';
+
                 if (isAdmin) {
+                    const isChecked = selectedCaseIds.includes(c.id);
+                    selectCheckboxCell = `<td style="text-align: center;"><input type="checkbox" class="checkbox-only case-checkbox" value="${c.id}" onchange="toggleCaseSelection(this, '${c.id}')" ${isChecked?'checked':''}></td>`;
                     actionButtons = `
                         <button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="delCase('${c.id}')">刪除</button>
@@ -1066,6 +1195,7 @@
 
                 return `
                 <tr>
+                    ${selectCheckboxCell}
                     <td><strong>${c.id}</strong></td>
                     <td>${c.supplierName}</td>
                     <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
@@ -1097,6 +1227,7 @@
             if(!isAdmin) return;
             if(confirm(`確定刪除案件 ${id}？`)) {
                 await removeCloudCase(id);
+                selectedCaseIds = selectedCaseIds.filter(cid => cid !== id);
                 addSystemLog("Delete Case", id, `刪除案件`);
                 renderDashboard(); renderList();
                 showToast(`案件已刪除`);
@@ -1128,7 +1259,7 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 1. 渲染內部動態流程圖 (Pipeline Flow) 完美呼吸燈效
+            // 1. 渲染內部動態流程圖 (具備完美呼吸燈)
             const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
             document.getElementById('det-pipeline').innerHTML = internalSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
@@ -1152,14 +1283,13 @@
                     </div>`;
             }).join('');
 
-            // 2. 渲染 VMD 4 欄精緻動態卡片 (根據勾選前後動態切換顯示文字)
+            // 2. 渲染 VMD 4 欄精緻動態卡片
             const vmdSteps = c.steps.filter(s => vmdRoleNames.includes(s.role));
             document.getElementById('vmd-cards-container').innerHTML = vmdSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
                 const cardClass = s.approved ? "vmd-flow-card completed" : "vmd-flow-card";
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${globalIdx}, this.checked)"` : `disabled`;
 
-                // 根據打勾與否動態轉換標題文字
                 let displayTitle = s.role;
                 if (s.role === '確認完畢文件') {
                     displayTitle = s.approved ? '確認完畢文件完成' : '確認完畢文件中';
@@ -1233,7 +1363,7 @@
             showToast(`狀態已更新`);
         }
 
-        // 📄 匯出 PDF (嚴格排除 VMD 流程內容)
+        // 📄 匯出 PDF (嚴格排除 VMD 流程)
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟案件"); return; }
@@ -1242,7 +1372,6 @@
             let printArea = document.getElementById('pdf-print-area');
             printArea.innerHTML = `
                 <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; padding: 15px 20px; color: #1e293b; max-width: 800px; margin: 0 auto; background: white; font-size: 12px; line-height: 1.3;">
-                    <!-- Header -->
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 14px;">
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -1257,7 +1386,6 @@
                         </div>
                     </div>
 
-                    <!-- Vendor Basic Info Box -->
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px 14px; margin-bottom: 14px;">
                         <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">1. 供應商基本與申請資訊 (Vendor Profile)</h3>
                         <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
@@ -1286,7 +1414,6 @@
                         </table>
                     </div>
 
-                    <!-- Internal Approval Workflow Table (嚴格排除 VMD) -->
                     <div style="margin-bottom: 14px;">
                         <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 內部跨部門審核軌跡 (Internal Approval Audit Trail)</h3>
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
@@ -1318,7 +1445,6 @@
                         </table>
                     </div>
 
-                    <!-- Footer Section -->
                     <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; border-top: 1px solid #cbd5e1; padding-top: 8px;">
                         <div>
                             <div><strong>CEVA Logistics (Taiwan) - OMC Operations Control</strong></div>
