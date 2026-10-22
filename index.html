@@ -248,7 +248,7 @@
             <div id="dash-pagination-container"></div>
         </div>
 
-        <!-- Create Case Panel (Non-Trade 已正確修正為大寫 T) -->
+        <!-- Create Case Panel (正確採用 Trade / Non-Trade 大寫) -->
         <div id="panel-create" class="panel hidden">
             <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">新建 / 修改供應商申請</h2>
             <form id="form-create-vendor" onsubmit="handleCreate(event)">
@@ -464,14 +464,13 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <!-- 🔄 具備動態呼吸燈與精緻連接箭頭的流程圖 (Proper Case 標題格式) -->
+            <!-- 🔄 具備動態呼吸燈與精緻連接箭頭的流程圖 -->
             <div class="unified-flow-wrapper">
                 <div>
                     <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. Internal Cross-Department Approval Flow :</h4>
                     <div class="pipeline-container" id="det-pipeline"></div>
                 </div>
 
-                <!-- 🔗 恢復俐落帶有陰影與標籤的向下箭頭 -->
                 <div class="flow-bridge-connector">
                     <div class="flow-bridge-line"></div>
                     <div class="flow-bridge-arrow">▼</div>
