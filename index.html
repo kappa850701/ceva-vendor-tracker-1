@@ -148,15 +148,15 @@
         <!-- Dashboard Panel -->
         <div id="panel-dash" class="panel">
             <div class="filter-row">
-                <input type="text" id="dash-search" oninput="renderDashboard()" placeholder="🔍 搜尋 Case ID 或 Supplier Name..." style="flex: 1; min-width: 250px;">
-                <select id="dash-filter-status" onchange="renderDashboard()" style="width: 180px;">
+                <input type="text" id="dash-search" oninput="dashCurrentPage=1; renderDashboard()" placeholder="🔍 搜尋 Case ID 或 Supplier Name..." style="flex: 1; min-width: 250px;">
+                <select id="dash-filter-status" onchange="dashCurrentPage=1; renderDashboard()" style="width: 180px;">
                     <option value="">🏷️ 所有狀態 (All)</option>
                     <option value="Waiting Internal Approval">Waiting Approval</option>
                     <option value="Done">Done (完成)</option>
                     <option value="Reject">Reject (退回)</option>
                     <option value="Hold">Hold (暫停)</option>
                 </select>
-                <select id="dash-filter-bu" onchange="renderDashboard()" style="width: 160px;">
+                <select id="dash-filter-bu" onchange="dashCurrentPage=1; renderDashboard()" style="width: 160px;">
                     <option value="">🏢 所有 BU (All)</option>
                     <option value="AE">AE (Air Export)</option>
                     <option value="AI">AI (Air Import)</option>
@@ -203,6 +203,9 @@
                 </thead>
                 <tbody id="dash-tbody"></tbody>
             </table>
+
+            <!-- 📄 儀表板分頁導覽列 -->
+            <div id="dash-pagination-container"></div>
         </div>
 
         <!-- Create Case Panel -->
@@ -253,7 +256,7 @@
                 </div>
 
                 <div style="background: #f8fafc; padding: 16px; margin-top: 20px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                    <strong style="color: #003366; font-size: 13px;">審核矩陣順序預覽 (包含 VMD):</strong>
+                    <strong style="color: #003366; font-size: 13px;">審核矩陣部門順序預覽 (包含 VMD):</strong>
                     <div id="matrix-preview" style="margin-top: 8px; font-size: 13px; color: #475569; font-family: monospace;">請先選擇 BU...</div>
                 </div>
 
@@ -452,7 +455,7 @@
                 <a id="det-attachment-link" href="#" target="_blank" class="btn btn-sm btn-outline-primary">📎 下載案件雲端附件 (PDF/報價單)</a>
             </div>
 
-            <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部簽核進度：</h4>
+            <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部部門簽核進度：</h4>
             <div class="timeline" id="det-timeline"></div>
 
             <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;" id="mail-section-box">
@@ -501,8 +504,9 @@
         let listSortKey = null;
         let listSortAsc = true;
 
+        let dashCurrentPage = 1;
         let listCurrentPage = 1;
-        const listPageSize = 20;
+        const pageSize = 20;
 
         const FIXED_CC_LIST = [
             "Christina.Chen@Cevalogistics.com",
@@ -785,7 +789,7 @@
         function updateMatrixPreview() {
             const bu = document.getElementById('inp-bu').value;
             if(!bu) return;
-            document.getElementById('matrix-preview').innerHTML = getMatrix(bu).map((m,i)=>`Step ${i+1} [${m.role}]: ${m.name}`).join(' ➔ ');
+            document.getElementById('matrix-preview').innerHTML = getMatrix(bu).map(m => m.role).join(' ➔ ');
         }
 
         function calcAge(dStr, completedDate, status) {
@@ -912,12 +916,21 @@
 
             renderDashboardAnalytics();
 
-            if (filteredTable.length === 0) {
+            const totalItems = filteredTable.length;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+            if (dashCurrentPage > totalPages) dashCurrentPage = totalPages;
+            if (dashCurrentPage < 1) dashCurrentPage = 1;
+
+            const startIndex = (dashCurrentPage - 1) * pageSize;
+            const paginatedItems = filteredTable.slice(startIndex, startIndex + pageSize);
+
+            if (paginatedItems.length === 0) {
                 document.getElementById('dash-tbody').innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-state-icon">🗂️</div><div class="empty-state-title">無相符的案件資料</div></td></tr>`;
+                document.getElementById('dash-pagination-container').innerHTML = '';
                 return;
             }
 
-            document.getElementById('dash-tbody').innerHTML = filteredTable.map(c => {
+            document.getElementById('dash-tbody').innerHTML = paginatedItems.map(c => {
                 const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 let ageClass = ageInfo.isNA ? "age-na" : "age-normal";
@@ -929,11 +942,27 @@
                         <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
                         <td style="font-size:12px; color:#475569;">${c.applyDate}</td>
                         <td>${getStatusBadge(c.status)}</td>
-                        <td>${c.status === 'Done' ? '<span style="color:#10b981; font-weight:bold;">全數通過</span>' : `Step ${c.currentStep+1}: ${curr.role}`}</td>
+                        <td>${c.status === 'Done' ? '<span style="color:#10b981; font-weight:bold;">全數通過</span>' : curr.role}</td>
                         <td><span class="${ageClass}">${ageInfo.text}</span></td>
                     </tr>
                 `;
             }).join('');
+
+            document.getElementById('dash-pagination-container').innerHTML = `
+                <div class="pagination-bar">
+                    <div>顯示第 ${startIndex + 1} 到 ${Math.min(startIndex + pageSize, totalItems)} 筆，共 ${totalItems} 筆案件</div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-sm btn-outline-primary" ${dashCurrentPage === 1 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeDashPage(${dashCurrentPage - 1})">◀ 上一頁</button>
+                        <span style="font-weight: bold; padding: 0 8px;">第 ${dashCurrentPage} / ${totalPages} 頁</span>
+                        <button class="btn btn-sm btn-outline-primary" ${dashCurrentPage === totalPages ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeDashPage(${dashCurrentPage + 1})">下一頁 ▶</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changeDashPage(targetPage) {
+            dashCurrentPage = targetPage;
+            renderDashboard();
         }
 
         function sortListTable(key) {
@@ -974,12 +1003,12 @@
             }
 
             const totalItems = filteredList.length;
-            const totalPages = Math.ceil(totalItems / listPageSize) || 1;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
             if (listCurrentPage > totalPages) listCurrentPage = totalPages;
             if (listCurrentPage < 1) listCurrentPage = 1;
 
-            const startIndex = (listCurrentPage - 1) * listPageSize;
-            const paginatedItems = filteredList.slice(startIndex, startIndex + listPageSize);
+            const startIndex = (listCurrentPage - 1) * pageSize;
+            const paginatedItems = filteredList.slice(startIndex, startIndex + pageSize);
 
             if (paginatedItems.length === 0) {
                 document.getElementById('list-tbody').innerHTML = `<tr><td colspan="${isAdmin?7:6}" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">找不到相符案件</div></td></tr>`;
@@ -1011,11 +1040,11 @@
 
             document.getElementById('pagination-container').innerHTML = `
                 <div class="pagination-bar">
-                    <div>顯示第 ${startIndex + 1} 到 ${Math.min(startIndex + listPageSize, totalItems)} 筆，共 ${totalItems} 筆案件</div>
+                    <div>顯示第 ${startIndex + 1} 到 ${Math.min(startIndex + pageSize, totalItems)} 筆，共 ${totalItems} 筆案件</div>
                     <div class="pagination-controls">
-                        <button class="btn btn-sm btn-outline-primary" ${listCurrentPage === 1 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeListPage(${listCurrentPage - 1})">◀ 上一頁</button>
+                        <button class="btn btn-sm btn-outline-primary" ${listCurrentPage === 1 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeListPage(listCurrentPage - 1)">◀ 上一頁</button>
                         <span style="font-weight: bold; padding: 0 8px;">第 ${listCurrentPage} / ${totalPages} 頁</span>
-                        <button class="btn btn-sm btn-outline-primary" ${listCurrentPage === totalPages ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeListPage(${listCurrentPage + 1})">下一頁 ▶</button>
+                        <button class="btn btn-sm btn-outline-primary" ${listCurrentPage === totalPages ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="changeListPage(listCurrentPage + 1)">下一頁 ▶</button>
                     </div>
                 </div>
             `;
@@ -1069,6 +1098,7 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
+            // 💡 移除 Step 字樣，僅保留部門名稱
             document.getElementById('det-timeline').innerHTML = c.steps.map((s, idx) => {
                 let dotClass = "timeline-dot" + (s.approved ? " approved" : (idx === c.currentStep && c.status === "Waiting Internal Approval" ? " active-breathing" : ""));
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled`;
@@ -1078,7 +1108,7 @@
                         <div class="${dotClass}"></div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong style="color: #003366;">Step ${idx+1}: ${s.role} - ${s.name}</strong>
+                                <strong style="color: #003366;">${s.role} - ${s.name}</strong>
                                 <div style="font-size: 12px; color: #475569; font-weight: bold; margin-top: 2px;">${s.title}</div>
                                 <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">Email: ${s.email}</div>
                                 <div style="font-size: 11px; color: #64748b; margin-top: 2px;">完成日期: ${s.time || 'N/A'}</div>
@@ -1119,7 +1149,7 @@
             }
 
             await saveCloudData(cases);
-            addSystemLog("Approval Step", c.id, `關卡 [${stepName}] 狀態更新`);
+            addSystemLog("Approval Step", c.id, `部門 [${stepName}] 狀態更新`);
             openDetail(activeCaseId); renderDashboard(); renderList();
         }
 
@@ -1129,7 +1159,7 @@
             const nowStr = new Date().toISOString().substring(0,10);
 
             if (status === 'Done') {
-                if (!c.steps.every(s => s.approved)) { alert("須完成所有關卡勾選方可 Approve！"); return; }
+                if (!c.steps.every(s => s.approved)) { alert("須完成所有部門審核勾選方可 Approve！"); return; }
                 c.completedDate = (c.completedDate === 'N/A') ? 'N/A' : nowStr;
             } else if (status === 'Reject') {
                 c.completedDate = nowStr;
@@ -1154,7 +1184,7 @@
             const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
         }
 
-        // 📄 強制一頁且帶有您的簽名圖檔 (Operation Control Executive - Nicolas Wang) 的 PDF
+        // 📄 強制單頁且具備正確簽名圖檔 (Operation Control Executive - Nicolas Wang) 的 PDF
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
@@ -1207,14 +1237,14 @@
                         </table>
                     </div>
 
-                    <!-- Internal Approval Workflow Table -->
+                    <!-- Internal Approval Workflow Table (部門排序，無 Step 字樣) -->
                     <div style="margin-bottom: 14px;">
                         <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 內部跨部門簽核軌跡與負責人資訊 (Internal Approval Audit Trail)</h3>
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                             <thead>
                                 <tr style="background-color: #003366; color: white;">
-                                    <th style="padding: 6px 8px; text-align: left; width: 12%;">關卡順序</th>
-                                    <th style="padding: 6px 8px; text-align: left; width: 25%;">審核人姓名與職稱</th>
+                                    <th style="padding: 6px 8px; text-align: left; width: 15%;">審核部門</th>
+                                    <th style="padding: 6px 8px; text-align: left; width: 24%;">審核人姓名與職稱</th>
                                     <th style="padding: 6px 8px; text-align: left; width: 27%;">電子郵件 (Email)</th>
                                     <th style="padding: 6px 8px; text-align: center; width: 13%;">簽核狀態</th>
                                     <th style="padding: 6px 8px; text-align: right; width: 13%;">完成日期</th>
@@ -1223,7 +1253,7 @@
                             <tbody>
                                 ${filteredSteps.map((s, idx) => `
                                     <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-                                        <td style="padding: 6px 8px; font-weight: bold; color: #475569;">Step ${idx+1} (${s.role})</td>
+                                        <td style="padding: 6px 8px; font-weight: bold; color: #475569;">${s.role}</td>
                                         <td style="padding: 6px 8px; color: #334155;">
                                             <div style="font-weight: bold; color: #003366;">${s.name}</div>
                                             <div style="font-size: 10px; color: #64748b;">${s.title}</div>
@@ -1248,7 +1278,7 @@
                         <div style="text-align: right; width: 220px;">
                             <div style="margin-bottom: 2px;">Authorized Signature:</div>
                             <div style="height: 45px; display: flex; align-items: center; justify-content: flex-end;">
-                                <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAmAMgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigD//2Q==" style="max-height: 42px; max-width: 140px; mix-blend-mode: multiply;" alt="Nicolas Signature">
+                                <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAmAMgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigD//2Q==" style="max-height: 42px; max-width: 140px; mix-blend-mode: multiply; filter: contrast(150%);" alt="Nicolas Signature">
                             </div>
                             <div style="border-top: 1px solid #94a3b8; padding-top: 2px; font-weight: bold; color: #0f172a;">Nicolas Wang (Operation Control Executive)</div>
                         </div>
