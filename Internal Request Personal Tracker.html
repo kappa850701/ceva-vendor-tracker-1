@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEVA Logistics (Taiwan) - Vendor Approval System (Cloud Pro)</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f8fafc; color: #334155; padding-bottom: 40px; }
+        
+        header { background-color: #003366; color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .logo-title { display: flex; align-items: center; gap: 12px; }
+        .logo { background-color: #dc2626; color: white; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-size: 20px; letter-spacing: 2px; }
+        .title { font-size: 18px; font-weight: 600; }
+        .subtitle { font-size: 12px; color: #cbd5e1; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+
+        .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+        .tabs { display: flex; gap: 24px; border-bottom: 2px solid #e2e8f0; background: white; padding: 0 24px; border-radius: 8px 8px 0 0; }
+        .tab-btn { padding: 16px 8px; border: none; background: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s; }
+        .tab-btn:hover { color: #003366; }
+        .tab-btn.active { color: #003366; border-bottom-color: #003366; }
+
+        .panel { background: white; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0; border-top: none; min-height: 500px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-left: 4px solid #64748b; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card.waiting { border-left-color: #f59e0b; }
+        .card.done { border-left-color: #10b981; }
+        .card.reject { border-left-color: #ef4444; }
+        .card-title { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #64748b; }
+        .card-val { font-size: 28px; font-weight: 800; margin-top: 8px; color: #1e293b; }
+
+        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-top: 4px; transition: border-color 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #003366; box-shadow: 0 0 0 3px rgba(0,51,102,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        tr:hover td { background-color: #f8fafc; }
+
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; }
+        .status-waiting { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .status-done { background-color: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+        .status-reject { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .status-hold { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+        #status-toast { position: fixed; top: 20px; right: 20px; background-color: #003366; color: white; padding: 12px 24px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); font-weight: bold; font-size: 14px; z-index: 1000; transition: opacity 0.3s, transform 0.3s; transform: translateY(0); }
+        #status-toast.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+
+        .age-normal { color: #334155; font-family: monospace; font-weight: bold; }
+        .age-warning { color: #d97706; font-weight: bold; background-color: #fef3c7; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .age-overdue { color: #dc2626; font-weight: bold; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .age-na { color: #94a3b8; font-style: italic; font-weight: normal; background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-primary { background-color: #003366; color: white; }
+        .btn-primary:hover { background-color: #002244; box-shadow: 0 4px 6px rgba(0,51,102,0.2); }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+        .btn-secondary { background-color: #64748b; color: white; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-outline-primary { background: white; border: 1px solid #cbd5e1; color: #003366; }
+        .btn-outline-primary:hover { background: #f8fafc; border-color: #003366; }
+        .btn-outline-danger { background: white; border: 1px solid #fecaca; color: #ef4444; }
+        .btn-outline-danger:hover { background: #fef2f2; border-color: #ef4444; }
+        .btn-outline-white { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: white; }
+        .btn-outline-white:hover { background: rgba(255,255,255,0.1); }
+        
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 720px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
+        .hidden { display: none !important; }
+        
+        .timeline { position: relative; border-left: 2px solid #cbd5e1; margin-left: 16px; padding-left: 24px; display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+        .timeline-item { position: relative; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .timeline-dot { position: absolute; left: -31px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; z-index: 2; transition: all 0.3s; }
+        .timeline-dot.approved { background: #10b981; box-shadow: 0 0 0 4px #d1fae5; }
+        .timeline-dot.active-breathing { background: #f59e0b; animation: pulse-orange 1.8s infinite; }
+
+        @keyframes pulse-orange {
+            0% { transform: translateY(-50%) scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { transform: translateY(-50%) scale(1.2); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+            100% { transform: translateY(-50%) scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        .checkbox-only { width: 22px; height: 22px; cursor: pointer; margin: 0; accent-color: #10b981; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.8; }
+        .empty-state-title { font-size: 16px; font-weight: bold; color: #334155; margin-bottom: 4px; }
+
+        .filter-row { display: flex; gap: 12px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .filter-row input, .filter-row select { margin-top: 0; }
+
+        @media print {
+            body > * { display: none !important; }
+            #pdf-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:_ApprovalStatus msdt:dt="string">0</mso:_ApprovalStatus>
+<mso:_ApprovalAssignedTo msdt:dt="string"></mso:_ApprovalAssignedTo>
+<mso:_ApprovalRespondedBy msdt:dt="string"></mso:_ApprovalRespondedBy>
+<mso:_ApprovalSentBy msdt:dt="string"></mso:_ApprovalSentBy>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+
+    <div id="status-toast" class="hidden"></div>
+
+    <header>
+        <div class="logo-title">
+            <span class="logo">CEVA</span>
+            <div>
+                <div class="title">CEVA Logistics (Taiwan)</div>
+                <div class="subtitle" id="header-subtitle">Vendor Approval & Management Console (訪客檢視模式)</div>
+            </div>
+        </div>
+        <div class="header-actions" id="header-actions-area">
+            <!-- 訪客狀態顯示登入按鈕 -->
+            <button class="btn btn-sm btn-outline-white" id="btn-login-modal" onclick="openLoginModal()">🔐 管理者登入</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" id="btn-tab-dash" onclick="switchTab('dash')">📊 儀表板</button>
+            <button class="tab-btn admin-only hidden" id="btn-tab-create" onclick="switchTab('create')">➕ 新建申請</button>
+            <button class="tab-btn" id="btn-tab-list" onclick="switchTab('list')">📋 案件追蹤清單</button>
+            <button class="tab-btn admin-only hidden" id="btn-tab-logs" onclick="switchTab('logs')">📜 系統日誌</button>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div id="panel-dash" class="panel">
+            <div class="filter-row">
+                <input type="text" id="dash-search" oninput="renderDashboard()" placeholder="🔍 搜尋 Case ID 或 Supplier Name..." style="flex: 1; min-width: 250px;">
+                <select id="dash-filter-status" onchange="renderDashboard()" style="width: 180px;">
+                    <option value="">🏷️ 所有狀態 (All)</option>
+                    <option value="Waiting Internal Approval">Waiting Approval</option>
+                    <option value="Done">Done (完成)</option>
+                    <option value="Reject">Reject (退回)</option>
+                    <option value="Hold">Hold (暫停)</option>
+                </select>
+                <select id="dash-filter-bu" onchange="renderDashboard()" style="width: 160px;">
+                    <option value="">🏢 所有 BU (All)</option>
+                    <option value="AE">AE (Air Export)</option>
+                    <option value="AI">AI (Air Import)</option>
+                    <option value="OE">OE (Ocean Export)</option>
+                    <option value="OI">OI (Ocean Import)</option>
+                    <option value="CL">CL (Contract Log.)</option>
+                    <option value="PL">PL (Project Log.)</option>
+                    <option value="HR">HR</option>
+                    <option value="QHSE">QHSE</option>
+                    <option value="ADM">ADM</option>
+                </select>
+            </div>
+            
+            <div class="card-grid">
+                <div class="card waiting"><div class="card-title">等待內部審核</div><div id="cnt-waiting" class="card-val">0</div></div>
+                <div class="card done"><div class="card-title">審核完成 (Done)</div><div id="cnt-done" class="card-val">0</div></div>
+                <div class="card reject"><div class="card-title">退回 (Reject)</div><div id="cnt-reject" class="card-val">0</div></div>
+                <div class="card"><div class="card-title">暫停 (Hold)</div><div id="cnt-hold" class="card-val">0</div></div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Case ID</th>
+                        <th>Supplier Name</th>
+                        <th>BU / Action / Type</th>
+                        <th>申請日期</th>
+                        <th>Status</th>
+                        <th>當前關卡 / 審核人</th>
+                        <th>SLA Age</th>
+                    </tr>
+                </thead>
+                <tbody id="dash-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Create Case Panel (Admin Only) -->
+        <div id="panel-create" class="panel hidden">
+            <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">【申請】新建/修改供應商</h2>
+            <form id="form-create-vendor" onsubmit="handleCreate(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="grid-column: span 2;">
+                        <label><strong>Supplier Name <span style="color:red;">*</span></strong></label>
+                        <input type="text" id="inp-supplier" required placeholder="例如: 佰進國際物流">
+                    </div>
+                    <div>
+                        <label><strong>BU / 部門 <span style="color:red;">*</span></strong></label>
+                        <select id="inp-bu" required onchange="updateMatrixPreview()">
+                            <option value="">請選擇 BU</option>
+                            <option value="AE">AE (Air Export)</option><option value="AI">AI (Air Import)</option>
+                            <option value="OE">OE (Ocean Export)</option><option value="OI">OI (Ocean Import)</option>
+                            <option value="CL">CL (Contract Logistics)</option><option value="PL">PL (Project Logistics)</option>
+                            <option value="HR">HR</option><option value="QHSE">QHSE</option><option value="ADM">ADM (Admin)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>Action <span style="color:red;">*</span></strong></label>
+                        <select id="inp-action" required>
+                            <option value="New">New</option>
+                            <option value="Change">Change</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>Vendor Type <span style="color:red;">*</span></strong></label>
+                        <select id="inp-type" required>
+                            <option value="Trade">Trade</option>
+                            <option value="Non-trade">Non-trade</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>申請日期 <span style="color:red;">*</span></strong></label>
+                        <input type="date" id="inp-date" required>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label><strong>申請人 Email <span style="color:red;">*</span></strong></label>
+                        <input type="email" id="inp-cc" required value="Nicolas.Wang@cevalogistics.com">
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 16px; margin-top: 20px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <strong style="color: #003366; font-size: 13px;">審核矩陣順序預覽 (包含 VMD):</strong>
+                    <div id="matrix-preview" style="margin-top: 8px; font-size: 13px; color: #475569; font-family: monospace;">請先選擇 BU...</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 24px; padding: 10px 24px; font-size: 14px;">🚀 建立單號並發送信件</button>
+            </form>
+        </div>
+
+        <!-- List Panel -->
+        <div id="panel-list" class="panel hidden">
+            <div class="filter-row" style="margin-bottom: 20px;">
+                <input type="text" id="list-search" oninput="renderList()" placeholder="🔍 搜尋 Case ID 或 Supplier Name..." style="flex: 1; min-width: 250px;">
+                <select id="list-filter-status" onchange="renderList()" style="width: 180px;">
+                    <option value="">🏷️ 所有狀態 (All)</option>
+                    <option value="Waiting Internal Approval">Waiting Approval</option>
+                    <option value="Done">Done (完成)</option>
+                    <option value="Reject">Reject (退回)</option>
+                    <option value="Hold">Hold (暫停)</option>
+                </select>
+                <select id="list-filter-bu" onchange="renderList()" style="width: 160px;">
+                    <option value="">🏢 所有 BU (All)</option>
+                    <option value="AE">AE (Air Export)</option>
+                    <option value="AI">AI (Air Import)</option>
+                    <option value="OE">OE (Ocean Export)</option>
+                    <option value="OI">OI (Ocean Import)</option>
+                    <option value="CL">CL (Contract Log.)</option>
+                    <option value="PL">PL (Project Log.)</option>
+                    <option value="HR">HR</option>
+                    <option value="QHSE">QHSE</option>
+                    <option value="ADM">ADM</option>
+                </select>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Case ID</th>
+                        <th>Supplier Name</th>
+                        <th>BU / Action / Type</th>
+                        <th>申請人</th>
+                        <th>Status</th>
+                        <th>SLA Age</th>
+                        <th style="text-align: right;" id="th-action-col">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="list-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Logs Panel (Admin Only) -->
+        <div id="panel-logs" class="panel hidden">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+                <div>
+                    <h3 style="color: #003366; font-size: 20px;">📜 系統歷史紀錄與操作日誌</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-top: 4px;">雲端同步日誌，供團隊稽核備查。</p>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="logs-search" oninput="renderLogs()" placeholder="🔍 搜尋日誌內容..." style="width: 250px; margin: 0;">
+                    <button class="btn btn-sm btn-outline-danger" onclick="clearAllLogs()" style="height: 38px;">🗑️ 清空所有</button>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 150px;">時間戳記</th>
+                        <th style="width: 140px;">事件類型</th>
+                        <th style="width: 160px;">關聯項目</th>
+                        <th>詳細紀錄內容</th>
+                        <th style="width: 80px; text-align: right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Login Modal (管理者密碼解鎖) -->
+    <div id="modal-login" class="modal-overlay hidden">
+        <div class="modal" style="max-width: 400px; text-align: center;">
+            <h3 style="color: #003366; margin-bottom: 12px;">🔐 管理者權限解鎖</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">請輸入管理者密碼以解鎖簽核、編輯與新建功能。</p>
+            <input type="password" id="inp-admin-pwd" placeholder="請輸入密碼..." style="margin-bottom: 20px; text-align: center; font-size: 16px;">
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-secondary" onclick="closeLoginModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitAdminLogin()">確認解鎖</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Modal -->
+    <div id="modal-paste" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 style="color: #003366; margin-bottom: 20px;">✍️ 快速建檔 (歷史資料/手動補登)</h3>
+            <form id="form-quick-add" onsubmit="submitManualPaste(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="grid-column: span 2;">
+                        <label><strong>Supplier Name <span style="color:red;">*</span></strong></label>
+                        <input type="text" id="qa-supplier" required placeholder="例如: 佰進國際物流">
+                    </div>
+                    <div>
+                        <label><strong>BU <span style="color:red;">*</span></strong></label>
+                        <select id="qa-bu" required>
+                            <option value="AE">AE</option><option value="AI">AI</option>
+                            <option value="OE">OE</option><option value="OI">OI</option>
+                            <option value="CL">CL</option><option value="PL">PL</option>
+                            <option value="HR">HR</option><option value="QHSE">QHSE</option><option value="ADM">ADM</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>Action <span style="color:red;">*</span></strong></label>
+                        <select id="qa-action" required>
+                            <option value="New">New</option>
+                            <option value="Change">Change</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>Vendor Type <span style="color:red;">*</span></strong></label>
+                        <select id="qa-type" required>
+                            <option value="Trade">Trade</option>
+                            <option value="Non-trade">Non-trade</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>申請日期 <span style="color:red;">*</span></strong></label>
+                        <input type="date" id="qa-date" required>
+                    </div>
+                    <div>
+                        <label><strong>申請人 Email <span style="color:red;">*</span></strong></label>
+                        <input type="email" id="qa-cc" required value="Nicolas.Wang@cevalogistics.com">
+                    </div>
+                    <div>
+                        <label><strong>Status <span style="color:red;">*</span></strong></label>
+                        <select id="qa-status" required>
+                            <option value="Done">Done</option>
+                            <option value="Waiting Internal Approval">Waiting Internal Approval</option>
+                            <option value="Reject">Reject</option>
+                            <option value="Hold">Hold</option>
+                        </select>
+                    </div>
+                    <div style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                        <label><strong>完成日期 <span style="color:#64748b; font-weight:normal; font-size:13px;">(若不確定或尚未完成，請留白即可自動設為 N/A)</span></strong></label>
+                        <input type="date" id="qa-completed-date">
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeManualPasteModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">確認匯入 / 建立</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="modal-edit" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 style="color: #003366; margin-bottom: 16px;">✏️ 編輯供應商案件</h3>
+            <form id="form-edit-vendor" onsubmit="handleEditSubmit(event)">
+                <input type="hidden" id="edit-id">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="grid-column: span 2;">
+                        <label><strong>Supplier Name</strong></label>
+                        <input type="text" id="edit-supplier" required>
+                    </div>
+                    <div>
+                        <label><strong>BU</strong></label>
+                        <select id="edit-bu" required>
+                            <option value="AE">AE</option><option value="AI">AI</option>
+                            <option value="OE">OE</option><option value="OI">OI</option>
+                            <option value="CL">CL</option><option value="PL">PL</option>
+                            <option value="HR">HR</option><option value="QHSE">QHSE</option><option value="ADM">ADM</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>Action</strong></label>
+                        <select id="edit-action" required>
+                            <option value="New">New</option>
+                            <option value="Change">Change</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>Vendor Type</strong></label>
+                        <select id="edit-type" required>
+                            <option value="Trade">Trade</option>
+                            <option value="Non-trade">Non-trade</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>申請日期</strong></label>
+                        <input type="date" id="edit-date" required>
+                    </div>
+                    <div>
+                        <label><strong>Status</strong></label>
+                        <select id="edit-status" required>
+                            <option value="Waiting Internal Approval">Waiting Internal Approval</option>
+                            <option value="Done">Done</option>
+                            <option value="Reject">Reject</option>
+                            <option value="Hold">Hold</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>完成日期 <span style="color:#64748b; font-weight:normal; font-size:12px;">(留白即為 N/A)</span></strong></label>
+                        <input type="date" id="edit-completed-date">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">儲存變更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="modal-detail" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
+            <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
+            
+            <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部簽核進度：</h4>
+            <div class="timeline" id="det-timeline"></div>
+
+            <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;" id="mail-section-box">
+                <div style="font-size: 13px; color: #475569; line-height: 1.6;">
+                    <div><strong>Mail To:</strong> <span id="mail-to-text" style="color: #003366; font-weight: bold;"></span></div>
+                    <div><strong>Mail CC:</strong> <span id="mail-cc-text" style="font-size:12px; color:#64748b;"></span></div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 12px;" id="mail-trigger-btn-wrap">
+                    <button class="btn btn-primary btn-sm" onclick="directTriggerOutlook()">🚀 觸發 Outlook 簽核信件</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <div style="display: flex; gap: 8px;" id="admin-action-buttons">
+                    <button class="btn btn-success" id="btn-approve-action" onclick="setGlobalStatus('Done')">Approve (完成)</button>
+                    <button class="btn btn-danger" onclick="setGlobalStatus('Reject')">Reject</button>
+                    <button class="btn btn-secondary" onclick="setGlobalStatus('Hold')">Hold</button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline-primary" onclick="exportPDF()">📄 匯出 PDF (排除VMD)</button>
+                    <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pdf-print-area" class="hidden"></div>
+
+    <script>
+        // 🌟 設定您的管理者密碼 (可自行修改)
+        const ADMIN_PASSWORD = "ceva888"; 
+        let isAdmin = false; // 預設為訪客模式
+
+        const SUPABASE_URL = "https://vwuctilkidzpkrtkkrmb.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_dECiL9hVTrJacMm1Hdfd8w_-5rx8_pk";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let activeCaseId = null;
+        let cases = [];
+        let systemLogs = [];
+
+        const FIXED_CC_LIST = [
+            "Christina.Chen@Cevalogistics.com",
+            "Vicky.Liu@Cevalogistics.com",
+            "tpe.omc@cevalogistics.com"
+        ];
+
+        const defaultCases = [
+            {
+                id: "CEVA-202606-001", supplierName: "佰進國際物流", bu: "AE", action: "Change", vendorType: "Trade",
+                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", status: "Done", currentStep: 5,
+                steps: [
+                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
+                ]
+            },
+            {
+                id: "CEVA-202606-002", supplierName: "木崧企業有限公司", bu: "CL", action: "New", vendorType: "Trade",
+                applyDate: "2026-06-12", completedDate: "N/A", requesterEmail: "Alisa.Hsu@cevalogistics.com", status: "Done", currentStep: 5,
+                steps: [
+                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "CL Product Head", name: "Barry CHAN", email: "Barry.Chan@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
+                ]
+            },
+            {
+                id: "CEVA-202606-003", supplierName: "日商日本貨物航空", bu: "AE", action: "New", vendorType: "Trade",
+                applyDate: "2026-06-25", completedDate: "N/A", requesterEmail: "Nina.Wang1@cevalogistics.com", status: "Done", currentStep: 5,
+                steps: [
+                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
+                ]
+            },
+            {
+                id: "CEVA-202608-001", supplierName: "祥和國際物流", bu: "AE", action: "New", vendorType: "Trade",
+                applyDate: "2026-08-04", completedDate: "N/A", requesterEmail: "Micky.Wang@cevalogistics.com", status: "Done", currentStep: 5,
+                steps: [
+                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
+                ]
+            },
+            {
+                id: "CEVA-202608-002", supplierName: "日商日本貨物航空", bu: "AE", action: "Change", vendorType: "Trade",
+                applyDate: "2026-08-12", completedDate: "N/A", requesterEmail: "Nina.Wang1@cevalogistics.com", status: "Done", currentStep: 5,
+                steps: [
+                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
+                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
+                ]
+            }
+        ];
+
+        window.onload = async function() {
+            document.getElementById('inp-date').valueAsDate = new Date();
+            await loadCloudData();
+            loadStoredLogs();
+            updateUIPermissions(); // 套用訪客權限
+            renderDashboard();
+            renderList();
+            renderLogs();
+        };
+
+        function showToast(msg) {
+            const toast = document.getElementById('status-toast');
+            toast.innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2500);
+        }
+
+        // 🔐 登入控制函數
+        function openLoginModal() {
+            document.getElementById('inp-admin-pwd').value = '';
+            document.getElementById('modal-login').classList.remove('hidden');
+            document.getElementById('inp-admin-pwd').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('modal-login').classList.add('hidden');
+        }
+
+        function submitAdminLogin() {
+            const pwd = document.getElementById('inp-admin-pwd').value;
+            if (pwd === ADMIN_PASSWORD) {
+                isAdmin = true;
+                closeLoginModal();
+                updateUIPermissions();
+                showToast("🔓 管理者權限已解鎖！");
+            } else {
+                alert("❌ 密碼錯誤！");
+            }
+        }
+
+        function logoutAdmin() {
+            if (confirm("確定要登出管理者模式，切回訪客檢視嗎？")) {
+                isAdmin = false;
+                updateUIPermissions();
+                switchTab('dash');
+                showToast("🔒 已切回訪客模式");
+            }
+        }
+
+        // 🌟 權限切換 UI 更新
+        function updateUIPermissions() {
+            const adminElements = document.querySelectorAll('.admin-only');
+            const headerActions = document.getElementById('header-actions-area');
+            const subtitle = document.getElementById('header-subtitle');
+
+            if (isAdmin) {
+                adminElements.forEach(el => el.classList.remove('hidden'));
+                subtitle.innerText = "Vendor Approval & Management Console (管理者模式 - Nicolas Wang)";
+                headerActions.innerHTML = `
+                    <button class="btn btn-sm btn-outline-white" onclick="openManualPasteModal()">✍️ 快速建檔</button>
+                    <button class="btn btn-sm btn-outline-white" onclick="exportDataBackup()">📥 備份 JSON</button>
+                    <button class="btn btn-sm btn-outline-white" onclick="triggerImport()">📤 匯入 JSON</button>
+                    <input type="file" id="file-import-input" accept=".json" class="hidden" onchange="importDataBackup(event)">
+                    <button class="btn btn-sm btn-danger" onclick="logoutAdmin()">🔒 登出</button>
+                `;
+            } else {
+                adminElements.forEach(el => el.classList.add('hidden'));
+                subtitle.innerText = "Vendor Approval & Management Console (訪客檢視模式)";
+                headerActions.innerHTML = `
+                    <button class="btn btn-sm btn-outline-white" id="btn-login-modal" onclick="openLoginModal()">🔐 管理者登入</button>
+                `;
+            }
+            renderList();
+        }
+
+        function getStatusBadge(status) {
+            if (status === 'Done') return `<span class="status-badge status-done">Done</span>`;
+            if (status === 'Reject') return `<span class="status-badge status-reject">Reject</span>`;
+            if (status === 'Hold') return `<span class="status-badge status-hold">Hold</span>`;
+            return `<span class="status-badge status-waiting">Waiting Approval</span>`;
+        }
+
+        async function loadCloudData() {
+            try {
+                const { data, error } = await supabaseClient.from('vendor_cases').select('*');
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    cases = data.map(item => item.data);
+                } else {
+                    cases = [...defaultCases];
+                    for (let c of cases) {
+                        await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c });
+                    }
+                }
+            } catch (err) {
+                console.error("雲端載入錯誤:", err);
+                cases = [...defaultCases];
+            }
+        }
+
+        async function saveCloudData(updatedCases) {
+            cases = updatedCases;
+            try {
+                for (let c of cases) {
+                    const { error } = await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c });
+                    if (error) throw error;
+                }
+                showToast("☁️ 雲端同步成功！");
+            } catch (err) {
+                alert("❌ 儲存至雲端失敗！");
+            }
+        }
+
+        async function removeCloudCase(id) {
+            cases = cases.filter(c => c.id !== id);
+            try {
+                await supabaseClient.from('vendor_cases').delete().eq('id', id);
+            } catch (err) {}
+        }
+
+        function loadStoredLogs() {
+            try {
+                const stored = localStorage.getItem('ceva_cloud_logs');
+                if (stored) systemLogs = JSON.parse(stored);
+                else {
+                    systemLogs = [{ time: getNowStr(), type: "Cloud Sync", target: "System", detail: "系統已成功連線至 Supabase 雲端共用資料庫。" }];
+                    saveStoredLogs();
+                }
+            } catch(e) { systemLogs = []; }
+        }
+
+        function saveStoredLogs() {
+            try { localStorage.setItem('ceva_cloud_logs', JSON.stringify(systemLogs)); } catch(e) {}
+        }
+
+        function getNowStr() {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        }
+
+        function addSystemLog(type, target, detail) {
+            systemLogs.unshift({ time: getNowStr(), type: type, target: target, detail: detail });
+            saveStoredLogs();
+            renderLogs();
+        }
+
+        function delLog(index) {
+            if(confirm("確定要刪除這筆日誌紀錄嗎？")) {
+                systemLogs.splice(index, 1);
+                saveStoredLogs();
+                renderLogs();
+                showToast("✅ 日誌已刪除");
+            }
+        }
+
+        function clearAllLogs() {
+            if(confirm("⚠️ 確定要清空所有歷史紀錄嗎？")) {
+                systemLogs = [];
+                saveStoredLogs();
+                renderLogs();
+                showToast("✅ 日誌已全數清空");
+            }
+        }
+
+        function renderLogs() {
+            const key = document.getElementById('logs-search').value.toLowerCase();
+            const filtered = systemLogs.filter(l => l.detail.toLowerCase().includes(key) || l.target.toLowerCase().includes(key) || l.type.toLowerCase().includes(key));
+            
+            if (filtered.length === 0) {
+                document.getElementById('logs-tbody').innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">目前沒有日誌紀錄</div></td></tr>`;
+                return;
+            }
+
+            document.getElementById('logs-tbody').innerHTML = filtered.map((l, idx) => `
+                <tr>
+                    <td style="font-size:12px; color:#64748b; font-family:monospace;">${l.time}</td>
+                    <td><strong>${l.type}</strong></td>
+                    <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#003366;">${l.target}</code></td>
+                    <td style="color:#334155;">${l.detail}</td>
+                    <td style="text-align: right;"><button class="btn btn-sm btn-outline-danger" title="刪除" onclick="delLog(${idx})">刪除</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function openManualPasteModal() { if(!isAdmin) return; document.getElementById('qa-date').valueAsDate = new Date(); document.getElementById('modal-paste').classList.remove('hidden'); }
+        function closeManualPasteModal() { document.getElementById('modal-paste').classList.add('hidden'); }
+
+        async function submitManualPaste(e) {
+            e.preventDefault();
+            if(!isAdmin) return;
+            const supplierName = document.getElementById('qa-supplier').value;
+            const bu = document.getElementById('qa-bu').value;
+            const action = document.getElementById('qa-action').value;
+            const vendorType = document.getElementById('qa-type').value;
+            const email = document.getElementById('qa-cc').value;
+            const applyDateStr = document.getElementById('qa-date').value;
+            const status = document.getElementById('qa-status').value;
+            const completedDateInput = document.getElementById('qa-completed-date').value;
+
+            const finalCompletedDate = completedDateInput ? completedDateInput : "N/A";
+            const generatedId = "CEVA-" + applyDateStr.substring(0,7).replace('-','') + "-" + String(cases.length + 1).padStart(3,'0');
+            const isDone = (status === 'Done');
+
+            const newCase = {
+                id: generatedId, supplierName, bu, action, vendorType, applyDate: applyDateStr,
+                completedDate: finalCompletedDate, requesterEmail: email, status,
+                currentStep: isDone ? 5 : 0,
+                steps: getMatrix(bu).map(m => ({ ...m, approved: isDone, time: finalCompletedDate }))
+            };
+
+            cases.unshift(newCase);
+            await saveCloudData(cases);
+            addSystemLog("Quick Add", newCase.id, `雲端新增紀錄：${supplierName}`);
+            renderDashboard(); renderList(); closeManualPasteModal();
+            e.target.reset(); 
+            showToast(`✅ Case ${newCase.id} 建檔成功！`);
+        }
+
+        function openEditModal(id) {
+            if(!isAdmin) { alert("⚠️ 訪客模式無法編輯案件！"); return; }
+            const c = cases.find(x => x.id === id);
+            if(!c) return;
+            document.getElementById('edit-id').value = c.id;
+            document.getElementById('edit-supplier').value = c.supplierName;
+            document.getElementById('edit-bu').value = c.bu;
+            document.getElementById('edit-action').value = c.action || 'New';
+            document.getElementById('edit-type').value = c.vendorType;
+            document.getElementById('edit-date').value = c.applyDate;
+            document.getElementById('edit-status').value = c.status;
+            document.getElementById('edit-completed-date').value = (c.completedDate === 'N/A' || !c.completedDate) ? '' : c.completedDate;
+            document.getElementById('modal-edit').classList.remove('hidden');
+        }
+
+        function closeEditModal() { document.getElementById('modal-edit').classList.add('hidden'); }
+
+        async function handleEditSubmit(e) {
+            e.preventDefault();
+            if(!isAdmin) return;
+            const id = document.getElementById('edit-id').value;
+            const c = cases.find(x => x.id === id);
+            if(!c) return;
+
+            c.supplierName = document.getElementById('edit-supplier').value;
+            c.bu = document.getElementById('edit-bu').value;
+            c.action = document.getElementById('edit-action').value;
+            c.vendorType = document.getElementById('edit-type').value;
+            c.applyDate = document.getElementById('edit-date').value;
+            c.status = document.getElementById('edit-status').value;
+            c.completedDate = document.getElementById('edit-completed-date').value || "N/A";
+
+            await saveCloudData(cases);
+            addSystemLog("Edit Case", id, `更新案件資訊`);
+            renderDashboard(); renderList(); closeEditModal();
+            showToast(`✅ 案件更新成功！`);
+        }
+
+        function exportDataBackup() {
+            if(!isAdmin) return;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ cases, systemLogs }, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `CEVA_Cloud_Backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        function triggerImport() { if(!isAdmin) return; document.getElementById('file-import-input').click(); }
+
+        async function importDataBackup(event) {
+            if(!isAdmin) return;
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    let incomingCases = Array.isArray(imported) ? imported : (imported.cases || []);
+                    if (incomingCases.length > 0) {
+                        await saveCloudData(incomingCases);
+                        renderDashboard(); renderList();
+                        showToast("✅ 資料還原成功！");
+                    }
+                } catch (err) { alert("格式有誤！"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function switchTab(tab) {
+            // 訪客如果嘗試切換到隱藏分頁則攔截
+            if (!isAdmin && (tab === 'create' || tab === 'logs')) {
+                alert("⚠️ 此分頁需要管理者權限才能檢視！");
+                return;
+            }
+
+            ['dash', 'create', 'list', 'logs'].forEach(t => {
+                const panel = document.getElementById('panel-' + t);
+                const btn = document.getElementById('btn-tab-' + t);
+                if(panel) panel.classList.add('hidden');
+                if(btn) btn.classList.remove('active');
+            });
+            const targetPanel = document.getElementById('panel-' + tab);
+            const targetBtn = document.getElementById('btn-tab-' + tab);
+            if(targetPanel) targetPanel.classList.remove('hidden');
+            if(targetBtn) targetBtn.classList.add('active');
+
+            if (tab === 'dash') renderDashboard();
+            if (tab === 'list') renderList();
+            if (tab === 'logs') renderLogs();
+        }
+
+        function getMatrix(bu) {
+            const isCL = (bu === 'CL');
+            return [
+                { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com" },
+                { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com" },
+                { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com" },
+                { role: isCL ? "CL Product Head" : "A&O Product Head", name: isCL ? "Barry CHAN" : "Warren WANG", email: isCL ? "Barry.Chan@cevalogistics.com" : "Warren.Wang@cevalogistics.com" },
+                { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com" }
+            ];
+        }
+
+        function updateMatrixPreview() {
+            const bu = document.getElementById('inp-bu').value;
+            if(!bu) return;
+            document.getElementById('matrix-preview').innerHTML = getMatrix(bu).map((m,i)=>`Step ${i+1} [${m.role}]: ${m.name}`).join(' ➔ ');
+        }
+
+        function calcAge(dStr, completedDate, status) {
+            if (!dStr) return { text: "0 天", days: 0, isNA: false };
+            let isStopped = (status === 'Done' || status === 'Reject');
+            if (isStopped && completedDate === 'N/A') return { text: "N/A", days: 0, isNA: true };
+
+            let start = new Date(dStr.substring(0,10));
+            let end = (isStopped && completedDate) ? new Date(completedDate.substring(0,10)) : new Date();
+            const diffMs = Math.max(0, end - start);
+            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            return { text: `${days} 天`, days: days, isNA: false };
+        }
+
+        async function handleCreate(e) {
+            e.preventDefault();
+            if(!isAdmin) return;
+            const bu = document.getElementById('inp-bu').value;
+            const supplierName = document.getElementById('inp-supplier').value;
+            const action = document.getElementById('inp-action').value;
+            const selectedDate = document.getElementById('inp-date').value;
+
+            const newCase = {
+                id: "CEVA-" + selectedDate.substring(0,7).replace('-','') + "-" + String(cases.length+1).padStart(3,'0'),
+                supplierName, bu, action,
+                vendorType: document.getElementById('inp-type').value,
+                applyDate: selectedDate,
+                completedDate: null,
+                requesterEmail: document.getElementById('inp-cc').value,
+                status: "Waiting Internal Approval", 
+                currentStep: 0,
+                steps: getMatrix(bu).map(m => ({ ...m, approved: false, time: "N/A" }))
+            };
+
+            cases.unshift(newCase);
+            await saveCloudData(cases);
+            activeCaseId = newCase.id;
+            addSystemLog("Create Case", newCase.id, `建檔：${supplierName} (${bu})`);
+
+            directTriggerOutlook();
+            document.getElementById('form-create-vendor').reset();
+            document.getElementById('inp-date').valueAsDate = new Date();
+            document.getElementById('inp-cc').value = "Nicolas.Wang@cevalogistics.com";
+            document.getElementById('matrix-preview').innerText = "請先選擇 BU...";
+            switchTab('list');
+            showToast(`✅ Case ${newCase.id} 建立成功！`);
+        }
+
+        function renderDashboard() {
+            const key = document.getElementById('dash-search').value.toLowerCase();
+            const statusFilter = document.getElementById('dash-filter-status').value;
+            const buFilter = document.getElementById('dash-filter-bu').value;
+
+            const filteredTable = cases.filter(c => {
+                const matchKey = c.id.toLowerCase().includes(key) || c.supplierName.toLowerCase().includes(key);
+                const matchStatus = statusFilter === "" || c.status === statusFilter;
+                const matchBu = buFilter === "" || c.bu === buFilter;
+                return matchKey && matchStatus && matchBu;
+            });
+
+            const countPool = cases.filter(c => {
+                const matchKey = c.id.toLowerCase().includes(key) || c.supplierName.toLowerCase().includes(key);
+                const matchBu = buFilter === "" || c.bu === buFilter;
+                return matchKey && matchBu;
+            });
+
+            document.getElementById('cnt-waiting').innerText = countPool.filter(c => c.status === 'Waiting Internal Approval').length;
+            document.getElementById('cnt-done').innerText = countPool.filter(c => c.status === 'Done').length;
+            document.getElementById('cnt-reject').innerText = countPool.filter(c => c.status === 'Reject').length;
+            document.getElementById('cnt-hold').innerText = countPool.filter(c => c.status === 'Hold').length;
+
+            if (filteredTable.length === 0) {
+                document.getElementById('dash-tbody').innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-state-icon">🗂️</div><div class="empty-state-title">無相符的案件資料</div></td></tr>`;
+                return;
+            }
+
+            document.getElementById('dash-tbody').innerHTML = filteredTable.map(c => {
+                const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
+                const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
+                let ageClass = ageInfo.isNA ? "age-na" : "age-normal";
+
+                return `
+                    <tr>
+                        <td><strong>${c.id}</strong></td>
+                        <td>${c.supplierName}</td>
+                        <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
+                        <td style="font-size:12px; color:#475569;">${c.applyDate}</td>
+                        <td>${getStatusBadge(c.status)}</td>
+                        <td>${c.status === 'Done' ? '<span style="color:#10b981; font-weight:bold;">全數通過</span>' : `Step ${c.currentStep+1}: ${curr.role}`}</td>
+                        <td><span class="${ageClass}">${ageInfo.text}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderList() {
+            const key = document.getElementById('list-search').value.toLowerCase();
+            const statusFilter = document.getElementById('list-filter-status').value;
+            const buFilter = document.getElementById('list-filter-bu').value;
+            const thAction = document.getElementById('th-action-col');
+
+            // 訪客模式隱藏操作欄位標題
+            if (thAction) thAction.style.display = isAdmin ? '' : 'none';
+
+            const filteredList = cases.filter(c => {
+                const matchKey = c.id.toLowerCase().includes(key) || c.supplierName.toLowerCase().includes(key);
+                const matchStatus = statusFilter === "" || c.status === statusFilter;
+                const matchBu = buFilter === "" || c.bu === buFilter;
+                return matchKey && matchStatus && matchBu;
+            });
+
+            if (filteredList.length === 0) {
+                document.getElementById('list-tbody').innerHTML = `<tr><td colspan="${isAdmin?7:6}" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">找不到相符案件</div></td></tr>`;
+                return;
+            }
+
+            document.getElementById('list-tbody').innerHTML = filteredList.map(c => {
+                const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
+                
+                // 🌟 訪客模式僅顯示「檢視」按鈕，隱藏編輯與刪除；管理者顯示完整按鈕
+                let actionButtons = `
+                    <button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>
+                `;
+                if (isAdmin) {
+                    actionButtons = `
+                        <button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視 / 簽核</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${c.id}')">編輯</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="delCase('${c.id}')">刪除</button>
+                    `;
+                }
+
+                return `
+                <tr>
+                    <td><strong>${c.id}</strong></td>
+                    <td>${c.supplierName}</td>
+                    <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
+                    <td>${c.requesterEmail}</td>
+                    <td>${getStatusBadge(c.status)}</td>
+                    <td><span class="${ageInfo.isNA ? 'age-na' : 'age-normal'}">${ageInfo.text}</span></td>
+                    ${isAdmin ? `<td style="text-align: right; white-space: nowrap;">${actionButtons}</td>` : `<td style="text-align: right; white-space: nowrap;">${actionButtons}</td>`}
+                </tr>`;
+            }).join('');
+        }
+
+        async function delCase(id) {
+            if(!isAdmin) return;
+            if(confirm(`⚠️ 確定要從雲端刪除案件 ${id} 嗎？`)) {
+                await removeCloudCase(id);
+                addSystemLog("Delete Case", id, `刪除案件。`);
+                renderDashboard(); renderList();
+                showToast(`✅ 案件已刪除`);
+            }
+        }
+
+        function getFullCCList(req) { return [...new Set([req, ...FIXED_CC_LIST])].join("; "); }
+
+        function openDetail(id) {
+            activeCaseId = id;
+            const c = cases.find(x => x.id === id);
+            const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
+
+            document.getElementById('det-title').innerText = `${c.supplierName} (${c.id})`;
+            document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | 申請日期: ${c.applyDate}`;
+            document.getElementById('mail-to-text').innerText = curr.role === 'VMD' ? curr.name : `${curr.name} (${curr.email})`;
+            document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
+            
+            // 🌟 訪客模式下隱藏信件觸發按鈕與簽核審核按鈕，僅供檢視
+            const mailBox = document.getElementById('mail-section-box');
+            const adminButtons = document.getElementById('admin-action-buttons');
+            
+            if (isAdmin) {
+                if(mailBox) mailBox.style.display = 'block';
+                if(adminButtons) adminButtons.style.display = 'flex';
+                document.getElementById('btn-approve-action').disabled = !c.steps.every(s => s.approved);
+            } else {
+                if(mailBox) mailBox.style.display = 'none'; // 訪客隱藏發信介面
+                if(adminButtons) adminButtons.style.display = 'none'; // 訪客隱藏 Approve/Reject/Hold
+            }
+
+            document.getElementById('det-timeline').innerHTML = c.steps.map((s, idx) => {
+                let dotClass = "timeline-dot" + (s.approved ? " approved" : (idx === c.currentStep && c.status === "Waiting Internal Approval" ? " active-breathing" : ""));
+                
+                // 訪客模式下 checkbox 設為 disabled，不能勾選
+                const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled title="訪客模式無法簽核"`;
+
+                return `
+                    <div class="timeline-item">
+                        <div class="${dotClass}"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #003366;">Step ${idx+1}: ${s.role} - ${s.name}</strong>
+                                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">完成日期: ${s.time || 'N/A'}</div>
+                            </div>
+                            <input type="checkbox" class="checkbox-only" ${s.approved ? 'checked' : ''} ${checkboxAttr}>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('modal-detail').classList.remove('hidden');
+        }
+
+        function closeDetailModal() { document.getElementById('modal-detail').classList.add('hidden'); }
+
+        async function toggleStepApproval(stepIndex, isChecked) {
+            if(!isAdmin) return;
+            const c = cases.find(x => x.id === activeCaseId);
+            const nowStr = new Date().toISOString().substring(0,10);
+            const stepName = c.steps[stepIndex].role;
+
+            if (isChecked) {
+                c.steps[stepIndex].approved = true;
+                c.steps[stepIndex].time = nowStr;
+                if (stepIndex + 1 < c.steps.length) {
+                    c.currentStep = stepIndex + 1;
+                    c.status = "Waiting Internal Approval";
+                    c.completedDate = null;
+                } else {
+                    c.status = "Done";
+                    c.completedDate = nowStr;
+                }
+            } else {
+                c.steps[stepIndex].approved = false;
+                c.steps[stepIndex].time = "N/A";
+                c.currentStep = stepIndex;
+                c.status = "Waiting Internal Approval";
+                c.completedDate = null;
+            }
+
+            await saveCloudData(cases);
+            addSystemLog("Approval Step", c.id, `關卡 [${stepName}] 狀態更新`);
+            openDetail(activeCaseId); renderDashboard(); renderList();
+        }
+
+        async function setGlobalStatus(status) {
+            if(!isAdmin) return;
+            const c = cases.find(x => x.id === activeCaseId);
+            const nowStr = new Date().toISOString().substring(0,10);
+
+            if (status === 'Done') {
+                if (!c.steps.every(s => s.approved)) { alert("須完成所有關卡勾選方可 Approve！"); return; }
+                c.completedDate = (c.completedDate === 'N/A') ? 'N/A' : nowStr;
+            } else if (status === 'Reject') {
+                c.completedDate = nowStr;
+            } else {
+                c.completedDate = null;
+            }
+
+            c.status = status;
+            await saveCloudData(cases);
+            addSystemLog("Case Status", c.id, `狀態變更為：${status}`);
+            openDetail(activeCaseId); renderDashboard(); renderList();
+            showToast(`✅ 狀態已更新為 ${c.status}`);
+        }
+
+        function directTriggerOutlook() {
+            if(!isAdmin) return;
+            const c = cases.find(x => x.id === activeCaseId);
+            const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
+            const mailtoUrl = `mailto:${encodeURIComponent(curr.email)}?cc=${encodeURIComponent(getFullCCList(c.requesterEmail))}&subject=${encodeURIComponent(`【Seek Approval】Vendor - ${c.supplierName}`)}&body=${encodeURIComponent("Please approve.")}`;
+            
+            const a = document.createElement('a');
+            a.href = mailtoUrl;
+            a.click();
+            a.remove();
+        }
+
+        function exportPDF() { window.print(); }
+    </script>
+</body>
+</html>
