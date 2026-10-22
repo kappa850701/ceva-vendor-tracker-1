@@ -29,10 +29,13 @@
         input:checked + .slider-track:before { transform: translateX(24px); }
 
         .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-        .tabs { display: flex; gap: 24px; border-bottom: 2px solid #e2e8f0; background: white; padding: 0 24px; border-radius: 8px 8px 0 0; }
-        .tab-btn { padding: 16px 8px; border: none; background: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s; }
-        .tab-btn:hover { color: #003366; }
-        .tab-btn.active { color: #003366; border-bottom-color: #003366; }
+        
+        /* 🧭 導覽列與質感 Icon 樣式 */
+        .tabs { display: flex; gap: 16px; border-bottom: 2px solid #e2e8f0; background: white; padding: 0 20px; border-radius: 8px 8px 0 0; }
+        .tab-btn { padding: 14px 12px; border: none; background: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, background-color 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .tab-btn:hover { color: #003366; background-color: #f8fafc; }
+        .tab-btn.active { color: #003366; border-bottom-color: #003366; background-color: #fff; }
+        .tab-icon { font-size: 16px; }
 
         .panel { background: white; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0; border-top: none; min-height: 500px; }
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
@@ -80,10 +83,9 @@
         .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
         .hidden { display: none !important; }
         
-        /* 🚀 結合動態光流與進度銜接的流程設計 */
+        /* 🚀 結合完美呼吸燈效與流暢過渡的流程設計 */
         .unified-flow-wrapper { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
         
-        /* 內部審核軌跡區塊 */
         .pipeline-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
         .pipeline-node { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.25s ease; position: relative; }
         .pipeline-node:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,51,102,0.08); border-color: #003366; }
@@ -92,7 +94,7 @@
 
         .pipeline-left { display: flex; align-items: center; gap: 14px; }
         
-        /* 動態脈衝燈號 */
+        /* 💡 完美的動態呼吸燈號 (Pulse Breathing Effect) */
         .pipeline-dot { width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; position: relative; flex-shrink: 0; transition: all 0.3s; }
         .pipeline-dot.approved { background: #10b981; box-shadow: 0 0 0 4px #d1fae5; }
         .pipeline-dot.active-breathing { background: #f59e0b; animation: pulse-orange 1.8s infinite; }
@@ -103,7 +105,7 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
 
-        /* 🔗 橋接動畫導引線 (Connecting Flow Bridge) */
+        /* 🔗 橋接動畫導引線 */
         .flow-bridge-connector { display: flex; align-items: center; justify-content: center; position: relative; margin: 4px 0; }
         .flow-bridge-line { width: 2px; height: 28px; background: linear-gradient(to bottom, #10b981, #003366); position: absolute; z-index: 1; }
         .flow-bridge-badge { background: #003366; color: white; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 12px; z-index: 2; letter-spacing: 1px; box-shadow: 0 2px 6px rgba(0,51,102,0.2); animation: flow-pulse 2s infinite; }
@@ -114,7 +116,7 @@
             100% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0); }
         }
 
-        /* 💎 VMD 4 欄精緻動態卡片進度區塊 */
+        /* 💎 VMD 4 欄動態卡片進度區塊（呼吸燈同步套用） */
         .vmd-pipeline-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 4px; }
         .vmd-flow-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 8px; text-align: center; position: relative; transition: all 0.25s ease; }
         .vmd-flow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -185,11 +187,20 @@
     </header>
 
     <div class="container">
+        <!-- 🧭 導覽列 (加入精緻 Icon) -->
         <div class="tabs">
-            <button class="tab-btn active" id="btn-tab-dash" onclick="switchTab('dash')">儀表板</button>
-            <button class="tab-btn" id="btn-tab-create" onclick="switchTab('create')">新建申請</button>
-            <button class="tab-btn" id="btn-tab-list" onclick="switchTab('list')">案件清單</button>
-            <button class="tab-btn admin-only hidden" id="btn-tab-logs" onclick="switchTab('logs')">系統日誌</button>
+            <button class="tab-btn active" id="btn-tab-dash" onclick="switchTab('dash')">
+                <span class="tab-icon">📊</span> 儀表板
+            </button>
+            <button class="tab-btn" id="btn-tab-create" onclick="switchTab('create')">
+                <span class="tab-icon">➕</span> 新建申請
+            </button>
+            <button class="tab-btn" id="btn-tab-list" onclick="switchTab('list')">
+                <span class="tab-icon">📋</span> 案件清單
+            </button>
+            <button class="tab-btn admin-only hidden" id="btn-tab-logs" onclick="switchTab('logs')">
+                <span class="tab-icon">📜</span> 系統日誌
+            </button>
         </div>
 
         <!-- Dashboard Panel -->
@@ -432,7 +443,7 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <!-- 🔄 結合動態光流與進度銜接的流程檢視 -->
+            <!-- 🔄 結合呼吸燈效與進度銜接的流程檢視 -->
             <div class="unified-flow-wrapper">
                 <div>
                     <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. 內部跨部門審核動態流程：</h4>
@@ -515,7 +526,7 @@
                     { role: "確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
                     { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
                     { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
-                    { role: "JDE建立完成", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" }
+                    { role: "JDE代碼建立中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" }
                 ]
             }
         ];
@@ -547,12 +558,10 @@
         // 🎚️ 滑軌切換模式互動邏輯
         function handleModeToggle(checkbox) {
             if (checkbox.checked) {
-                // 欲切換至管理模式，彈出密碼驗證框
                 document.getElementById('inp-admin-pwd').value = '';
                 document.getElementById('modal-login').classList.remove('hidden');
                 document.getElementById('inp-admin-pwd').focus();
             } else {
-                // 直接切回訪客模式
                 isAdmin = false;
                 updateUIPermissions();
                 switchTab('dash');
@@ -561,7 +570,6 @@
         }
 
         function cancelModeToggle() {
-            // 取消切換時將滑軌推回訪客狀態
             document.getElementById('mode-toggle-input').checked = false;
             closeLoginModal();
         }
@@ -641,14 +649,6 @@
             addSystemLog("Security", "Admin", "管理者修改密碼");
         }
 
-        function logoutAdmin() {
-            isAdmin = false;
-            document.getElementById('mode-toggle-input').checked = false;
-            updateUIPermissions();
-            switchTab('dash');
-            showToast("已切回訪客模式");
-        }
-
         function updateUIPermissions() {
             const adminElements = document.querySelectorAll('.admin-only');
             const subtitle = document.getElementById('header-subtitle');
@@ -676,6 +676,15 @@
             return `<span class="status-badge status-waiting">Waiting</span>`;
         }
 
+        // 🔄 統一對應 VMD 4 階段舊命名轉為新命名
+        function migrateVmdRoleName(role) {
+            if (role === '確認完畢文件') return '確認完畢文件';
+            if (role === '要求相關單位核准中') return '要求相關單位核准中';
+            if (role === '與供應商確認相關訊息中') return '與供應商確認相關訊息中';
+            if (role === 'JDE建立完成' || role === 'JDE代碼建立中') return 'JDE代碼建立中';
+            return role;
+        }
+
         async function loadCloudData() {
             try {
                 const { data, error } = await supabaseClient.from('vendor_cases').select('*');
@@ -683,8 +692,21 @@
                 if (data && data.length > 0) {
                     cases = data.map(item => {
                         if (item.data && item.data.steps) {
+                            // 統一進行 VMD 欄位名稱對應與更新
+                            item.data.steps = item.data.steps.map(s => {
+                                if (s.role === 'JDE建立完成') s.role = 'JDE代碼建立中';
+                                if (!s.title) {
+                                    if (s.role === 'OMC') s.title = "Operation Management Control Supervisor";
+                                    else if (s.role === 'Compliance') s.title = "Ethics and Compliance Specialist";
+                                    else if (s.role === 'Local Finance') s.title = "Business Controlling Manager Taiwan";
+                                    else if (s.role.includes('Product Head')) s.title = s.role.includes('CL') ? "Contract Logistics Product Head" : "Air & Ocean Director";
+                                    else if (['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'].includes(s.role)) s.title = "Vendor Master Data Team";
+                                }
+                                return s;
+                            });
+
                             let hasVmdSubsteps = item.data.steps.some(s => 
-                                s.role === '確認完畢文件' || s.role === '要求相關單位核准中' || s.role === '與供應商確認相關訊息中' || s.role === 'JDE建立完成'
+                                s.role === '確認完畢文件' || s.role === '要求相關單位核准中' || s.role === '與供應商確認相關訊息中' || s.role === 'JDE代碼建立中'
                             );
                             if (!hasVmdSubsteps) {
                                 let oldVmd = item.data.steps.find(s => s.role === 'VMD' || s.role.startsWith('VMD'));
@@ -696,20 +718,9 @@
                                     { role: "確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: approvedState, time: timeState },
                                     { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: approvedState, time: timeState },
                                     { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: approvedState, time: timeState },
-                                    { role: "JDE建立完成", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: approvedState, time: timeState }
+                                    { role: "JDE代碼建立中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: approvedState, time: timeState }
                                 );
                             }
-
-                            item.data.steps = item.data.steps.map(s => {
-                                if (!s.title) {
-                                    if (s.role === 'OMC') s.title = "Operation Management Control Supervisor";
-                                    else if (s.role === 'Compliance') s.title = "Ethics and Compliance Specialist";
-                                    else if (s.role === 'Local Finance') s.title = "Business Controlling Manager Taiwan";
-                                    else if (s.role.includes('Product Head')) s.title = s.role.includes('CL') ? "Contract Logistics Product Head" : "Air & Ocean Director";
-                                    else if (['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE建立完成'].includes(s.role)) s.title = "Vendor Master Data Team";
-                                }
-                                return s;
-                            });
                         }
                         return item.data;
                     });
@@ -801,7 +812,7 @@
                 { role: "確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "JDE建立完成", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
+                { role: "JDE代碼建立中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
             ];
         }
 
@@ -849,7 +860,7 @@
             await saveCloudData(cases);
             addSystemLog("Create Case", newCase.id, `新建案件：${supplierName} (${bu})`);
 
-            const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE建立完成'];
+            const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'];
             const toEmails = matrixSteps.filter(s => !vmdRoleNames.includes(s.role)).map(s => s.email).join("; ");
             const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
             
@@ -955,7 +966,7 @@
                 return;
             }
 
-            const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE建立完成'];
+            const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'];
 
             document.getElementById('dash-tbody').innerHTML = paginatedItems.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
@@ -1092,7 +1103,7 @@
             }
         }
 
-        const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE建立完成'];
+        const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'];
         function getApproversToEmails(steps) {
             return steps.filter(s => !vmdRoleNames.includes(s.role)).map(s => s.email).join("; ");
         }
@@ -1117,7 +1128,7 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 1. 渲染內部動態流程圖 (Pipeline Flow)
+            // 1. 渲染內部動態流程圖 (Pipeline Flow) 完美呼吸燈效
             const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
             document.getElementById('det-pipeline').innerHTML = internalSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
@@ -1141,16 +1152,28 @@
                     </div>`;
             }).join('');
 
-            // 2. 渲染 VMD 4 欄精緻動態卡片
+            // 2. 渲染 VMD 4 欄精緻動態卡片 (根據勾選前後動態切換顯示文字)
             const vmdSteps = c.steps.filter(s => vmdRoleNames.includes(s.role));
             document.getElementById('vmd-cards-container').innerHTML = vmdSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
                 const cardClass = s.approved ? "vmd-flow-card completed" : "vmd-flow-card";
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${globalIdx}, this.checked)"` : `disabled`;
 
+                // 根據打勾與否動態轉換標題文字
+                let displayTitle = s.role;
+                if (s.role === '確認完畢文件') {
+                    displayTitle = s.approved ? '確認完畢文件完成' : '確認完畢文件中';
+                } else if (s.role === '要求相關單位核准中') {
+                    displayTitle = s.approved ? '要求相關單位核准完成' : '要求相關單位核准中';
+                } else if (s.role === '與供應商確認相關訊息中') {
+                    displayTitle = s.approved ? '與供應商確認相關訊息完成' : '與供應商確認相關訊息中';
+                } else if (s.role === 'JDE代碼建立中') {
+                    displayTitle = s.approved ? 'JDE代碼建立完成' : 'JDE代碼建立中';
+                }
+
                 return `
                     <div class="${cardClass}">
-                        <div class="vmd-flow-title">${s.role}</div>
+                        <div class="vmd-flow-title">${displayTitle}</div>
                         <div style="margin-bottom: 4px;">
                             <input type="checkbox" class="checkbox-only" ${s.approved ? 'checked' : ''} ${checkboxAttr}>
                         </div>
