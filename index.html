@@ -732,7 +732,7 @@
             return { text: `${days} 天`, days: days, isNA: false };
         }
 
-        // 💡 建立單號並完成申請時自動觸發寄信（對齊截圖格式與您的收件人/CC矩陣規則）
+        // 💡 訪客新建申請時：建立單號並自動觸發 Outlook 寄信給內部審核矩陣
         async function handleCreate(e) {
             e.preventDefault();
             const bu = document.getElementById('inp-bu').value;
@@ -759,13 +759,13 @@
             await saveCloudData(cases);
             addSystemLog("Create Case", newCase.id, `訪客新建案件：${supplierName} (${bu} - ${vendorType})`);
 
-            // 💡 組合收件人 To：矩陣內的人（排除 VMD，納入 Tristan, Chris, Will, 以及 Barry 或 Warren）
+            // 💡 收件人 To：矩陣內審核主管（排除 VMD，包含 Tristan, Chris, Will, 以及 Barry 或 Warren）
             const toEmails = matrixSteps.filter(s => s.role !== 'VMD').map(s => s.email).join("; ");
             
-            // 💡 組合副本 CC：申請人 Email + 您指定的固定清單
+            // 💡 副本 CC：申請人 + 指定固定清單
             const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
             
-            // 💡 組合主旨與內文（完全對齊您提供的截圖樣式）
+            // 💡 主旨與內文（嚴格對齊您提供的英文格式截圖）
             const subject = `【Seek Approval】Vendor Creation/Amendment - ${supplierName}`;
             const body = 
                 `Dear Approver,\r\n\r\n` +
@@ -777,20 +777,16 @@
 
             const mailtoUrl = `mailto:${encodeURIComponent(toEmails)}?cc=${encodeURIComponent(ccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-            if (vendorType === 'Trade') {
-                alert(`⚠️ 【申請建立成功 - Trade 流程提醒】\n\n1. 請務必確認信件或案件中已夾帶 **VMD Request Form** 與 **Supporting** 相關附件！\n2. 內部審核完畢後，後續將引導至 **Bizagi 平台**由申請人自行提交正式申請。`);
-            } else {
-                alert(`⚠️ 【申請建立成功 - Non-trade 流程提醒】\n\n1. 請務必在即將開啟的 Outlook 郵件中夾帶 **VMD Request Form** 與 **Supporting** 相關附件！\n2. 內部審核完畢後，將直接發送郵件至 SH-AP-VMD-GBSC@Cevalogistics.com 提交申請。`);
-            }
+            alert(`⚠️ 【申請建立成功 - 審核信件提醒】\n\n1. 請務必在即將彈出的 Outlook 信件中夾帶 **VMD Request Form** 與 **Supporting** 相關附件！\n2. 系統已自動將內部審核主管納入收件人 (To)，並將申請人及相關主管納入副本 (CC)。`);
 
-            // 💡 自動觸發 Outlook 郵件視窗
+            // 💡 觸發 Outlook
             const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
 
             document.getElementById('form-create-vendor').reset();
             document.getElementById('inp-date').valueAsDate = new Date();
             document.getElementById('matrix-preview').innerText = "請先選擇 BU...";
             switchTab('list');
-            showToast(`✅ Case ${newCase.id} 建立成功並已自動觸發郵件！`);
+            showToast(`✅ Case ${newCase.id} 建立成功並已自動觸發審核信件！`);
         }
 
         function renderDashboardAnalytics() {
@@ -1009,9 +1005,6 @@
         }
 
         function getApproversToEmails(steps, vendorType) {
-            if (vendorType === 'Non-trade') {
-                return "SH-AP-VMD-GBSC@Cevalogistics.com";
-            }
             return steps.filter(s => s.role !== 'VMD').map(s => s.email).join("; ");
         }
 
@@ -1105,7 +1098,7 @@
             showToast(`✅ 狀態已更新為 ${c.status}`);
         }
 
-        // 📄 匯出 PDF（不含 Logo 與確認簽名申明）
+        // 📄 匯出 PDF
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
