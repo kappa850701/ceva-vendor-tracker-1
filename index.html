@@ -37,7 +37,8 @@
         input:focus, select:focus, textarea:focus { outline: none; border-color: #003366; box-shadow: 0 0 0 3px rgba(0,51,102,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
         th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        th { background-color: #f8fafc; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; cursor: pointer; user-select: none; transition: background-color 0.2s; }
+        th:hover { background-color: #e2e8f0; color: #003366; }
         tr:hover td { background-color: #f8fafc; }
 
         .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; }
@@ -50,8 +51,6 @@
         #status-toast.hidden { opacity: 0; transform: translateY(-10px); pointer-events: none; }
 
         .age-normal { color: #334155; font-family: monospace; font-weight: bold; }
-        .age-warning { color: #d97706; font-weight: bold; background-color: #fef3c7; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-        .age-overdue { color: #dc2626; font-weight: bold; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
         .age-na { color: #94a3b8; font-style: italic; font-weight: normal; background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
 
         .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
@@ -122,7 +121,6 @@
             </div>
         </div>
         <div class="header-actions" id="header-actions-area">
-            <!-- 訪客狀態顯示登入按鈕 -->
             <button class="btn btn-sm btn-outline-white" id="btn-login-modal" onclick="openLoginModal()">🔐 管理者登入</button>
         </div>
     </header>
@@ -170,13 +168,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Case ID</th>
-                        <th>Supplier Name</th>
-                        <th>BU / Action / Type</th>
-                        <th>申請日期</th>
-                        <th>Status</th>
+                        <th onclick="sortDashTable('id')">Case ID ↕</th>
+                        <th onclick="sortDashTable('supplierName')">Supplier Name ↕</th>
+                        <th onclick="sortDashTable('bu')">BU / Action / Type ↕</th>
+                        <th onclick="sortDashTable('applyDate')">申請日期 ↕</th>
+                        <th onclick="sortDashTable('status')">Status ↕</th>
                         <th>當前關卡 / 審核人</th>
-                        <th>SLA Age</th>
+                        <th onclick="sortDashTable('age')">SLA Age ↕</th>
                     </tr>
                 </thead>
                 <tbody id="dash-tbody"></tbody>
@@ -263,12 +261,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Case ID</th>
-                        <th>Supplier Name</th>
-                        <th>BU / Action / Type</th>
-                        <th>申請人</th>
-                        <th>Status</th>
-                        <th>SLA Age</th>
+                        <th onclick="sortListTable('id')">Case ID ↕</th>
+                        <th onclick="sortListTable('supplierName')">Supplier Name ↕</th>
+                        <th onclick="sortListTable('bu')">BU / Action / Type ↕</th>
+                        <th onclick="sortListTable('requesterEmail')">申請人 ↕</th>
+                        <th onclick="sortListTable('status')">Status ↕</th>
+                        <th onclick="sortListTable('age')">SLA Age ↕</th>
                         <th style="text-align: right;" id="th-action-col">操作</th>
                     </tr>
                 </thead>
@@ -304,7 +302,7 @@
         </div>
     </div>
 
-    <!-- Login Modal (管理者密碼解鎖) -->
+    <!-- Login Modal -->
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">🔐 管理者權限解鎖</h3>
@@ -372,7 +370,6 @@
                         <input type="date" id="qa-completed-date">
                     </div>
                 </div>
-                
                 <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
                     <button type="button" class="btn btn-secondary" onclick="closeManualPasteModal()">取消</button>
                     <button type="submit" class="btn btn-primary">確認匯入 / 建立</button>
@@ -490,6 +487,12 @@
         let cases = [];
         let systemLogs = [];
 
+        // 排序狀態變數
+        let dashSortKey = null;
+        let dashSortAsc = true;
+        let listSortKey = null;
+        let listSortAsc = true;
+
         const FIXED_CC_LIST = [
             "Christina.Chen@Cevalogistics.com",
             "Vicky.Liu@Cevalogistics.com",
@@ -516,39 +519,6 @@
                     { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
                     { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
                     { role: "CL Product Head", name: "Barry CHAN", email: "Barry.Chan@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
-                ]
-            },
-            {
-                id: "CEVA-202606-003", supplierName: "日商日本貨物航空", bu: "AE", action: "New", vendorType: "Trade",
-                applyDate: "2026-06-25", completedDate: "N/A", requesterEmail: "Nina.Wang1@cevalogistics.com", status: "Done", currentStep: 5,
-                steps: [
-                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
-                ]
-            },
-            {
-                id: "CEVA-202608-001", supplierName: "祥和國際物流", bu: "AE", action: "New", vendorType: "Trade",
-                applyDate: "2026-08-04", completedDate: "N/A", requesterEmail: "Micky.Wang@cevalogistics.com", status: "Done", currentStep: 5,
-                steps: [
-                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
-                ]
-            },
-            {
-                id: "CEVA-202608-002", supplierName: "日商日本貨物航空", bu: "AE", action: "Change", vendorType: "Trade",
-                applyDate: "2026-08-12", completedDate: "N/A", requesterEmail: "Nina.Wang1@cevalogistics.com", status: "Done", currentStep: 5,
-                steps: [
-                    { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "Local Finance", name: "Will YU", email: "Will.Yu@Cevalogistics.com", approved: true, time: "N/A" },
-                    { role: "A&O Product Head", name: "Warren WANG", email: "Warren.Wang@cevalogistics.com", approved: true, time: "N/A" },
                     { role: "VMD", name: "VMD Team", email: "vmd@cevalogistics.com", approved: true, time: "N/A" }
                 ]
             }
@@ -883,7 +853,7 @@
         function calcAge(dStr, completedDate, status) {
             if (!dStr) return { text: "0 天", days: 0, isNA: false };
             let isStopped = (status === 'Done' || status === 'Reject');
-            if (isStopped && completedDate === 'N/A') return { text: "N/A", days: 0, isNA: true };
+            if (isStopped && completedDate === 'N/A') return { text: "N/A", days: -1, isNA: true };
 
             let start = new Date(dStr.substring(0,10));
             let end = (isStopped && completedDate) ? new Date(completedDate.substring(0,10)) : new Date();
@@ -926,17 +896,45 @@
             showToast(`✅ Case ${newCase.id} 建立成功！`);
         }
 
+        // 📊 儀表板表格排序邏輯
+        function sortDashTable(key) {
+            if (dashSortKey === key) {
+                dashSortAsc = !dashSortAsc;
+            } else {
+                dashSortKey = key;
+                dashSortAsc = true;
+            }
+            renderDashboard();
+        }
+
         function renderDashboard() {
             const key = document.getElementById('dash-search').value.toLowerCase();
             const statusFilter = document.getElementById('dash-filter-status').value;
             const buFilter = document.getElementById('dash-filter-bu').value;
 
-            const filteredTable = cases.filter(c => {
+            let filteredTable = cases.filter(c => {
                 const matchKey = c.id.toLowerCase().includes(key) || c.supplierName.toLowerCase().includes(key);
                 const matchStatus = statusFilter === "" || c.status === statusFilter;
                 const matchBu = buFilter === "" || c.bu === buFilter;
                 return matchKey && matchStatus && matchBu;
             });
+
+            // 執行排序
+            if (dashSortKey) {
+                filteredTable.sort((a, b) => {
+                    let valA, valB;
+                    if (dashSortKey === 'age') {
+                        valA = calcAge(a.applyDate, a.completedDate, a.status).days;
+                        valB = calcAge(b.applyDate, b.completedDate, b.status).days;
+                    } else {
+                        valA = a[dashSortKey] || '';
+                        valB = b[dashSortKey] || '';
+                    }
+                    if (valA < valB) return dashSortAsc ? -1 : 1;
+                    if (valA > valB) return dashSortAsc ? 1 : -1;
+                    return 0;
+                });
+            }
 
             const countPool = cases.filter(c => {
                 const matchKey = c.id.toLowerCase().includes(key) || c.supplierName.toLowerCase().includes(key);
@@ -973,6 +971,17 @@
             }).join('');
         }
 
+        // 📋 案件追蹤清單表格排序邏輯
+        function sortListTable(key) {
+            if (listSortKey === key) {
+                listSortAsc = !listSortAsc;
+            } else {
+                listSortKey = key;
+                listSortAsc = true;
+            }
+            renderList();
+        }
+
         function renderList() {
             const key = document.getElementById('list-search').value.toLowerCase();
             const statusFilter = document.getElementById('list-filter-status').value;
@@ -981,12 +990,29 @@
 
             if (thAction) thAction.style.display = isAdmin ? '' : 'none';
 
-            const filteredList = cases.filter(c => {
+            let filteredList = cases.filter(c => {
                 const matchKey = c.id.toLowerCase().includes(key) || c.supplierName.toLowerCase().includes(key);
                 const matchStatus = statusFilter === "" || c.status === statusFilter;
                 const matchBu = buFilter === "" || c.bu === buFilter;
                 return matchKey && matchStatus && matchBu;
             });
+
+            // 執行排序
+            if (listSortKey) {
+                filteredList.sort((a, b) => {
+                    let valA, valB;
+                    if (listSortKey === 'age') {
+                        valA = calcAge(a.applyDate, a.completedDate, a.status).days;
+                        valB = calcAge(b.applyDate, b.completedDate, b.status).days;
+                    } else {
+                        valA = a[listSortKey] || '';
+                        valB = b[listSortKey] || '';
+                    }
+                    if (valA < valB) return listSortAsc ? -1 : 1;
+                    if (valA > valB) return listSortAsc ? 1 : -1;
+                    return 0;
+                });
+            }
 
             if (filteredList.length === 0) {
                 document.getElementById('list-tbody').innerHTML = `<tr><td colspan="${isAdmin?7:6}" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">找不到相符案件</div></td></tr>`;
@@ -1015,7 +1041,7 @@
                     <td>${c.requesterEmail}</td>
                     <td>${getStatusBadge(c.status)}</td>
                     <td><span class="${ageInfo.isNA ? 'age-na' : 'age-normal'}">${ageInfo.text}</span></td>
-                    ${isAdmin ? `<td style="text-align: right; white-space: nowrap;">${actionButtons}</td>` : `<td style="text-align: right; white-space: nowrap;">${actionButtons}</td>`}
+                    <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
                 </tr>`;
             }).join('');
         }
@@ -1139,7 +1165,6 @@
             a.remove();
         }
 
-        // 🌟 修復後的 PDF 匯出功能（自動排除 VMD 並支援列印）
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) {
@@ -1147,7 +1172,6 @@
                 return;
             }
 
-            // 過濾掉 VMD 關卡
             const filteredSteps = c.steps.filter(s => s.role !== 'VMD');
 
             let printArea = document.getElementById('pdf-print-area');
