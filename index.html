@@ -579,16 +579,6 @@
             renderDashboard();
             renderList();
             renderLogs();
-
-            setInterval(async () => {
-                const activeEl = document.activeElement;
-                const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
-                const isModalOpen = !document.getElementById('modal-detail').classList.contains('hidden') || !document.getElementById('modal-login').classList.contains('hidden');
-
-                if (!isTyping && !isModalOpen) {
-                    await backgroundSyncCloudData();
-                }
-            }, 30000);
         };
 
         function showToast(msg) {
@@ -880,20 +870,6 @@
                     for (let c of cases) { await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c }); }
                 }
             } catch (err) { cases = [...defaultCases]; }
-        }
-
-        async function backgroundSyncCloudData() {
-            try {
-                const { data, error } = await supabaseClient.from('vendor_cases').select('*');
-                if (!error && data && data.length > 0) {
-                    let remoteCases = data.map(item => item.data);
-                    if (JSON.stringify(remoteCases) !== JSON.stringify(cases)) {
-                        cases = remoteCases;
-                        if (!document.getElementById('panel-dash').classList.contains('hidden')) renderDashboard();
-                        if (!document.getElementById('panel-list').classList.contains('hidden')) renderList();
-                    }
-                }
-            } catch (e) {}
         }
 
         async function saveCloudData(updatedCases) {
