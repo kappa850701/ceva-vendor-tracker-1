@@ -118,7 +118,7 @@
 
     <div class="container">
         <div class="tabs">
-            <button class="tab-btn active" id="btn-tab-dash" onclick="switchTab('dash')">📊 儀表板</button>
+            <button class="tab-btn active" id="btn-tab-dash" onclick="switchTab('dash')">📊 儀表板與營運分析</button>
             <button class="tab-btn admin-only hidden" id="btn-tab-create" onclick="switchTab('create')">➕ 新建申請</button>
             <button class="tab-btn" id="btn-tab-list" onclick="switchTab('list')">📋 案件追蹤清單</button>
             <button class="tab-btn admin-only hidden" id="btn-tab-logs" onclick="switchTab('logs')">📜 系統日誌</button>
@@ -154,6 +154,27 @@
                 <div class="card done"><div class="card-title">審核完成 (Done)</div><div id="cnt-done" class="card-val">0</div></div>
                 <div class="card reject"><div class="card-title">退回 (Reject)</div><div id="cnt-reject" class="card-val">0</div></div>
                 <div class="card"><div class="card-title">暫停 (Hold)</div><div id="cnt-hold" class="card-val">0</div></div>
+            </div>
+
+            <!-- 📈 營運效率與瓶頸分析區塊 (Analytics & Bottleneck Tracking) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <div class="card" style="border-left-color: #003366;">
+                    <div class="card-title">平均審核週期 (Lead Time)</div>
+                    <div id="stat-avg-lead-time" class="card-val" style="color: #003366;">0 天</div>
+                </div>
+                <div class="card" style="border-left-color: #f59e0b;">
+                    <div class="card-title">目前最大滯留天數 (Max Active Age)</div>
+                    <div id="stat-max-age" class="card-val" style="color: #b45309;">0 天</div>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                <h4 style="font-size: 14px; color: #003366; margin-bottom: 14px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                    <span>🔍 目前各部門審核瓶頸分析 (Department Bottleneck Tracking)</span>
+                </h4>
+                <div id="bottleneck-container" style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+                    <!-- 動態渲染 -->
+                </div>
             </div>
 
             <table>
@@ -212,6 +233,10 @@
                     <div style="grid-column: span 2;">
                         <label><strong>申請人 Email <span style="color:red;">*</span></strong></label>
                         <input type="email" id="inp-cc" required value="Nicolas.Wang@cevalogistics.com">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label><strong>上傳附件 (PDF / 報價單 / 執照)</strong></label>
+                        <input type="file" id="inp-file" accept=".pdf,.png,.jpg,.jpeg,.xlsx">
                     </div>
                 </div>
 
@@ -309,7 +334,7 @@
         </div>
     </div>
 
-    <!-- 1️⃣ 主動修改密碼 Modal -->
+    <!-- 變更密碼 Modal -->
     <div id="modal-change-pwd" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px;">
             <h3 style="color: #003366; margin-bottom: 12px;">🔑 修改管理者密碼</h3>
@@ -329,7 +354,7 @@
         </div>
     </div>
 
-    <!-- 2️⃣ 忘記密碼 Modal -->
+    <!-- 忘記密碼 Modal -->
     <div id="modal-forgot-pwd" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">❓ 密碼重設與救援</h3>
@@ -339,69 +364,6 @@
                 <button class="btn btn-secondary" onclick="closeForgotModal()">取消</button>
                 <button class="btn btn-primary" onclick="submitForgotPwd()">發送重設信件</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Quick Add Modal -->
-    <div id="modal-paste" class="modal-overlay hidden">
-        <div class="modal">
-            <h3 style="color: #003366; margin-bottom: 20px;">✍️ 快速建檔 (歷史資料/手動補登)</h3>
-            <form id="form-quick-add" onsubmit="submitManualPaste(event)">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div style="grid-column: span 2;">
-                        <label><strong>Supplier Name <span style="color:red;">*</span></strong></label>
-                        <input type="text" id="qa-supplier" required placeholder="例如: 佰進國際物流">
-                    </div>
-                    <div>
-                        <label><strong>BU <span style="color:red;">*</span></strong></label>
-                        <select id="qa-bu" required>
-                            <option value="AE">AE</option><option value="AI">AI</option>
-                            <option value="OE">OE</option><option value="OI">OI</option>
-                            <option value="CL">CL</option><option value="PL">PL</option>
-                            <option value="HR">HR</option><option value="QHSE">QHSE</option><option value="ADM">ADM</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>Action <span style="color:red;">*</span></strong></label>
-                        <select id="qa-action" required>
-                            <option value="New">New</option>
-                            <option value="Change">Change</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>Vendor Type <span style="color:red;">*</span></strong></label>
-                        <select id="qa-type" required>
-                            <option value="Trade">Trade</option>
-                            <option value="Non-trade">Non-trade</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>申請日期 <span style="color:red;">*</span></strong></label>
-                        <input type="date" id="qa-date" required>
-                    </div>
-                    <div>
-                        <label><strong>申請人 Email <span style="color:red;">*</span></strong></label>
-                        <input type="email" id="qa-cc" required value="Nicolas.Wang@cevalogistics.com">
-                    </div>
-                    <div>
-                        <label><strong>Status <span style="color:red;">*</span></strong></label>
-                        <select id="qa-status" required>
-                            <option value="Done">Done</option>
-                            <option value="Waiting Internal Approval">Waiting Internal Approval</option>
-                            <option value="Reject">Reject</option>
-                            <option value="Hold">Hold</option>
-                        </select>
-                    </div>
-                    <div style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                        <label><strong>完成日期 <span style="color:#64748b; font-weight:normal; font-size:13px;">(若不確定或尚未完成，請留白即可自動設為 N/A)</span></strong></label>
-                        <input type="date" id="qa-completed-date">
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeManualPasteModal()">取消</button>
-                    <button type="submit" class="btn btn-primary">確認匯入 / 建立</button>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -471,6 +433,10 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
             
+            <div id="det-attachment-wrap" style="margin-bottom: 16px;" class="hidden">
+                <a id="det-attachment-link" href="#" target="_blank" class="btn btn-sm btn-outline-primary">📎 下載案件雲端附件 (PDF/報價單)</a>
+            </div>
+
             <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部簽核進度：</h4>
             <div class="timeline" id="det-timeline"></div>
 
@@ -503,7 +469,6 @@
     <div id="pdf-print-area" class="hidden"></div>
 
     <script>
-        // 🔐 密碼與資安原則設定
         let currentPassword = localStorage.getItem('ceva_admin_pwd') || "REMOVED";
         let lastPwdChangeDate = localStorage.getItem('ceva_pwd_date') || new Date().toISOString();
         let isAdmin = false;
@@ -530,7 +495,7 @@
         const defaultCases = [
             {
                 id: "CEVA-202606-001", supplierName: "佰進國際物流", bu: "AE", action: "Change", vendorType: "Trade",
-                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", status: "Done", currentStep: 5,
+                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", attachmentUrl: "", status: "Done", currentStep: 5,
                 steps: [
                     { role: "OMC", name: "Tristan YANG", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "N/A" },
                     { role: "Compliance", name: "Chris ZHANG", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "N/A" },
@@ -558,55 +523,41 @@
             setTimeout(() => toast.classList.add('hidden'), 2500);
         }
 
-        // 登入 Modal 控制
         function openLoginModal() {
             document.getElementById('inp-admin-pwd').value = '';
             document.getElementById('modal-login').classList.remove('hidden');
             document.getElementById('inp-admin-pwd').focus();
         }
-        function closeLoginModal() {
-            document.getElementById('modal-login').classList.add('hidden');
-        }
+        function closeLoginModal() { document.getElementById('modal-login').classList.add('hidden'); }
 
-        // 忘記密碼 Modal 控制
         function openForgotModal() {
             closeLoginModal();
             document.getElementById('inp-forgot-email').value = "Nicolas.Wang@cevalogistics.com";
             document.getElementById('modal-forgot-pwd').classList.remove('hidden');
         }
-        function closeForgotModal() {
-            document.getElementById('modal-forgot-pwd').classList.add('hidden');
-        }
+        function closeForgotModal() { document.getElementById('modal-forgot-pwd').classList.add('hidden'); }
+
         function submitForgotPwd() {
             const email = document.getElementById('inp-forgot-email').value;
             if(!email) { alert("請輸入 Email！"); return; }
             closeForgotModal();
-            
-            // 透過 mailto 自動觸發發送重設需求信件至 IT/OMC 團隊或自身
             const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent("【CEVA System】Admin Password Reset Request")}&body=${encodeURIComponent("請協助重設管理者密碼。申請人: " + email)}`;
-            const a = document.createElement('a');
-            a.href = mailtoUrl;
-            a.click();
-            a.remove();
-            
+            const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
             showToast("📧 已透過 Outlook 觸發密碼重設通知信！");
             addSystemLog("Security", "Admin", `發送密碼重設申請至：${email}`);
         }
 
-        // 驗證登入與檢查是否超過一個月強制修改
         function submitAdminLogin() {
             const pwd = document.getElementById('inp-admin-pwd').value;
             if (pwd === currentPassword) {
                 closeLoginModal();
-
-                // 檢查是否超過 30 天未修改密碼
                 const lastDate = new Date(lastPwdChangeDate);
                 const now = new Date();
                 const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
 
                 if (diffDays >= 30) {
                     alert("⚠️ 為了符合資安規範，您的管理者密碼已超過一個月未修改，請立即更新密碼！");
-                    openChangePwdModal(true); // 強制修改模式
+                    openChangePwdModal(true);
                 } else {
                     isAdmin = true;
                     updateUIPermissions();
@@ -617,16 +568,13 @@
             }
         }
 
-        // 主動或強制修改密碼 Modal
         function openChangePwdModal(isForced = false) {
             document.getElementById('inp-new-pwd').value = '';
             document.getElementById('inp-confirm-pwd').value = '';
-            
             const cancelBtn = document.getElementById('btn-cancel-change-pwd');
             const notice = document.getElementById('pwd-change-notice');
-            
             if (isForced) {
-                cancelBtn.style.display = 'none'; // 強制時不給取消
+                cancelBtn.style.display = 'none';
                 notice.innerText = "⚠️ 密碼已屆滿一個月，必須變更後才能繼續操作系統。";
             } else {
                 cancelBtn.style.display = 'inline-block';
@@ -634,30 +582,17 @@
             }
             document.getElementById('modal-change-pwd').classList.remove('hidden');
         }
-
-        function closeChangePwdModal() {
-            document.getElementById('modal-change-pwd').classList.add('hidden');
-        }
+        function closeChangePwdModal() { document.getElementById('modal-change-pwd').classList.add('hidden'); }
 
         function submitChangePwd() {
             const newPwd = document.getElementById('inp-new-pwd').value;
             const confirmPwd = document.getElementById('inp-confirm-pwd').value;
-
-            if (!newPwd || newPwd.length < 6) {
-                alert("❌ 新密碼長度至少需要 6 個字元以上！");
-                return;
-            }
-            if (newPwd !== confirmPwd) {
-                alert("❌ 兩次輸入的新密碼不相符！");
-                return;
-            }
-
+            if (!newPwd || newPwd.length < 6) { alert("❌ 新密碼長度至少需要 6 個字元以上！"); return; }
+            if (newPwd !== confirmPwd) { alert("❌ 兩次輸入的新密碼不相符！"); return; }
             currentPassword = newPwd;
             lastPwdChangeDate = new Date().toISOString();
-            
             localStorage.setItem('ceva_admin_pwd', currentPassword);
             localStorage.setItem('ceva_pwd_date', lastPwdChangeDate);
-
             isAdmin = true;
             closeChangePwdModal();
             updateUIPermissions();
@@ -684,18 +619,13 @@
                 subtitle.innerText = "Vendor Approval & Management Console (管理者模式 - Nicolas Wang)";
                 headerActions.innerHTML = `
                     <button class="btn btn-sm btn-outline-white" onclick="openChangePwdModal(false)">🔑 修改密碼</button>
-                    <button class="btn btn-sm btn-outline-white" onclick="openManualPasteModal()">✍️ 快速建檔</button>
                     <button class="btn btn-sm btn-outline-white" onclick="exportDataBackup()">📥 備份 JSON</button>
-                    <button class="btn btn-sm btn-outline-white" onclick="triggerImport()">📤 匯入 JSON</button>
-                    <input type="file" id="file-import-input" accept=".json" class="hidden" onchange="importDataBackup(event)">
                     <button class="btn btn-sm btn-danger" onclick="logoutAdmin()">🔒 登出</button>
                 `;
             } else {
                 adminElements.forEach(el => el.classList.add('hidden'));
                 subtitle.innerText = "Vendor Approval & Management Console (訪客檢視模式)";
-                headerActions.innerHTML = `
-                    <button class="btn btn-sm btn-outline-white" id="btn-login-modal" onclick="openLoginModal()">🔐 管理者登入</button>
-                `;
+                headerActions.innerHTML = `<button class="btn btn-sm btn-outline-white" onclick="openLoginModal()">🔐 管理者登入</button>`;
             }
             renderList();
         }
@@ -715,32 +645,31 @@
                     cases = data.map(item => item.data);
                 } else {
                     cases = [...defaultCases];
-                    for (let c of cases) {
-                        await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c });
-                    }
+                    for (let c of cases) { await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c }); }
                 }
-            } catch (err) {
-                cases = [...defaultCases];
-            }
+            } catch (err) { cases = [...defaultCases]; }
         }
 
         async function saveCloudData(updatedCases) {
             cases = updatedCases;
             try {
-                for (let c of cases) {
-                    await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c });
-                }
+                for (let c of cases) { await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c }); }
                 showToast("☁️ 雲端同步成功！");
-            } catch (err) {
-                alert("❌ 儲存至雲端失敗！");
-            }
+            } catch (err) { alert("❌ 儲存至雲端失敗！"); }
         }
 
         async function removeCloudCase(id) {
-            cases = cases.filter(c => c.id !== id);
-            try {
-                await supabaseClient.from('vendor_cases').delete().eq('id', id);
-            } catch (err) {}
+            const c = cases.find(x => x.id === id);
+            if (c && c.attachmentUrl) {
+                try {
+                    const urlParts = c.attachmentUrl.split('/vendor-attachments/');
+                    if (urlParts.length > 1) {
+                        await supabaseClient.storage.from('vendor-attachments').remove([decodeURIComponent(urlParts[1])]);
+                    }
+                } catch(e) {}
+            }
+            cases = cases.filter(x => x.id !== id);
+            try { await supabaseClient.from('vendor_cases').delete().eq('id', id); } catch (err) {}
         }
 
         function loadStoredLogs() {
@@ -753,181 +682,49 @@
                 }
             } catch(e) { systemLogs = []; }
         }
-
-        function saveStoredLogs() {
-            try { localStorage.setItem('ceva_cloud_logs', JSON.stringify(systemLogs)); } catch(e) {}
-        }
-
+        function saveStoredLogs() { try { localStorage.setItem('ceva_cloud_logs', JSON.stringify(systemLogs)); } catch(e) {} }
         function getNowStr() {
             const now = new Date();
             return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         }
-
         function addSystemLog(type, target, detail) {
             systemLogs.unshift({ time: getNowStr(), type: type, target: target, detail: detail });
-            saveStoredLogs();
-            renderLogs();
+            saveStoredLogs(); renderLogs();
         }
-
         function delLog(index) {
-            if(confirm("確定要刪除這筆日誌紀錄嗎？")) {
-                systemLogs.splice(index, 1);
-                saveStoredLogs();
-                renderLogs();
-                showToast("✅ 日誌已刪除");
-            }
+            if(confirm("確定要刪除這筆日誌紀錄嗎？")) { systemLogs.splice(index, 1); saveStoredLogs(); renderLogs(); showToast("✅ 日誌已刪除"); }
         }
-
         function clearAllLogs() {
-            if(confirm("⚠️ 確定要清空所有歷史紀錄嗎？")) {
-                systemLogs = [];
-                saveStoredLogs();
-                renderLogs();
-                showToast("✅ 日誌已全數清空");
-            }
+            if(confirm("⚠️ 確定要清空所有歷史紀錄嗎？")) { systemLogs = []; saveStoredLogs(); renderLogs(); showToast("✅ 日誌已全數清空"); }
         }
-
         function renderLogs() {
             const key = document.getElementById('logs-search').value.toLowerCase();
             const filtered = systemLogs.filter(l => l.detail.toLowerCase().includes(key) || l.target.toLowerCase().includes(key) || l.type.toLowerCase().includes(key));
-            
             if (filtered.length === 0) {
                 document.getElementById('logs-tbody').innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">目前沒有日誌紀錄</div></td></tr>`;
                 return;
             }
-
             document.getElementById('logs-tbody').innerHTML = filtered.map((l, idx) => `
                 <tr>
                     <td style="font-size:12px; color:#64748b; font-family:monospace;">${l.time}</td>
                     <td><strong>${l.type}</strong></td>
                     <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#003366;">${l.target}</code></td>
                     <td style="color:#334155;">${l.detail}</td>
-                    <td style="text-align: right;"><button class="btn btn-sm btn-outline-danger" title="刪除" onclick="delLog(${idx})">刪除</button></td>
+                    <td style="text-align: right;"><button class="btn btn-sm btn-outline-danger" onclick="delLog(${idx})">刪除</button></td>
                 </tr>
             `).join('');
         }
 
-        function openManualPasteModal() { if(!isAdmin) return; document.getElementById('qa-date').valueAsDate = new Date(); document.getElementById('modal-paste').classList.remove('hidden'); }
-        function closeManualPasteModal() { document.getElementById('modal-paste').classList.add('hidden'); }
-
-        async function submitManualPaste(e) {
-            e.preventDefault();
-            if(!isAdmin) return;
-            const supplierName = document.getElementById('qa-supplier').value;
-            const bu = document.getElementById('qa-bu').value;
-            const action = document.getElementById('qa-action').value;
-            const vendorType = document.getElementById('qa-type').value;
-            const email = document.getElementById('qa-cc').value;
-            const applyDateStr = document.getElementById('qa-date').value;
-            const status = document.getElementById('qa-status').value;
-            const completedDateInput = document.getElementById('qa-completed-date').value;
-
-            const finalCompletedDate = completedDateInput ? completedDateInput : "N/A";
-            const generatedId = "CEVA-" + applyDateStr.substring(0,7).replace('-','') + "-" + String(cases.length + 1).padStart(3,'0');
-            const isDone = (status === 'Done');
-
-            const newCase = {
-                id: generatedId, supplierName, bu, action, vendorType, applyDate: applyDateStr,
-                completedDate: finalCompletedDate, requesterEmail: email, status,
-                currentStep: isDone ? 5 : 0,
-                steps: getMatrix(bu).map(m => ({ ...m, approved: isDone, time: finalCompletedDate }))
-            };
-
-            cases.unshift(newCase);
-            await saveCloudData(cases);
-            addSystemLog("Quick Add", newCase.id, `雲端新增紀錄：${supplierName}`);
-            renderDashboard(); renderList(); closeManualPasteModal();
-            e.target.reset(); 
-            showToast(`✅ Case ${newCase.id} 建檔成功！`);
-        }
-
-        function openEditModal(id) {
-            if(!isAdmin) { alert("⚠️ 訪客模式無法編輯案件！"); return; }
-            const c = cases.find(x => x.id === id);
-            if(!c) return;
-            document.getElementById('edit-id').value = c.id;
-            document.getElementById('edit-supplier').value = c.supplierName;
-            document.getElementById('edit-bu').value = c.bu;
-            document.getElementById('edit-action').value = c.action || 'New';
-            document.getElementById('edit-type').value = c.vendorType;
-            document.getElementById('edit-date').value = c.applyDate;
-            document.getElementById('edit-status').value = c.status;
-            document.getElementById('edit-completed-date').value = (c.completedDate === 'N/A' || !c.completedDate) ? '' : c.completedDate;
-            document.getElementById('modal-edit').classList.remove('hidden');
-        }
-
-        function closeEditModal() { document.getElementById('modal-edit').classList.add('hidden'); }
-
-        async function handleEditSubmit(e) {
-            e.preventDefault();
-            if(!isAdmin) return;
-            const id = document.getElementById('edit-id').value;
-            const c = cases.find(x => x.id === id);
-            if(!c) return;
-
-            c.supplierName = document.getElementById('edit-supplier').value;
-            c.bu = document.getElementById('edit-bu').value;
-            c.action = document.getElementById('edit-action').value;
-            c.vendorType = document.getElementById('edit-type').value;
-            c.applyDate = document.getElementById('edit-date').value;
-            c.status = document.getElementById('edit-status').value;
-            c.completedDate = document.getElementById('edit-completed-date').value || "N/A";
-
-            await saveCloudData(cases);
-            addSystemLog("Edit Case", id, `更新案件資訊`);
-            renderDashboard(); renderList(); closeEditModal();
-            showToast(`✅ 案件更新成功！`);
-        }
-
-        function exportDataBackup() {
-            if(!isAdmin) return;
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ cases, systemLogs }, null, 2));
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `CEVA_Cloud_Backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(dlAnchor);
-            dlAnchor.click();
-            dlAnchor.remove();
-        }
-
-        function triggerImport() { if(!isAdmin) return; document.getElementById('file-import-input').click(); }
-
-        async function importDataBackup(event) {
-            if(!isAdmin) return;
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    let incomingCases = Array.isArray(imported) ? imported : (imported.cases || []);
-                    if (incomingCases.length > 0) {
-                        await saveCloudData(incomingCases);
-                        renderDashboard(); renderList();
-                        showToast("✅ 資料還原成功！");
-                    }
-                } catch (err) { alert("格式有誤！"); }
-            };
-            reader.readAsText(file);
-        }
-
         function switchTab(tab) {
-            if (!isAdmin && (tab === 'create' || tab === 'logs')) {
-                alert("⚠️ 此分頁需要管理者權限才能檢視！");
-                return;
-            }
-
+            if (!isAdmin && (tab === 'create' || tab === 'logs')) { alert("⚠️ 此分頁需要管理者權限才能檢視！"); return; }
             ['dash', 'create', 'list', 'logs'].forEach(t => {
                 const panel = document.getElementById('panel-' + t);
                 const btn = document.getElementById('btn-tab-' + t);
                 if(panel) panel.classList.add('hidden');
                 if(btn) btn.classList.remove('active');
             });
-            const targetPanel = document.getElementById('panel-' + tab);
-            const targetBtn = document.getElementById('btn-tab-' + tab);
-            if(targetPanel) targetPanel.classList.remove('hidden');
-            if(targetBtn) targetBtn.classList.add('active');
-
+            document.getElementById('panel-' + tab).classList.remove('hidden');
+            document.getElementById('btn-tab-' + tab).classList.add('active');
             if (tab === 'dash') renderDashboard();
             if (tab === 'list') renderList();
             if (tab === 'logs') renderLogs();
@@ -954,7 +751,6 @@
             if (!dStr) return { text: "0 天", days: 0, isNA: false };
             let isStopped = (status === 'Done' || status === 'Reject');
             if (isStopped && completedDate === 'N/A') return { text: "N/A", days: -1, isNA: true };
-
             let start = new Date(dStr.substring(0,10));
             let end = (isStopped && completedDate) ? new Date(completedDate.substring(0,10)) : new Date();
             const diffMs = Math.max(0, end - start);
@@ -969,6 +765,18 @@
             const supplierName = document.getElementById('inp-supplier').value;
             const action = document.getElementById('inp-action').value;
             const selectedDate = document.getElementById('inp-date').value;
+            const fileInput = document.getElementById('inp-file');
+
+            let fileUrl = "";
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const filePath = `attachments/${Date.now()}_${file.name}`;
+                const { error } = await supabaseClient.storage.from('vendor-attachments').upload(filePath, file);
+                if (!error) {
+                    const { data: pubData } = supabaseClient.storage.from('vendor-attachments').getPublicUrl(filePath);
+                    fileUrl = pubData.publicUrl;
+                }
+            }
 
             const newCase = {
                 id: "CEVA-" + selectedDate.substring(0,7).replace('-','') + "-" + String(cases.length+1).padStart(3,'0'),
@@ -977,6 +785,7 @@
                 applyDate: selectedDate,
                 completedDate: null,
                 requesterEmail: document.getElementById('inp-cc').value,
+                attachmentUrl: fileUrl,
                 status: "Waiting Internal Approval", 
                 currentStep: 0,
                 steps: getMatrix(bu).map(m => ({ ...m, approved: false, time: "N/A" }))
@@ -985,7 +794,7 @@
             cases.unshift(newCase);
             await saveCloudData(cases);
             activeCaseId = newCase.id;
-            addSystemLog("Create Case", newCase.id, `建檔：${supplierName} (${bu})`);
+            addSystemLog("Create Case", newCase.id, `建檔：${supplierName} (${bu}) ${fileUrl ? '[含附件]' : ''}`);
 
             directTriggerOutlook();
             document.getElementById('form-create-vendor').reset();
@@ -994,6 +803,55 @@
             document.getElementById('matrix-preview').innerText = "請先選擇 BU...";
             switchTab('list');
             showToast(`✅ Case ${newCase.id} 建立成功！`);
+        }
+
+        // 📈 渲染儀表板與營運效率/瓶頸分析
+        function renderDashboardAnalytics() {
+            const doneCases = cases.filter(c => c.status === 'Done' && c.completedDate && c.completedDate !== 'N/A');
+            let totalDays = 0;
+            doneCases.forEach(c => {
+                const info = calcAge(c.applyDate, c.completedDate, c.status);
+                if (info.days >= 0) totalDays += info.days;
+            });
+            const avgDays = doneCases.length > 0 ? (totalDays / doneCases.length).toFixed(1) : 0;
+            document.getElementById('stat-avg-lead-time').innerText = `${avgDays} 天`;
+
+            const waitingCases = cases.filter(c => c.status === 'Waiting Internal Approval');
+            let maxAge = 0;
+            waitingCases.forEach(c => {
+                const info = calcAge(c.applyDate, null, c.status);
+                if (info.days > maxAge) maxAge = info.days;
+            });
+            document.getElementById('stat-max-age').innerText = `${maxAge} 天`;
+
+            // 統計各部門卡住數量
+            const roleCounts = { "OMC": 0, "Compliance": 0, "Local Finance": 0, "Product Head": 0, "VMD": 0 };
+            waitingCases.forEach(c => {
+                const currStep = c.steps[c.currentStep];
+                if (currStep) {
+                    let rName = currStep.role;
+                    if (rName.includes("Product Head")) rName = "Product Head";
+                    if (roleCounts[rName] !== undefined) roleCounts[rName]++;
+                }
+            });
+
+            const totalWaiting = waitingCases.length || 1;
+            let bottleneckHtml = '';
+            for (let [role, count] of Object.entries(roleCounts)) {
+                const pct = Math.round((count / totalWaiting) * 100);
+                bottleneckHtml += `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span><strong>${role}</strong> 審核中案件</span>
+                            <span style="color: #64748b; font-weight: bold;">${count} 件 (${pct}%)</span>
+                        </div>
+                        <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: #003366; width: ${pct}%; height: 100%; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('bottleneck-container').innerHTML = bottleneckHtml;
         }
 
         function sortDashTable(key) {
@@ -1040,6 +898,8 @@
             document.getElementById('cnt-done').innerText = countPool.filter(c => c.status === 'Done').length;
             document.getElementById('cnt-reject').innerText = countPool.filter(c => c.status === 'Reject').length;
             document.getElementById('cnt-hold').innerText = countPool.filter(c => c.status === 'Hold').length;
+
+            renderDashboardAnalytics();
 
             if (filteredTable.length === 0) {
                 document.getElementById('dash-tbody').innerHTML = `<tr><td colspan="7" class="empty-state"><div class="empty-state-icon">🗂️</div><div class="empty-state-title">無相符的案件資料</div></td></tr>`;
@@ -1109,12 +969,10 @@
 
             document.getElementById('list-tbody').innerHTML = filteredList.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
-                
                 let actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>`;
                 if (isAdmin) {
                     actionButtons = `
                         <button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視 / 簽核</button>
-                        <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${c.id}')">編輯</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="delCase('${c.id}')">刪除</button>
                     `;
                 }
@@ -1134,7 +992,7 @@
 
         async function delCase(id) {
             if(!isAdmin) return;
-            if(confirm(`⚠️ 確定要從雲端刪除案件 ${id} 嗎？`)) {
+            if(confirm(`⚠️ 確定要從雲端刪除案件 ${id} 及其關聯附件嗎？`)) {
                 await removeCloudCase(id);
                 addSystemLog("Delete Case", id, `刪除案件。`);
                 renderDashboard(); renderList();
@@ -1154,6 +1012,15 @@
             document.getElementById('mail-to-text').innerText = curr.role === 'VMD' ? curr.name : `${curr.name} (${curr.email})`;
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
             
+            const attachWrap = document.getElementById('det-attachment-wrap');
+            const attachLink = document.getElementById('det-attachment-link');
+            if (c.attachmentUrl) {
+                attachLink.href = c.attachmentUrl;
+                attachWrap.classList.remove('hidden');
+            } else {
+                attachWrap.classList.add('hidden');
+            }
+
             const mailBox = document.getElementById('mail-section-box');
             const adminButtons = document.getElementById('admin-action-buttons');
             
@@ -1168,7 +1035,7 @@
 
             document.getElementById('det-timeline').innerHTML = c.steps.map((s, idx) => {
                 let dotClass = "timeline-dot" + (s.approved ? " approved" : (idx === c.currentStep && c.status === "Waiting Internal Approval" ? " active-breathing" : ""));
-                const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled title="訪客模式無法簽核"`;
+                const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled`;
 
                 return `
                     <div class="timeline-item">
@@ -1243,18 +1110,15 @@
             if(!isAdmin) return;
             const c = cases.find(x => x.id === activeCaseId);
             const curr = c.steps[c.currentStep] || c.steps[c.steps.length - 1];
-            const mailtoUrl = `mailto:${encodeURIComponent(curr.email)}?cc=${encodeURIComponent(getFullCCList(c.requesterEmail))}&subject=${encodeURIComponent(`【Seek Approval】Vendor - ${c.supplierName}`)}&body=${encodeURIComponent("Please approve.")}`;
+            const bodyText = `Please approve.\n\n相關附件下載：${c.attachmentUrl || '無'}`;
+            const mailtoUrl = `mailto:${encodeURIComponent(curr.email)}?cc=${encodeURIComponent(getFullCCList(c.requesterEmail))}&subject=${encodeURIComponent(`【Seek Approval】Vendor - ${c.supplierName}`)}&body=${encodeURIComponent(bodyText)}`;
             
-            const a = document.createElement('a');
-            a.href = mailtoUrl;
-            a.click();
-            a.remove();
+            const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
         }
 
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
-
             const filteredSteps = c.steps.filter(s => s.role !== 'VMD');
 
             let printArea = document.getElementById('pdf-print-area');
