@@ -96,7 +96,7 @@
 
         @media print {
             body > * { display: none !important; }
-            #pdf-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+            #pdf-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; color: black; }
         }
     </style>
 
@@ -475,12 +475,12 @@
         </div>
     </div>
 
+    <!-- 用於列印 PDF 的專用容器 -->
     <div id="pdf-print-area" class="hidden"></div>
 
     <script>
-        // 🌟 設定您的管理者密碼 (可自行修改)
         const ADMIN_PASSWORD = "ceva888"; 
-        let isAdmin = false; // 預設為訪客模式
+        let isAdmin = false;
 
         const SUPABASE_URL = "https://vwuctilkidzpkrtkkrmb.supabase.co";
         const SUPABASE_KEY = "sb_publishable_dECiL9hVTrJacMm1Hdfd8w_-5rx8_pk";
@@ -558,7 +558,7 @@
             document.getElementById('inp-date').valueAsDate = new Date();
             await loadCloudData();
             loadStoredLogs();
-            updateUIPermissions(); // 套用訪客權限
+            updateUIPermissions();
             renderDashboard();
             renderList();
             renderLogs();
@@ -571,7 +571,6 @@
             setTimeout(() => toast.classList.add('hidden'), 2500);
         }
 
-        // 🔐 登入控制函數
         function openLoginModal() {
             document.getElementById('inp-admin-pwd').value = '';
             document.getElementById('modal-login').classList.remove('hidden');
@@ -603,7 +602,6 @@
             }
         }
 
-        // 🌟 權限切換 UI 更新
         function updateUIPermissions() {
             const adminElements = document.querySelectorAll('.admin-only');
             const headerActions = document.getElementById('header-actions-area');
@@ -844,7 +842,6 @@
         }
 
         function switchTab(tab) {
-            // 訪客如果嘗試切換到隱藏分頁則攔截
             if (!isAdmin && (tab === 'create' || tab === 'logs')) {
                 alert("⚠️ 此分頁需要管理者權限才能檢視！");
                 return;
@@ -982,7 +979,6 @@
             const buFilter = document.getElementById('list-filter-bu').value;
             const thAction = document.getElementById('th-action-col');
 
-            // 訪客模式隱藏操作欄位標題
             if (thAction) thAction.style.display = isAdmin ? '' : 'none';
 
             const filteredList = cases.filter(c => {
@@ -1000,7 +996,6 @@
             document.getElementById('list-tbody').innerHTML = filteredList.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 
-                // 🌟 訪客模式僅顯示「檢視」按鈕，隱藏編輯與刪除；管理者顯示完整按鈕
                 let actionButtons = `
                     <button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>
                 `;
@@ -1047,7 +1042,6 @@
             document.getElementById('mail-to-text').innerText = curr.role === 'VMD' ? curr.name : `${curr.name} (${curr.email})`;
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
             
-            // 🌟 訪客模式下隱藏信件觸發按鈕與簽核審核按鈕，僅供檢視
             const mailBox = document.getElementById('mail-section-box');
             const adminButtons = document.getElementById('admin-action-buttons');
             
@@ -1056,14 +1050,12 @@
                 if(adminButtons) adminButtons.style.display = 'flex';
                 document.getElementById('btn-approve-action').disabled = !c.steps.every(s => s.approved);
             } else {
-                if(mailBox) mailBox.style.display = 'none'; // 訪客隱藏發信介面
-                if(adminButtons) adminButtons.style.display = 'none'; // 訪客隱藏 Approve/Reject/Hold
+                if(mailBox) mailBox.style.display = 'none';
+                if(adminButtons) adminButtons.style.display = 'none';
             }
 
             document.getElementById('det-timeline').innerHTML = c.steps.map((s, idx) => {
                 let dotClass = "timeline-dot" + (s.approved ? " approved" : (idx === c.currentStep && c.status === "Waiting Internal Approval" ? " active-breathing" : ""));
-                
-                // 訪客模式下 checkbox 設為 disabled，不能勾選
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled title="訪客模式無法簽核"`;
 
                 return `
@@ -1147,7 +1139,65 @@
             a.remove();
         }
 
-        function exportPDF() { window.print(); }
+        // 🌟 修復後的 PDF 匯出功能（自動排除 VMD 並支援列印）
+        function exportPDF() {
+            const c = cases.find(x => x.id === activeCaseId);
+            if (!c) {
+                alert("請先開啟要匯出的案件詳細資料！");
+                return;
+            }
+
+            // 過濾掉 VMD 關卡
+            const filteredSteps = c.steps.filter(s => s.role !== 'VMD');
+
+            let printArea = document.getElementById('pdf-print-area');
+            printArea.innerHTML = `
+                <div style="font-family: Calibri, sans-serif; padding: 20px; color: #334155;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="color: #003366; margin: 0;">CEVA Logistics (Taiwan)</h2>
+                            <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Vendor Approval Summary Report</p>
+                        </div>
+                        <div style="text-align: right; font-size: 12px; color: #64748b;">
+                            <div>列印日期：${new Date().toISOString().slice(0,10)}</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #1e293b; margin-bottom: 8px;">${c.supplierName} (${c.id})</h3>
+                    <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">
+                        <strong>BU:</strong> ${c.bu} &nbsp;|&nbsp; 
+                        <strong>Action:</strong> ${c.action} &nbsp;|&nbsp; 
+                        <strong>Type:</strong> ${c.vendorType} &nbsp;|&nbsp; 
+                        <strong>申請日期:</strong> ${c.applyDate} &nbsp;|&nbsp;
+                        <strong>狀態:</strong> ${c.status}
+                    </p>
+
+                    <h4 style="font-size: 14px; color: #003366; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; margin-bottom: 12px;">內部簽核進度（已排除 VMD）</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                                <th style="padding: 8px; text-align: left;">關卡角色</th>
+                                <th style="padding: 8px; text-align: left;">審核人</th>
+                                <th style="padding: 8px; text-align: center;">簽核狀態</th>
+                                <th style="padding: 8px; text-align: right;">完成日期</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredSteps.map((s, idx) => `
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 8px;">Step ${idx+1}: ${s.role}</td>
+                                    <td style="padding: 8px;">${s.name}</td>
+                                    <td style="padding: 8px; text-align: center;">${s.approved ? '<span style="color: #10b981; font-weight: bold;">✔ Approved</span>' : '<span style="color: #f59e0b;">Waiting</span>'}</td>
+                                    <td style="padding: 8px; text-align: right; font-family: monospace;">${s.time || 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            window.print();
+        }
     </script>
 </body>
 </html>
