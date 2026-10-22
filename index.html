@@ -87,7 +87,7 @@
         .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; border: 1px solid #e2e8f0; }
         .hidden { display: none !important; }
         
-        /* 💡 流程圖與精緻高雅的呼吸燈動畫 (1.6秒循環 - 所有人皆可享受) */
+        /* 💡 流程圖與精緻高雅的呼吸燈動畫 (1.6秒循環) + 恢復俐落連接箭頭 */
         .unified-flow-wrapper { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
         
         .pipeline-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
@@ -108,9 +108,9 @@
         }
 
         .flow-bridge-connector { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; margin: 4px 0; }
-        .flow-bridge-line { width: 2px; height: 20px; background: #cbd5e1; }
-        .flow-bridge-arrow { font-size: 14px; color: #64748b; font-weight: bold; line-height: 1; margin: -2px 0; }
-        .flow-bridge-badge { background: #003366; color: white; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 12px; letter-spacing: 0.5px; border: 1px solid #002244; white-space: nowrap; margin-top: 4px; }
+        .flow-bridge-line { width: 2px; height: 18px; background: #94a3b8; }
+        .flow-bridge-arrow { font-size: 14px; color: #003366; font-weight: bold; line-height: 1; margin: -3px 0; text-shadow: 0 1px 2px rgba(0,51,102,0.2); }
+        .flow-bridge-badge { background: #003366; color: white; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 12px; letter-spacing: 0.5px; border: 1px solid #002244; white-space: nowrap; margin-top: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         .vmd-pipeline-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 4px; }
         .vmd-flow-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 8px; text-align: center; position: relative; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
@@ -248,7 +248,7 @@
             <div id="dash-pagination-container"></div>
         </div>
 
-        <!-- Create Case Panel (欄位名稱已依要求更新) -->
+        <!-- Create Case Panel (Non-Trade 已正確修正為大寫 T) -->
         <div id="panel-create" class="panel hidden">
             <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">新建 / 修改供應商申請</h2>
             <form id="form-create-vendor" onsubmit="handleCreate(event)">
@@ -278,7 +278,7 @@
                         <label><strong>Vendor Type <span style="color:red;">*</span></strong></label>
                         <select id="inp-type" required>
                             <option value="Trade">Trade</option>
-                            <option value="Non-trade">Non-trade</option>
+                            <option value="Non-Trade">Non-Trade</option>
                         </select>
                     </div>
                     <div>
@@ -464,21 +464,22 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <!-- 🔄 具備完美呼吸燈動畫的流程圖 (訪客與管理者皆可享受) -->
+            <!-- 🔄 具備動態呼吸燈與精緻連接箭頭的流程圖 (Proper Case 標題格式) -->
             <div class="unified-flow-wrapper">
                 <div>
-                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. 內部跨部門審核流程：</h4>
+                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. Internal Cross-Department Approval Flow :</h4>
                     <div class="pipeline-container" id="det-pipeline"></div>
                 </div>
 
+                <!-- 🔗 恢復俐落帶有陰影與標籤的向下箭頭 -->
                 <div class="flow-bridge-connector">
                     <div class="flow-bridge-line"></div>
                     <div class="flow-bridge-arrow">▼</div>
-                    <div class="flow-bridge-badge">內部審核通過 ➔ 進入 VMD 執行管道</div>
+                    <div class="flow-bridge-badge">Internal Approval Passed ➔ Enter VMD Pipeline</div>
                 </div>
 
                 <div>
-                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 6px; font-weight: bold; text-transform: uppercase;">2. VMD 執行流程 (4 階段聯動管道)：</h4>
+                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 6px; font-weight: bold; text-transform: uppercase;">2. VMD Execution Pipeline (4-Stage Linked Pipeline) :</h4>
                     <div class="vmd-pipeline-grid" id="vmd-cards-container"></div>
                 </div>
             </div>
@@ -1431,7 +1432,7 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 1. 渲染內部審核動態流程圖 (不論訪客或管理者，皆可完整享受到 1.6 秒循環呼吸燈動態效果)
+            // 1. 渲染內部審核動態流程圖 (具備 1.6秒循環呼吸燈動畫)
             const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
             document.getElementById('det-pipeline').innerHTML = internalSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
@@ -1455,7 +1456,7 @@
                     </div>`;
             }).join('');
 
-            // 2. 渲染 VMD 4 欄精緻卡片
+            // 2. 渲染 VMD 4 欄精緻卡片 (維持 JDE 在最後一步正常順序)
             const vmdSteps = c.steps.filter(s => vmdRoleNames.includes(s.role));
             document.getElementById('vmd-cards-container').innerHTML = vmdSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
