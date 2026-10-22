@@ -129,7 +129,7 @@
             <span class="logo">CEVA</span>
             <div>
                 <div class="title">CEVA Logistics (Taiwan)</div>
-                <div class="subtitle" id="header-subtitle">Vendor Approval & Management Console (訪客檢視模式)</div>
+                <div class="subtitle" id="header-subtitle">Vendor Approval & Management Console (訪客申請模式)</div>
             </div>
         </div>
         <div class="header-actions" id="header-actions-area">
@@ -140,7 +140,7 @@
     <div class="container">
         <div class="tabs">
             <button class="tab-btn active" id="btn-tab-dash" onclick="switchTab('dash')">📊 儀表板與營運分析</button>
-            <button class="tab-btn admin-only hidden" id="btn-tab-create" onclick="switchTab('create')">➕ 新建申請</button>
+            <button class="tab-btn" id="btn-tab-create" onclick="switchTab('create')">➕ 新建申請</button>
             <button class="tab-btn" id="btn-tab-list" onclick="switchTab('list')">📋 案件追蹤清單</button>
             <button class="tab-btn admin-only hidden" id="btn-tab-logs" onclick="switchTab('logs')">📜 系統日誌</button>
         </div>
@@ -197,7 +197,7 @@
                         <th onclick="sortDashTable('bu')">BU / Action / Type ↕</th>
                         <th onclick="sortDashTable('applyDate')">申請日期 ↕</th>
                         <th onclick="sortDashTable('status')">Status ↕</th>
-                        <th>當前關卡 / 審核人</th>
+                        <th>準備審核的單位 (Approval Matrix)</th>
                         <th onclick="sortDashTable('age')">SLA Age ↕</th>
                     </tr>
                 </thead>
@@ -208,7 +208,7 @@
             <div id="dash-pagination-container"></div>
         </div>
 
-        <!-- Create Case Panel -->
+        <!-- Create Case Panel (開放給訪客使用) -->
         <div id="panel-create" class="panel hidden">
             <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">【申請】新建/修改供應商</h2>
             <form id="form-create-vendor" onsubmit="handleCreate(event)">
@@ -247,12 +247,12 @@
                     </div>
                     <div style="grid-column: span 2;">
                         <label><strong>申請人 Email <span style="color:red;">*</span></strong></label>
-                        <input type="email" id="inp-cc" required value="Nicolas.Wang@cevalogistics.com">
+                        <input type="email" id="inp-cc" required placeholder="請輸入您的 Email (例如: Name@cevalogistics.com)">
                     </div>
                 </div>
 
                 <div style="background: #f8fafc; padding: 16px; margin-top: 20px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                    <strong style="color: #003366; font-size: 13px;">審核矩陣部門順序預覽 (包含 VMD):</strong>
+                    <strong style="color: #003366; font-size: 13px;">審核矩陣準備審查單位列表:</strong>
                     <div id="matrix-preview" style="margin-top: 8px; font-size: 13px; color: #475569; font-family: monospace;">請先選擇 BU...</div>
                 </div>
 
@@ -381,79 +381,19 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div id="modal-edit" class="modal-overlay hidden">
-        <div class="modal">
-            <h3 style="color: #003366; margin-bottom: 16px;">✏️ 編輯供應商案件</h3>
-            <form id="form-edit-vendor" onsubmit="handleEditSubmit(event)">
-                <input type="hidden" id="edit-id">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div style="grid-column: span 2;">
-                        <label><strong>Supplier Name</strong></label>
-                        <input type="text" id="edit-supplier" required>
-                    </div>
-                    <div>
-                        <label><strong>BU</strong></label>
-                        <select id="edit-bu" required>
-                            <option value="AE">AE</option><option value="AI">AI</option>
-                            <option value="OE">OE</option><option value="OI">OI</option>
-                            <option value="CL">CL</option><option value="PL">PL</option>
-                            <option value="HR">HR</option><option value="QHSE">QHSE</option><option value="ADM">ADM</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>Action</strong></label>
-                        <select id="edit-action" required>
-                            <option value="New">New</option>
-                            <option value="Change">Change</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>Vendor Type</strong></label>
-                        <select id="edit-type" required>
-                            <option value="Trade">Trade</option>
-                            <option value="Non-trade">Non-trade</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>申請日期</strong></label>
-                        <input type="date" id="edit-date" required>
-                    </div>
-                    <div>
-                        <label><strong>Status</strong></label>
-                        <select id="edit-status" required>
-                            <option value="Waiting Internal Approval">Waiting Internal Approval</option>
-                            <option value="Done">Done</option>
-                            <option value="Reject">Reject</option>
-                            <option value="Hold">Hold</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>完成日期 <span style="color:#64748b; font-weight:normal; font-size:12px;">(留白即為 N/A)</span></strong></label>
-                        <input type="date" id="edit-completed-date">
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">取消</button>
-                    <button type="submit" class="btn btn-primary">儲存變更</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Detail Modal -->
     <div id="modal-detail" class="modal-overlay hidden">
         <div class="modal">
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部部門簽核進度：</h4>
+            <h4 style="font-size: 14px; color: #334155; margin-bottom: 12px; font-weight: bold;">內部部門簽核進度 (僅限管理者 Nicolas 勾選核准)：</h4>
             <div class="timeline" id="det-timeline"></div>
 
             <div style="margin-top: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;" id="mail-section-box">
                 <div style="font-size: 13px; color: #475569; line-height: 1.6;">
-                    <div><strong>Mail To (所有審核主管):</strong> <span id="mail-to-text" style="color: #003366; font-weight: bold;"></span></div>
-                    <div><strong>Mail CC (申請人 + tpe.omc):</strong> <span id="mail-cc-text" style="font-size:12px; color:#64748b;"></span></div>
+                    <div><strong>Mail To:</strong> <span id="mail-to-text" style="color: #003366; font-weight: bold;"></span></div>
+                    <div><strong>Mail CC:</strong> <span id="mail-cc-text" style="font-size:12px; color:#64748b;"></span></div>
                 </div>
 
                 <div style="display: flex; gap: 8px; margin-top: 12px;" id="mail-trigger-btn-wrap">
@@ -507,7 +447,7 @@
         const defaultCases = [
             {
                 id: "CEVA-202606-001", supplierName: "佰進國際物流", bu: "AE", action: "Change", vendorType: "Trade",
-                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", status: "Done", currentStep: 5,
+                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", status: "Done",
                 steps: [
                     { role: "OMC", name: "Tristan YANG", title: "Operation Management Control Supervisor", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "2026-06-23" },
                     { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "2026-06-24" },
@@ -636,7 +576,7 @@
                 `;
             } else {
                 adminElements.forEach(el => el.classList.add('hidden'));
-                subtitle.innerText = "Vendor Approval & Management Console (訪客檢視模式)";
+                subtitle.innerText = "Vendor Approval & Management Console (訪客申請模式)";
                 headerActions.innerHTML = `<button class="btn btn-sm btn-outline-white" onclick="openLoginModal()">🔐 管理者登入</button>`;
             }
             renderList();
@@ -742,7 +682,7 @@
         }
 
         function switchTab(tab) {
-            if (!isAdmin && (tab === 'create' || tab === 'logs')) { alert("⚠️ 此分頁需要管理者權限才能檢視！"); return; }
+            if (!isAdmin && tab === 'logs') { alert("⚠️ 此分頁需要管理者權限才能檢視！"); return; }
             ['dash', 'create', 'list', 'logs'].forEach(t => {
                 const panel = document.getElementById('panel-' + t);
                 const btn = document.getElementById('btn-tab-' + t);
@@ -759,18 +699,20 @@
         function getMatrix(bu) {
             const isCL = (bu === 'CL');
             return [
-                { role: "OMC", name: "Tristan YANG", title: "Operation Management Control Supervisor", email: "Tristan.Yang@cevalogistics.com" },
-                { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com" },
-                { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com" },
-                { role: isCL ? "CL Product Head" : "A&O Product Head", name: isCL ? "Barry CHAN" : "Warren WANG", title: isCL ? "Contract Logistics Product Head" : "Air & Ocean Director", email: isCL ? "Barry.Chan@cevalogistics.com" : "Warren.Wang@cevalogistics.com" },
-                { role: "VMD", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com" }
+                { role: "OMC", name: "Tristan YANG", title: "Operation Management Control Supervisor", email: "Tristan.Yang@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: false, time: "N/A" },
+                { role: isCL ? "CL Product Head" : "A&O Product Head", name: isCL ? "Barry CHAN" : "Warren WANG", title: isCL ? "Contract Logistics Product Head" : "Air & Ocean Director", email: isCL ? "Barry.Chan@cevalogistics.com" : "Warren.Wang@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "VMD", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
             ];
         }
 
+        // 💡 預覽改為條列清單，移除箭頭符號
         function updateMatrixPreview() {
             const bu = document.getElementById('inp-bu').value;
             if(!bu) return;
-            document.getElementById('matrix-preview').innerHTML = getMatrix(bu).map(m => m.role).join(' ➔ ');
+            const roles = getMatrix(bu).map(m => m.role);
+            document.getElementById('matrix-preview').innerHTML = roles.join(' / ');
         }
 
         function calcAge(dStr, completedDate, status) {
@@ -786,33 +728,32 @@
 
         async function handleCreate(e) {
             e.preventDefault();
-            if(!isAdmin) return;
             const bu = document.getElementById('inp-bu').value;
             const supplierName = document.getElementById('inp-supplier').value;
             const action = document.getElementById('inp-action').value;
             const selectedDate = document.getElementById('inp-date').value;
+            const requesterEmail = document.getElementById('inp-cc').value;
+            const vendorType = document.getElementById('inp-type').value;
 
             const newCase = {
                 id: "CEVA-" + selectedDate.substring(0,7).replace('-','') + "-" + String(cases.length+1).padStart(3,'0'),
                 supplierName, bu, action,
-                vendorType: document.getElementById('inp-type').value,
+                vendorType: vendorType,
                 applyDate: selectedDate,
                 completedDate: null,
-                requesterEmail: document.getElementById('inp-cc').value,
-                status: "Waiting Internal Approval", 
-                currentStep: 0,
+                requesterEmail: requesterEmail,
+                status: "Waiting Internal Approval",
                 steps: getMatrix(bu)
             };
 
             cases.unshift(newCase);
             await saveCloudData(cases);
             activeCaseId = newCase.id;
-            addSystemLog("Create Case", newCase.id, `建檔：${supplierName} (${bu})`);
+            addSystemLog("Create Case", newCase.id, `訪客新建案件：${supplierName} (${bu} - ${vendorType})`);
 
             directTriggerOutlook();
             document.getElementById('form-create-vendor').reset();
             document.getElementById('inp-date').valueAsDate = new Date();
-            document.getElementById('inp-cc').value = "Nicolas.Wang@cevalogistics.com";
             document.getElementById('matrix-preview').innerText = "請先選擇 BU...";
             switchTab('list');
             showToast(`✅ Case ${newCase.id} 建立成功！`);
@@ -901,6 +842,7 @@
             document.getElementById('dash-tbody').innerHTML = paginatedItems.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
                 let ageClass = ageInfo.isNA ? "age-na" : "age-normal";
+                const matrixStr = c.steps.map(s => s.role).join(' / ');
 
                 return `
                     <tr>
@@ -909,7 +851,7 @@
                         <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
                         <td style="font-size:12px; color:#475569;">${c.applyDate}</td>
                         <td>${getStatusBadge(c.status)}</td>
-                        <td>${c.status === 'Done' ? '<span style="color:#10b981; font-weight:bold;">全數通過</span>' : '待各部門回覆'}</td>
+                        <td style="font-size:12px; color:#003366; font-weight:600;">${matrixStr}</td>
                         <td><span class="${ageClass}">${ageInfo.text}</span></td>
                     </tr>
                 `;
@@ -1032,12 +974,13 @@
             }
         }
 
-        // 💡 取得除了 VMD 之外的所有審核主管 Email 清單 (用分號串接放在 TO)
-        function getApproversToEmails(steps) {
+        function getApproversToEmails(steps, vendorType) {
+            if (vendorType === 'Non-trade') {
+                return "SH-AP-VMD-GBSC@Cevalogistics.com";
+            }
             return steps.filter(s => s.role !== 'VMD').map(s => s.email).join("; ");
         }
 
-        // 💡 CC 包含申請人以及固定清單
         function getFullCCList(req) { return [...new Set([req, ...FIXED_CC_LIST])].join("; "); }
 
         function openDetail(id) {
@@ -1045,10 +988,9 @@
             const c = cases.find(x => x.id === id);
 
             document.getElementById('det-title').innerText = `${c.supplierName} (${c.id})`;
-            document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | 申請日期: ${c.applyDate}`;
+            document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | Vendor Type: ${c.vendorType} | 申請日期: ${c.applyDate}`;
             
-            // 顯示所有審核主管信箱
-            document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps);
+            document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps, c.vendorType);
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
             
             const mailBox = document.getElementById('mail-section-box');
@@ -1059,13 +1001,13 @@
                 if(adminButtons) adminButtons.style.display = 'flex';
                 document.getElementById('btn-approve-action').disabled = !c.steps.every(s => s.approved);
             } else {
-                if(mailBox) mailBox.style.display = 'none';
+                if(mailBox) mailBox.style.display = 'block';
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
             document.getElementById('det-timeline').innerHTML = c.steps.map((s, idx) => {
                 let dotClass = "timeline-dot" + (s.approved ? " approved" : " active-breathing");
-                const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled`;
+                const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${idx}, this.checked)"` : `disabled title="僅限管理者 Nicolas 可執行簽核勾選"`;
 
                 return `
                     <div class="timeline-item">
@@ -1088,7 +1030,7 @@
         function closeDetailModal() { document.getElementById('modal-detail').classList.add('hidden'); }
 
         async function toggleStepApproval(stepIndex, isChecked) {
-            if(!isAdmin) return;
+            if(!isAdmin) { alert("⚠️ 權限不足：只有管理者 Nicolas 可以執行簽核勾選！"); return; }
             const c = cases.find(x => x.id === activeCaseId);
             const nowStr = new Date().toISOString().substring(0,10);
             const stepName = c.steps[stepIndex].role;
@@ -1133,29 +1075,48 @@
             showToast(`✅ 狀態已更新為 ${c.status}`);
         }
 
-        // 💡 參考截圖 2 的精準郵件格式與內容
+        // 💡 根據 Trade / Non-trade 提供專業潤飾的提示與信件內容
         function directTriggerOutlook() {
-            if(!isAdmin) return;
             const c = cases.find(x => x.id === activeCaseId);
-            
-            const toEmails = getApproversToEmails(c.steps);
+            if (!c) return;
+
+            if (c.vendorType === 'Trade') {
+                alert("⚠️ 【Trade 類別提醒】\n請申請人務必自行至 Bizagi 平台提交申請（此流程由申請人自行處理，無需透過 OMC Team 代為問詢）。");
+            } else {
+                alert("⚠️ 【Non-trade 提醒】\n請務必在 Outlook 信件中夾帶 **VMD Request Form** 與 **Supporting** 相關附件！");
+            }
+
+            const toEmails = getApproversToEmails(c.steps, c.vendorType);
             const ccEmails = getFullCCList(c.requesterEmail);
             const subject = `【Seek Approval】Vendor Creation/Amendment - ${c.supplierName}`;
             
-            const body = 
-                `Dear Approver,\r\n\r\n` +
-                `We are seeking your approval to proceed with the vendor onboarding/amendment for the following supplier in our system:\r\n\r\n` +
-                `Supplier Name: ${c.supplierName}\r\n\r\n` +
-                `Please review the attached details and reply to this email with either “Approved” or “Not approved”.\r\n\r\n` +
-                `If you have any questions or require additional information, please feel free to reach out to the requester (cc'd in this email).\r\n\r\n` +
-                `Your confirmation within 3 business days would be greatly appreciated to facilitate a timely setup.`;
+            let body = "";
+            if (c.vendorType === 'Non-trade') {
+                body = 
+                    `Dear VMD Team,\r\n\r\n` +
+                    `We are submitting a Non-trade vendor onboarding/amendment request for your review and system setup:\r\n\r\n` +
+                    `Supplier Name: ${c.supplierName}\r\n` +
+                    `Business Unit: ${c.bu}\r\n` +
+                    `Action Type: ${c.action}\r\n\r\n` +
+                    `Please find attached the required VMD Request Form and Supporting documents for your processing.\r\n\r\n` +
+                    `Should you require any further clarification, please feel free to contact the requester (cc'd in this email).\r\n\r\n` +
+                    `Your prompt assistance in this matter would be greatly appreciated.`;
+            } else {
+                body = 
+                    `Dear Approvers,\r\n\r\n` +
+                    `We are seeking your formal approval to proceed with the vendor onboarding/amendment for the following supplier:\r\n\r\n` +
+                    `Supplier Name: ${c.supplierName}\r\n\r\n` +
+                    `Please review the attached details (VMD Request Form & Supporting documents) and reply to this email with either “Approved” or “Not approved”.\r\n\r\n` +
+                    `If you have any questions or require additional information, please feel free to reach out to the requester (cc'd in this email).\r\n\r\n` +
+                    `Your confirmation within 3 business days would be greatly appreciated to facilitate a timely setup.`;
+            }
 
             const mailtoUrl = `mailto:${encodeURIComponent(toEmails)}?cc=${encodeURIComponent(ccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             
             const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
         }
 
-        // 📄 強制單頁且具備透明簽名圖檔 (Operation Control Executive - Nicolas Wang) 的 PDF
+        // 📄 具備精準英文草寫 Nicolas WANG 簽名的 PDF
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert("請先開啟要匯出的案件詳細資料！"); return; }
@@ -1240,7 +1201,7 @@
                         </table>
                     </div>
 
-                    <!-- Sign-off / Footer Section with Fixed Clean Signature -->
+                    <!-- Sign-off / Footer Section with Nicolas WANG Cursive Signature -->
                     <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; border-top: 1px solid #cbd5e1; padding-top: 8px;">
                         <div>
                             <div><strong>CEVA Logistics (Taiwan) - OMC Operations Control</strong></div>
@@ -1249,8 +1210,7 @@
                         <div style="text-align: right; width: 220px;">
                             <div style="margin-bottom: 2px;">Authorized Signature:</div>
                             <div style="height: 45px; display: flex; align-items: center; justify-content: flex-end;">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" style="display:none;" />
-                                <span style="font-family: 'Brush Script MT', cursive, sans-serif; font-size: 26px; color: #1e293b; font-weight: bold; font-style: italic; letter-spacing: 1px;">Nicolas</span>
+                                <span style="font-family: 'Brush Script MT', cursive, sans-serif; font-size: 26px; color: #1e293b; font-weight: bold; font-style: italic; letter-spacing: 1px;">Nicolas WANG</span>
                             </div>
                             <div style="border-top: 1px solid #94a3b8; padding-top: 2px; font-weight: bold; color: #0f172a;">Nicolas Wang (Operation Control Executive)</div>
                         </div>
