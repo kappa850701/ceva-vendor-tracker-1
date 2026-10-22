@@ -87,7 +87,7 @@
         .modal { background: white; border-radius: 12px; padding: 28px; width: 100%; max-width: 920px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; border: 1px solid #e2e8f0; }
         .hidden { display: none !important; }
         
-        /* 💡 流程圖與精緻高雅的呼吸燈動畫 (1.6秒循環) */
+        /* 💡 流程圖與精緻高雅的呼吸燈動畫 (1.6秒循環 - 所有人皆可享受) */
         .unified-flow-wrapper { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
         
         .pipeline-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
@@ -237,7 +237,7 @@
                         <th onclick="sortDashTable('id')">Case ID <span class="sort-indicator" id="sort-ind-id">↕</span></th>
                         <th onclick="sortDashTable('supplierName')">Supplier Name <span class="sort-indicator" id="sort-ind-supplierName">↕</span></th>
                         <th onclick="sortDashTable('bu')">BU / Action / Type <span class="sort-indicator" id="sort-ind-bu">↕</span></th>
-                        <th onclick="sortDashTable('applyDate')">申請日期 <span class="sort-indicator" id="sort-ind-applyDate">↕</span></th>
+                        <th onclick="sortDashTable('applyDate')">Apply Date <span class="sort-indicator" id="sort-ind-applyDate">↕</span></th>
                         <th onclick="sortDashTable('status')">Status <span class="sort-indicator" id="sort-ind-status">↕</span></th>
                         <th onclick="sortDashTable('age')">SLA Age <span class="sort-indicator" id="sort-ind-age">↕</span></th>
                     </tr>
@@ -248,7 +248,7 @@
             <div id="dash-pagination-container"></div>
         </div>
 
-        <!-- Create Case Panel (保持您原本乾淨簡潔的表單) -->
+        <!-- Create Case Panel (欄位名稱已依要求更新) -->
         <div id="panel-create" class="panel hidden">
             <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">新建 / 修改供應商申請</h2>
             <form id="form-create-vendor" onsubmit="handleCreate(event)">
@@ -258,7 +258,7 @@
                         <input type="text" id="inp-supplier" required placeholder="例如: 佰進國際物流">
                     </div>
                     <div>
-                        <label><strong>BU / 部門 <span style="color:red;">*</span></strong></label>
+                        <label><strong>BU <span style="color:red;">*</span></strong></label>
                         <select id="inp-bu" required onchange="updateMatrixPreview()">
                             <option value="">請選擇 BU</option>
                             <option value="AE">AE (Air Export)</option><option value="AI">AI (Air Import)</option>
@@ -282,11 +282,11 @@
                         </select>
                     </div>
                     <div>
-                        <label><strong>申請日期 <span style="color:red;">*</span></strong></label>
+                        <label><strong>Apply Date <span style="color:red;">*</span></strong></label>
                         <input type="date" id="inp-date" required>
                     </div>
                     <div style="grid-column: span 2;">
-                        <label><strong>申請人 Email <span style="color:red;">*</span></strong></label>
+                        <label><strong>Requestor Email <span style="color:red;">*</span></strong></label>
                         <input type="email" id="inp-cc" required placeholder="請輸入您的 Email (例如: Name@cevalogistics.com)">
                     </div>
                 </div>
@@ -341,7 +341,7 @@
                         <th onclick="sortListTable('id')">Case ID <span class="sort-indicator" id="sort-list-ind-id">↕</span></th>
                         <th onclick="sortListTable('supplierName')">Supplier Name <span class="sort-indicator" id="sort-list-ind-supplierName">↕</span></th>
                         <th onclick="sortListTable('bu')">BU / Action / Type <span class="sort-indicator" id="sort-list-ind-bu">↕</span></th>
-                        <th onclick="sortListTable('requesterEmail')">申請人 <span class="sort-indicator" id="sort-list-ind-requesterEmail">↕</span></th>
+                        <th onclick="sortListTable('requesterEmail')">Requestor <span class="sort-indicator" id="sort-list-ind-requesterEmail">↕</span></th>
                         <th onclick="sortListTable('status')">Status <span class="sort-indicator" id="sort-list-ind-status">↕</span></th>
                         <th onclick="sortListTable('age')">SLA Age <span class="sort-indicator" id="sort-list-ind-age">↕</span></th>
                         <th style="text-align: right;" id="th-action-col">操作</th>
@@ -393,13 +393,13 @@
     <div id="modal-report-config" class="modal-overlay hidden">
         <div class="modal" style="max-width: 450px;">
             <h3 style="color: #003366; margin-bottom: 12px;">產出專業分析報告</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請選擇申請日期區間（Report Date Range）：</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請選擇 Apply Date 區間（Report Date Range）：</p>
             <div style="margin-bottom: 12px;">
-                <label><strong>起始日期 (Start Date)</strong></label>
+                <label><strong>Start Date</strong></label>
                 <input type="date" id="rep-start-date">
             </div>
             <div style="margin-bottom: 20px;">
-                <label><strong>結束日期 (End Date)</strong></label>
+                <label><strong>End Date</strong></label>
                 <input type="date" id="rep-end-date">
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px;">
@@ -464,7 +464,7 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
-            <!-- 🔄 具備流暢呼吸燈動畫的流程圖 -->
+            <!-- 🔄 具備完美呼吸燈動畫的流程圖 (訪客與管理者皆可享受) -->
             <div class="unified-flow-wrapper">
                 <div>
                     <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. 內部跨部門審核流程：</h4>
@@ -690,8 +690,8 @@
                                     <th style="padding: 6px 8px; text-align: left;">Case ID</th>
                                     <th style="padding: 6px 8px; text-align: left;">Supplier Name</th>
                                     <th style="padding: 6px 8px; text-align: left;">BU / Action</th>
-                                    <th style="padding: 6px 8px; text-align: left;">申請日期</th>
-                                    <th style="padding: 6px 8px; text-align: center;">狀態</th>
+                                    <th style="padding: 6px 8px; text-align: left;">Apply Date</th>
+                                    <th style="padding: 6px 8px; text-align: center;">Status</th>
                                     <th style="padding: 6px 8px; text-align: right;">SLA Age</th>
                                 </tr>
                             </thead>
@@ -928,7 +928,6 @@
             saveStoredLogs(); renderLogs();
         }
 
-        // 🗑️ 批次選取與刪除 (刪除模式下只用上方批次工具列，項目旁絕不放個別刪除按鈕)
         function toggleSelectAllLogs(masterChk) {
             const checkboxes = document.querySelectorAll('.log-checkbox');
             selectedLogIndices = [];
@@ -1419,7 +1418,7 @@
             const c = cases.find(x => x.id === id);
 
             document.getElementById('det-title').innerText = `${c.supplierName} (${c.id})`;
-            document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | Type: ${c.vendorType} | 日期: ${c.applyDate}`;
+            document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | Type: ${c.vendorType} | Apply Date: ${c.applyDate}`;
             
             document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps);
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
@@ -1432,13 +1431,13 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 1. 渲染內部審核動態流程圖 (具備 1.6 秒循環呼吸燈動畫)
+            // 1. 渲染內部審核動態流程圖 (不論訪客或管理者，皆可完整享受到 1.6 秒循環呼吸燈動態效果)
             const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
             document.getElementById('det-pipeline').innerHTML = internalSteps.map((s) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
                 let dotClass = "pipeline-dot" + (s.approved ? " approved" : " active-breathing");
                 let nodeClass = s.approved ? "pipeline-node done-stage" : "pipeline-node active-stage";
-                const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${globalIdx}, this.checked)"` : `disabled title="僅限管理者操作"`;
+                const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${globalIdx}, this.checked)"` : `disabled title="僅限管理者操作核准勾選"`;
 
                 return `
                     <div class="${nodeClass}">
@@ -1574,9 +1573,9 @@
                                 <td style="padding: 3px 0; font-weight: bold; color: #0f172a;">${c.vendorType}</td>
                             </tr>
                             <tr>
-                                <td style="padding: 3px 0; color: #64748b;">Request Date:</td>
+                                <td style="padding: 3px 0; color: #64748b;">Apply Date:</td>
                                 <td style="padding: 3px 0; font-family: monospace;">${c.applyDate}</td>
-                                <td style="padding: 3px 0; color: #64748b;">Requester Email:</td>
+                                <td style="padding: 3px 0; color: #64748b;">Requestor Email:</td>
                                 <td style="padding: 3px 0; font-family: monospace; font-size: 11px;">${c.requesterEmail}</td>
                             </tr>
                             <tr>
