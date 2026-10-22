@@ -144,7 +144,190 @@
                 background: white !important; color: black !important; page-break-inside: avoid !important; page-break-after: avoid !important;
             }
         }
-    </style>
+    
+/* ===== Flow animations ===== */
+@keyframes flow-down   { from { background-position: 0 0; } to { background-position: 0 24px; } }
+@keyframes arrow-bounce{ 0%,100% { transform: translateY(-2px); opacity:.6; } 50% { transform: translateY(3px); opacity:1; } }
+@keyframes node-in     { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes shimmer     { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes ripple      { from { transform: scale(1); opacity:.7; } to { transform: scale(2.6); opacity:0; } }
+@keyframes check-pop   { 0% { transform: scale(0); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+@keyframes flash-ok    { from { background:#bbf7d0; } to { background:#f6fdf9; } }
+@keyframes badge-slide { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+@keyframes travel      { 0% { top:-4px; opacity:0; } 20%,80% { opacity:1; } 100% { top:calc(100% - 5px); opacity:0; } }
+@keyframes nudge-right { 0%,100% { transform: translateY(-50%) translateX(-2px); opacity:.6; } 50% { transform: translateY(-50%) translateX(3px); opacity:1; } }
+@keyframes glow-ring   { 0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); } 50% { box-shadow: 0 0 0 4px rgba(245,158,11,.18), 0 4px 14px rgba(245,158,11,.28); } }
+
+.pipeline-container { gap: 0; }
+.pipeline-node { overflow: hidden; }
+.animate-in .pipeline-node { animation: node-in .45s ease both; animation-delay: calc(var(--i, 0) * 80ms); }
+.pipeline-node.active-stage::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(245,158,11,.16), transparent);
+    animation: shimmer 2.2s ease-in-out infinite;
+}
+.pipeline-dot.active-breathing::after {
+    content: ""; position: absolute; inset: -2px; border-radius: 50%;
+    border: 2px solid #f59e0b; animation: ripple 1.6s ease-out infinite;
+}
+.pipeline-node.just-changed { animation: flash-ok .9s ease-out; }
+.pipeline-node.just-changed .pipeline-dot.approved { animation: check-pop .5s ease-out !important; }
+
+.pipe-link { position: relative; width: 3px; height: 20px; margin-left: 22px; background: #cbd5e1; border-radius: 2px; }
+.animate-in .pipe-link { animation: node-in .4s ease both; animation-delay: calc(var(--i, 0) * 80ms); }
+.pipe-link.passed  { background: linear-gradient(to bottom, #10b981, #6ee7b7, #10b981); background-size: 100% 24px; animation: flow-down 1.2s linear infinite; }
+.pipe-link.flowing { background: linear-gradient(to bottom, #f59e0b, #fde68a, #f59e0b); background-size: 100% 24px; animation: flow-down .6s linear infinite; }
+.pipe-link.flowing::after {
+    content: ""; position: absolute; left: -3px; width: 9px; height: 9px; border-radius: 50%;
+    background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,.8); animation: travel 1.1s ease-in-out infinite;
+}
+
+.flow-bridge-line { width: 3px; height: 26px; background: #cbd5e1; border-radius: 2px; }
+.flow-bridge-badge { background: #94a3b8; border-color: #64748b; }
+.flow-bridge-connector.active .flow-bridge-line {
+    background: linear-gradient(to bottom, #003366, #60a5fa, #003366); background-size: 100% 24px;
+    animation: flow-down .9s linear infinite;
+}
+.flow-bridge-connector.active .flow-bridge-arrow { animation: arrow-bounce 1s ease-in-out infinite; }
+.flow-bridge-connector.active .flow-bridge-badge {
+    background: linear-gradient(90deg, #003366, #2563eb, #003366); background-size: 200% 100%;
+    border-color: #002244; animation: badge-slide 2.4s linear infinite;
+}
+
+.vmd-pipeline-grid { gap: 12px 22px; }
+.animate-in .vmd-flow-card { animation: node-in .45s ease both; animation-delay: calc(500ms + var(--i, 0) * 110ms); }
+.vmd-flow-card:not(:last-child)::after {
+    content: "➜"; position: absolute; right: -19px; top: 50%; transform: translateY(-50%);
+    font-size: 14px; color: #cbd5e1;
+}
+.vmd-flow-card.completed:not(:last-child)::after { color: #10b981; }
+.vmd-flow-card.completed.to-active::after { color: #f59e0b; animation: nudge-right 1s ease-in-out infinite; }
+.vmd-flow-card.locked { opacity: .55; }
+.vmd-flow-card.active-vmd { border-color: #f59e0b; background: #fffdfa; animation: glow-ring 1.8s ease-in-out infinite; }
+.animate-in .vmd-flow-card.active-vmd {
+    animation: node-in .45s ease both, glow-ring 1.8s ease-in-out infinite;
+    animation-delay: calc(500ms + var(--i, 0) * 110ms), 1s;
+}
+.vmd-flow-card.active-vmd::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; border-radius: 8px 8px 0 0;
+    background: linear-gradient(90deg, #f59e0b, #fde68a, #f59e0b); background-size: 200% 100%;
+    animation: badge-slide 1.4s linear infinite;
+}
+.vmd-flow-card.just-changed { animation: check-pop .5s ease-out; }
+
+/* ===== Professional theme ===== */
+@keyframes fade-in   { from { opacity: 0; } }
+@keyframes modal-in  { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+@keyframes badge-pulse { 50% { opacity: .3; } }
+
+body { background: linear-gradient(180deg, #e9eef5 0, #f8fafc 260px) no-repeat, #f8fafc; -webkit-font-smoothing: antialiased; }
+::selection { background: #bfdbfe; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; border: 2px solid #f8fafc; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+header { position: sticky; top: 0; z-index: 50; background: linear-gradient(135deg, #003366 0%, #00264d 100%); border-bottom: 3px solid #dc2626; }
+.logo { box-shadow: 0 2px 8px rgba(220,38,38,.5); }
+.title { letter-spacing: .3px; }
+
+.container { margin-top: 20px; }
+.tabs { padding: 0 12px; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+.tab-btn { border-radius: 8px 8px 0 0; }
+.panel { box-shadow: 0 6px 20px rgba(15,23,42,.05); }
+
+.card { border-radius: 10px; background: linear-gradient(180deg, #fff, #fafcff); transition: transform .2s, box-shadow .2s; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15,23,42,.09); }
+.card-title { letter-spacing: .6px; }
+.card-val { font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+.filter-row { border-radius: 10px; }
+
+label { font-size: 13px; color: #334155; }
+input, select, textarea { border-radius: 8px; }
+input:hover, select:hover, textarea:hover { border-color: #94a3b8; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid rgba(0,51,102,.45); outline-offset: 2px; }
+
+.panel thead th { background: linear-gradient(180deg, #f8fafc, #eef2f7); color: #334155; }
+.panel tbody tr { transition: background-color .15s; }
+.panel tbody tr:nth-child(even) td { background-color: #fafbfd; }
+.panel tbody tr:hover td { background-color: #eff6ff; }
+.sort-indicator { font-size: 11px; }
+
+.btn { border-radius: 8px; letter-spacing: .2px; box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: none; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-success { background-color: #059669; color: #fff; border-color: #047857; }
+.btn-success:hover:not(:disabled) { background-color: #047857; box-shadow: 0 4px 6px rgba(5,150,105,.25); }
+
+.status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; }
+.status-waiting::before { animation: badge-pulse 1.6s ease-in-out infinite; }
+
+.modal-overlay { animation: fade-in .2s ease; }
+.modal { border-radius: 16px; box-shadow: 0 25px 60px -12px rgba(15,23,42,.35); animation: modal-in .28s cubic-bezier(.2,.8,.2,1); }
+#status-toast { border-left: 4px solid #10b981; border-radius: 8px; }
+
+.empty-state { padding: 48px 20px; }
+.app-footer { text-align: center; font-size: 12px; color: #94a3b8; margin: 28px 0 8px; letter-spacing: .3px; }
+
+
+/* ===== Flow v2：進度摘要 + Stepper 外觀 ===== */
+@keyframes stripes { from { background-position: 28px 0, 0 0; } to { background-position: 0 0, 0 0; } }
+@keyframes sheen   { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
+@keyframes soft-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+.flow-summary { background: linear-gradient(135deg, #f8fafc, #eef4fb); border: 1px solid #dbe5f1; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; animation: soft-in .4s ease both; }
+.fs-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.fs-title { font-size: 15px; font-weight: 700; color: #003366; display: flex; align-items: center; gap: 8px; }
+.fs-dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; position: relative; flex-shrink: 0; }
+.fs-dot.working::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid #f59e0b; animation: ripple 1.6s ease-out infinite; }
+.fs-dot.done { background: #10b981; } .fs-dot.reject { background: #ef4444; } .fs-dot.hold { background: #64748b; }
+.fs-sub { font-size: 12px; color: #64748b; margin-top: 3px; }
+.fs-metrics { display: flex; gap: 22px; text-align: right; }
+.fs-metric b { display: block; font-size: 22px; font-weight: 800; color: #003366; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.fs-metric span { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
+
+.fs-track { position: relative; height: 12px; background: #e2e8f0; border-radius: 999px; margin: 14px 0 6px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(15,23,42,.12); }
+.fs-fill { position: relative; height: 100%; width: 0; border-radius: 999px; overflow: hidden; background: linear-gradient(90deg, #003366, #2563eb); transition: width 1.1s cubic-bezier(.22, 1, .36, 1); }
+.fs-fill.done   { background: linear-gradient(90deg, #059669, #10b981); }
+.fs-fill.reject { background: linear-gradient(90deg, #dc2626, #ef4444); }
+.fs-fill.hold   { background: linear-gradient(90deg, #64748b, #94a3b8); }
+.fs-fill.working {
+    background-image:
+        linear-gradient(45deg, rgba(255,255,255,.28) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.28) 50%, rgba(255,255,255,.28) 75%, transparent 75%, transparent),
+        linear-gradient(90deg, #f59e0b, #fbbf24);
+    background-size: 28px 28px, 100% 100%;
+    animation: stripes .8s linear infinite;
+}
+.fs-fill.working::after, .fs-fill.done::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 30%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    animation: sheen 2.2s ease-in-out infinite;
+}
+.fs-tick { position: absolute; top: 0; bottom: 0; width: 2px; background: #fff; }
+.fs-labels { display: flex; font-size: 11px; color: #64748b; font-weight: 700; letter-spacing: .3px; }
+
+/* Stepper 節點：圓形圖示 + 狀態膠囊 */
+.pipeline-node { border-left: 4px solid #e2e8f0; }
+.pipeline-dot { width: 20px; height: 20px; }
+.pipeline-dot.approved::after {
+    content: "✓"; position: absolute; inset: 0; display: grid; place-items: center;
+    color: #fff; font-size: 12px; font-weight: 900; line-height: 1;
+}
+.pipe-link { margin-left: 28px; }
+.step-right { display: flex; align-items: center; gap: 12px; }
+.step-pill { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; letter-spacing: .3px; white-space: nowrap; }
+.step-pill.done   { background: #d1fae5; color: #047857; }
+.step-pill.active { background: #fef3c7; color: #b45309; }
+.step-pill.idle   { background: #f1f5f9; color: #64748b; }
+.step-pill.reject { background: #fee2e2; color: #b91c1c; }
+.step-pill.hold   { background: #e2e8f0; color: #475569; }
+
+/* 退回 / 暫停：流程停止流動，只在「進行中」時才有動態 */
+.flow-halted .pipeline-dot.active-breathing, .flow-halted .pipeline-dot.active-breathing::after,
+.flow-halted .pipeline-node.active-stage::after, .flow-halted .pipe-link.flowing, .flow-halted .pipe-link.flowing::after,
+.flow-halted .vmd-flow-card.active-vmd, .flow-halted .vmd-flow-card.active-vmd::before,
+.flow-halted .vmd-flow-card.to-active::after, .flow-halted .flow-bridge-connector.active * { animation: none !important; }
+</style>
 </head>
 <body>
 
@@ -393,6 +576,8 @@
         </div>
     </div>
 
+    <footer class="app-footer">CEVA Logistics (Taiwan) Co., Ltd. · Operation Management Control (OMC) · Internal Use Only</footer>
+
     <!-- 📊 報表區間設定 Modal -->
     <div id="modal-report-config" class="modal-overlay hidden">
         <div class="modal" style="max-width: 450px;">
@@ -468,13 +653,15 @@
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
+            <div id="flow-summary"></div>
+
             <div class="unified-flow-wrapper">
                 <div>
                     <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. Internal Cross-Department Approval Flow :</h4>
                     <div class="pipeline-container" id="det-pipeline"></div>
                 </div>
 
-                <div class="flow-bridge-connector">
+                <div class="flow-bridge-connector" id="flow-bridge">
                     <div class="flow-bridge-line"></div>
                     <div class="flow-bridge-arrow">▼</div>
                     <div class="flow-bridge-badge">Internal Approval Passed ➔ Enter VMD Pipeline</div>
@@ -511,8 +698,8 @@
     <div id="pdf-print-area" class="hidden"></div>
 
     <script>
-        let currentPassword = localStorage.getItem('ceva_admin_pwd') || "ceva888";
-        let lastPwdChangeDate = localStorage.getItem('ceva_pwd_date') || new Date().toISOString();
+        const ADMIN_EMAIL = "Nicolas.Wang@cevalogistics.com";
+        
         let isAdmin = false;
         let isDeleteMode = false;
 
@@ -521,6 +708,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let activeCaseId = null;
+        let lastToggledRole = null;
         let cases = [];
         let systemLogs = [];
         let selectedCaseIds = [];
@@ -559,6 +747,21 @@
         ];
 
         const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'];
+
+        // Vendor Type 一律標準化為 "Trade" / "Non-Trade"
+        function normalizeVendorType(v) {
+            const t = String(v || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+            return (t === 'non-trade' || t === 'nontrade') ? 'Non-Trade' : 'Trade';
+        }
+
+        // 以現有最大序號 +1 產生案件編號，避免刪除案件後撞號覆蓋舊資料
+        function nextCaseId(dateStr) {
+            const prefix = "CEVA-" + dateStr.substring(0, 7).replace('-', '') + "-";
+            const max = cases
+                .filter(c => c.id.startsWith(prefix))
+                .reduce((m, c) => Math.max(m, parseInt(c.id.slice(prefix.length), 10) || 0), 0);
+            return prefix + String(max + 1).padStart(3, '0');
+        }
 
         window.onload = async function() {
             document.getElementById('inp-date').valueAsDate = new Date();
@@ -865,6 +1068,7 @@
                                 });
                             }
                         }
+                        if (item.data) item.data.vendorType = normalizeVendorType(item.data.vendorType);
                         return item.data;
                     });
                 } else {
@@ -1051,9 +1255,9 @@
             const matrixSteps = getMatrix(bu);
 
             const newCase = {
-                id: "CEVA-" + selectedDate.substring(0,7).replace('-','') + "-" + String(cases.length+1).padStart(3,'0'),
+                id: nextCaseId(selectedDate),
                 supplierName, bu, action,
-                vendorType: vendorType,
+                vendorType: normalizeVendorType(vendorType),
                 applyDate: selectedDate,
                 completedDate: null,
                 requesterEmail: requesterEmail,
@@ -1410,30 +1614,47 @@
                 if(adminButtons) adminButtons.style.display = 'none';
             }
 
-            // 1. 內部審核流程渲染（智慧判定：前面已審核完畢顯示綠燈，當前等待審核的關卡自動套用 .active-breathing 呼吸燈動畫）
-            const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
-            
-            // 找出第一個尚未核准的關卡索引
-            let firstPendingIdx = internalSteps.findIndex(s => !s.approved);
+            const modalEl = document.getElementById('modal-detail');
+            const isFirstOpen = modalEl.classList.contains('hidden'); // 首次開啟才播放進場動畫
 
-            document.getElementById('det-pipeline').innerHTML = internalSteps.map((s, idx) => {
+            const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
+            const vmdSteps = c.steps.filter(s => vmdRoleNames.includes(s.role));
+            const allInternalDone = internalSteps.every(s => s.approved);
+            const firstPendingIdx = internalSteps.findIndex(s => !s.approved);
+            const firstPendingVmd = allInternalDone ? vmdSteps.findIndex(s => !s.approved) : -1;
+
+            const pipeEl = document.getElementById('det-pipeline');
+            const vmdEl = document.getElementById('vmd-cards-container');
+            const bridgeEl = document.getElementById('flow-bridge');
+            pipeEl.classList.toggle('animate-in', isFirstOpen);
+            vmdEl.classList.toggle('animate-in', isFirstOpen);
+            bridgeEl.classList.toggle('active', allInternalDone);
+
+            // 1. 內部審核流程（含流動連接線）
+            pipeEl.innerHTML = internalSteps.map((s, idx) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
-                
                 let dotClass = "pipeline-dot";
                 let nodeClass = "pipeline-node";
-                
+
                 if (s.approved) {
                     dotClass += " approved";
                     nodeClass += " done-stage";
+                    if (s.role === lastToggledRole) nodeClass += " just-changed";
                 } else if (idx === firstPendingIdx) {
-                    dotClass += " active-breathing"; // 🔴 強制觸發呼吸燈動畫
+                    dotClass += " active-breathing";
                     nodeClass += " active-stage";
+                }
+
+                let linkHtml = '';
+                if (idx < internalSteps.length - 1) {
+                    const linkClass = s.approved ? (internalSteps[idx + 1].approved ? 'passed' : 'flowing') : '';
+                    linkHtml = `<div class="pipe-link ${linkClass}" style="--i:${idx * 2 + 1}"></div>`;
                 }
 
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${globalIdx}, this.checked)"` : `disabled title="僅限管理者操作核准勾選"`;
 
                 return `
-                    <div class="${nodeClass}">
+                    <div class="${nodeClass}" style="--i:${idx * 2}">
                         <div class="pipeline-left">
                             <div class="${dotClass}"></div>
                             <div>
@@ -1445,37 +1666,44 @@
                         <div>
                             <input type="checkbox" class="checkbox-only" ${s.approved ? 'checked' : ''} ${checkboxAttr}>
                         </div>
-                    </div>`;
+                    </div>${linkHtml}`;
             }).join('');
 
-            // 2. VMD 4 欄精緻卡片渲染
-            const vmdSteps = c.steps.filter(s => vmdRoleNames.includes(s.role));
-            document.getElementById('vmd-cards-container').innerHTML = vmdSteps.map((s) => {
+            // 2. VMD 4 階段卡片（進行中呼吸發光、完成後箭頭推進）
+            vmdEl.innerHTML = vmdSteps.map((s, idx) => {
                 const globalIdx = c.steps.findIndex(x => x.role === s.role);
-                const cardClass = s.approved ? "vmd-flow-card completed" : "vmd-flow-card";
                 const checkboxAttr = isAdmin ? `onchange="toggleStepApproval(${globalIdx}, this.checked)"` : `disabled`;
 
-                let displayTitle = s.role;
-                if (s.role === '確認完畢文件') {
-                    displayTitle = s.approved ? '確認完畢文件完成' : '確認完畢文件中';
-                } else if (s.role === '要求相關單位核准中') {
-                    displayTitle = s.approved ? '要求相關單位核准完成' : '要求相關單位核准中';
-                } else if (s.role === '與供應商確認相關訊息中') {
-                    displayTitle = s.approved ? '與供應商確認相關訊息完成' : '與供應商確認相關訊息中';
-                } else if (s.role === 'JDE代碼建立中') {
-                    displayTitle = s.approved ? 'JDE代碼建立完成' : 'JDE代碼建立中';
+                let cardClass = "vmd-flow-card";
+                if (s.approved) {
+                    cardClass += " completed";
+                    if (idx + 1 === firstPendingVmd) cardClass += " to-active";
+                    if (s.role === lastToggledRole) cardClass += " just-changed";
+                } else if (idx === firstPendingVmd) {
+                    cardClass += " active-vmd";
+                } else {
+                    cardClass += " locked";
                 }
 
+                let displayTitle = s.role;
+                if (s.role === '確認完畢文件') displayTitle = s.approved ? '確認完畢文件完成' : '確認完畢文件中';
+                else if (s.role === '要求相關單位核准中') displayTitle = s.approved ? '要求相關單位核准完成' : '要求相關單位核准中';
+                else if (s.role === '與供應商確認相關訊息中') displayTitle = s.approved ? '與供應商確認相關訊息完成' : '與供應商確認相關訊息中';
+                else if (s.role === 'JDE代碼建立中') displayTitle = s.approved ? 'JDE代碼建立完成' : 'JDE代碼建立中';
+
+                const timeText = (s.time && s.time !== 'N/A') ? s.time : (idx === firstPendingVmd ? '進行中' : '待處理');
+
                 return `
-                    <div class="${cardClass}">
+                    <div class="${cardClass}" style="--i:${idx}">
                         <div class="vmd-flow-title">${displayTitle}</div>
                         <div style="margin-bottom: 4px;">
                             <input type="checkbox" class="checkbox-only" ${s.approved ? 'checked' : ''} ${checkboxAttr}>
                         </div>
-                        <div class="vmd-flow-time">${s.time && s.time !== 'N/A' ? s.time : '進行中'}</div>
-                    </div>
-                `;
+                        <div class="vmd-flow-time">${timeText}</div>
+                    </div>`;
             }).join('');
+
+            lastToggledRole = null;
 
             document.getElementById('modal-detail').classList.remove('hidden');
         }
@@ -1504,6 +1732,7 @@
 
             await saveCloudData(cases);
             addSystemLog("Approval", c.id, `階段 [${stepName}] 更新`);
+            lastToggledRole = isChecked ? stepName : null;
             openDetail(activeCaseId); renderDashboard(); renderList();
         }
 
@@ -1612,6 +1841,232 @@
             `;
             window.print();
         }
+    
+        /* ===================== Supabase Auth / RLS 版本（覆蓋上方同名舊函式） ===================== */
+        const syncedSnapshot = new Map();
+        function snapshotCases() {
+            syncedSnapshot.clear();
+            cases.forEach(c => syncedSnapshot.set(c.id, JSON.stringify(c)));
+        }
+
+        function isAdminUser(user) {
+            return !!user && (user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        }
+
+        function enterAdminMode() {
+            isAdmin = true;
+            document.getElementById('mode-toggle-input').checked = true;
+            updateUIPermissions();
+        }
+
+        async function submitAdminLogin() {
+            const pwd = document.getElementById('inp-admin-pwd').value;
+            if (!pwd) { alert("請輸入密碼"); return; }
+            const { error } = await supabaseClient.auth.signInWithPassword({ email: ADMIN_EMAIL, password: pwd });
+            if (error) {
+                alert("登入失敗：帳號或密碼錯誤");
+                document.getElementById('mode-toggle-input').checked = false;
+                return;
+            }
+            closeLoginModal();
+            enterAdminMode();
+            showToast("管理者權限已解鎖");
+            addSystemLog("Security", "Admin", "管理者登入");
+        }
+
+        function handleModeToggle(checkbox) {
+            if (checkbox.checked) {
+                document.getElementById('inp-admin-pwd').value = '';
+                document.getElementById('modal-login').classList.remove('hidden');
+                document.getElementById('inp-admin-pwd').focus();
+            } else {
+                supabaseClient.auth.signOut();
+                isAdmin = false;
+                isDeleteMode = false;
+                selectedCaseIds = [];
+                selectedLogIndices = [];
+                document.getElementById('btn-delete-mode').classList.remove('active');
+                document.getElementById('delete-mode-status-text').innerText = "(關閉)";
+                updateUIPermissions();
+                switchTab('dash');
+                showToast("已切回訪客模式");
+            }
+        }
+
+        async function submitForgotPwd() {
+            const email = document.getElementById('inp-forgot-email').value.trim();
+            if (!email) { alert("請輸入 Email"); return; }
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
+            closeForgotModal();
+            if (error) { alert("發送失敗：" + error.message); return; }
+            showToast("若此帳號存在，重設密碼信已寄出");
+            addSystemLog("Security", "Admin", `發送密碼重設申請至：${email}`);
+        }
+
+        async function submitChangePwd() {
+            const newPwd = document.getElementById('inp-new-pwd').value;
+            const confirmPwd = document.getElementById('inp-confirm-pwd').value;
+            if (!newPwd || newPwd.length < 8) { alert("新密碼長度至少 8 字元"); return; }
+            if (newPwd !== confirmPwd) { alert("兩次輸入密碼不相符"); return; }
+            const { data, error } = await supabaseClient.auth.updateUser({ password: newPwd });
+            if (error) { alert("更新失敗：" + error.message); return; }
+            closeChangePwdModal();
+            if (isAdminUser(data && data.user)) enterAdminMode();
+            showToast("密碼更新成功");
+            addSystemLog("Security", "Admin", "管理者修改密碼");
+        }
+
+        // 只上傳「有變動」的案件；失敗時重新載入雲端資料，避免畫面與資料庫不一致
+        async function saveCloudData(updatedCases) {
+            cases = updatedCases;
+            try {
+                const changed = cases.filter(c => syncedSnapshot.get(c.id) !== JSON.stringify(c));
+                if (changed.length) {
+                    const { error } = await supabaseClient.from('vendor_cases').upsert(changed.map(c => ({ id: c.id, data: c })));
+                    if (error) throw error;
+                    changed.forEach(c => syncedSnapshot.set(c.id, JSON.stringify(c)));
+                }
+                showToast("雲端同步成功");
+            } catch (err) {
+                console.error(err);
+                alert("儲存至雲端失敗：" + (err.message || "權限不足或網路錯誤") + "\n畫面將還原為雲端最新資料。");
+                await loadCloudData();
+                snapshotCases();
+                if (!document.getElementById('modal-detail').classList.contains('hidden')) closeDetailModal();
+                renderDashboard();
+                renderList();
+                throw err;
+            }
+        }
+
+        async function removeCloudCase(id) {
+            const { data, error } = await supabaseClient.from('vendor_cases').delete().eq('id', id).select();
+            if (error || !data || data.length === 0) {
+                alert("刪除失敗：" + ((error && error.message) || "權限不足（請重新登入管理者）"));
+                return;
+            }
+            cases = cases.filter(x => x.id !== id);
+            syncedSnapshot.delete(id);
+        }
+
+        // 載入後建立同步快照、還原管理者 session、處理密碼重設連結
+        const _baseOnload = window.onload;
+        window.onload = async function () {
+            await _baseOnload();
+            snapshotCases();
+            const { data } = await supabaseClient.auth.getSession();
+            if (data && data.session && isAdminUser(data.session.user)) {
+                enterAdminMode();
+            }
+        };
+        supabaseClient.auth.onAuthStateChange((event) => {
+            if (event === 'PASSWORD_RECOVERY') openChangePwdModal(false);
+        });
+    
+        /* ===================== Flow v2：進度摘要 ===================== */
+        const vmdProgressText = {
+            '確認完畢文件': '確認完畢文件中', '要求相關單位核准中': '要求相關單位核准中',
+            '與供應商確認相關訊息中': '與供應商確認相關訊息中', 'JDE代碼建立中': 'JDE代碼建立中'
+        };
+        let flowPrev = { id: null, pct: 0 };
+
+        function animateNumber(el, from, to, ms, fmt) {
+            const t0 = performance.now();
+            (function tick(t) {
+                const k = Math.min(1, (t - t0) / ms);
+                const e = 1 - Math.pow(1 - k, 3);
+                el.textContent = fmt(Math.round(from + (to - from) * e));
+                if (k < 1) requestAnimationFrame(tick);
+            })(t0);
+        }
+
+        function flowHeadline(c, internal, vmd) {
+            if (c.status === 'Reject') return ['此案件已退回', '流程已終止，請確認退回原因後重新申請'];
+            if (c.status === 'Hold') return ['此案件暫停中', '待管理者恢復後繼續流程'];
+            if (c.status === 'Done') {
+                const d = (c.completedDate && c.completedDate !== 'N/A') ? c.completedDate : '—';
+                return ['審核流程全部完成', `完成日期：${d}`];
+            }
+            const p = internal.find(s => !s.approved);
+            if (p) return [`等待 ${p.role} 核准`, `${p.name}（${p.title}）`];
+            const v = vmd.find(s => !s.approved);
+            if (v) return [`VMD 處理中：${vmdProgressText[v.role] || v.role}`, '內部審核已通過，進入 VMD 執行流程'];
+            return ['流程處理中', ''];
+        }
+
+        function renderFlowSummary(id) {
+            const c = cases.find(x => x.id === id);
+            const box = document.getElementById('flow-summary');
+            if (!c || !box) return;
+
+            const internal = c.steps.filter(s => !vmdRoleNames.includes(s.role));
+            const vmd = c.steps.filter(s => vmdRoleNames.includes(s.role));
+            const total = c.steps.length;
+            const done = c.steps.filter(s => s.approved).length;
+            const pct = total ? Math.round(done / total * 100) : 0;
+            const tick = total ? Math.round(internal.length / total * 100) : 50;
+            const [title, sub] = flowHeadline(c, internal, vmd);
+            const state = c.status === 'Done' ? 'done' : c.status === 'Reject' ? 'reject' : c.status === 'Hold' ? 'hold' : 'working';
+            const age = calcAge(c.applyDate, c.completedDate, c.status).text;
+            const from = flowPrev.id === id ? flowPrev.pct : 0;
+
+            document.querySelector('#modal-detail .modal').classList.toggle('flow-halted', state === 'reject' || state === 'hold');
+
+            box.innerHTML = `
+                <div class="flow-summary">
+                    <div class="fs-top">
+                        <div>
+                            <div class="fs-title"><span class="fs-dot ${state}"></span>${title}</div>
+                            <div class="fs-sub">${sub}</div>
+                        </div>
+                        <div class="fs-metrics">
+                            <div class="fs-metric"><b class="fs-pct">${from}%</b><span>整體進度</span></div>
+                            <div class="fs-metric"><b>${done} / ${total}</b><span>已完成階段</span></div>
+                            <div class="fs-metric"><b>${age}</b><span>SLA Age</span></div>
+                        </div>
+                    </div>
+                    <div class="fs-track">
+                        <div class="fs-fill ${state}" style="width:${from}%"></div>
+                        <div class="fs-tick" style="left:${tick}%"></div>
+                    </div>
+                    <div class="fs-labels">
+                        <span style="width:${tick}%">內部跨部門審核</span>
+                        <span>VMD 執行</span>
+                    </div>
+                </div>`;
+
+            const fill = box.querySelector('.fs-fill');
+            requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + '%'; }));
+            animateNumber(box.querySelector('.fs-pct'), from, pct, 1000, n => n + '%');
+            flowPrev = { id, pct };
+        }
+
+        function decorateSteps() {
+            const c = cases.find(x => x.id === activeCaseId);
+            document.querySelectorAll('#det-pipeline .pipeline-node').forEach(n => {
+                if (n.querySelector('.step-pill')) return;
+                let st = ['idle', '待處理'];
+                if (n.classList.contains('done-stage')) st = ['done', '已完成'];
+                else if (n.classList.contains('active-stage')) {
+                    st = ['active', '進行中'];
+                    if (c && c.status === 'Reject') st = ['reject', '已退回'];
+                    if (c && c.status === 'Hold') st = ['hold', '暫停'];
+                }
+                const holder = n.lastElementChild;
+                holder.classList.add('step-right');
+                const pill = document.createElement('span');
+                pill.className = 'step-pill ' + st[0];
+                pill.textContent = st[1];
+                holder.prepend(pill);
+            });
+        }
+
+        const _openDetailV1 = openDetail;
+        openDetail = function (id) {
+            _openDetailV1(id);
+            renderFlowSummary(id);
+            decorateSteps();
+        };
     </script>
 </body>
 </html>
