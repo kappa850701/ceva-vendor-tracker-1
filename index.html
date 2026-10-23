@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://vwuctilkidzpkrtkkrmb.supabase.co wss://vwuctilkidzpkrtkkrmb.supabase.co; object-src 'none'; base-uri 'none'; frame-src 'none'; form-action 'none'">
+    <meta name="referrer" content="no-referrer">
     <title>CEVA Logistics (Taiwan) - Vendor Approval System (Pipeline Pro)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -368,6 +370,74 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 .sig-editor { min-height: 90px; max-height: 220px; overflow: auto; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; background: #fff; font-size: 13px; margin-top: 6px; line-height: 1.5; }
 .sig-editor:empty::before { content: attr(data-placeholder); color: #94a3b8; }
 .sig-editor:focus { outline: none; border-color: #003366; box-shadow: 0 0 0 3px rgba(0,51,102,.1); }
+
+/* ===== v6：必填 / 即時同步 / 手機版 ===== */
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.attach-drop.invalid { border-color: #dc2626; background: #fef2f2; color: #b91c1c; animation: shake .4s; }
+.live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .3px; color: #cbd5e1; padding: 4px 10px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; }
+.live-pill i { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+.live-pill.on { color: #fff; }
+.live-pill.on i { background: #22c55e; animation: badge-pulse 1.6s ease-in-out infinite; }
+
+@media (max-width: 768px) {
+    body { padding-bottom: 24px; }
+    header { flex-wrap: wrap; gap: 10px; padding: 10px 12px; }
+    .logo-title { width: 100%; gap: 10px; }
+    .logo-img { height: 34px; padding: 4px 8px; }
+    .title { font-size: 15px; }
+    .subtitle { font-size: 11px; line-height: 1.3; }
+    .header-actions { width: 100%; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+    .container { margin: 12px auto; padding: 0 10px; }
+    .tabs { overflow-x: auto; gap: 2px; padding: 0 6px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { padding: 12px 10px; font-size: 13px; flex-shrink: 0; }
+    .panel { padding: 14px; min-height: 0; }
+
+    input, select, textarea { font-size: 16px; }
+    .btn { min-height: 40px; }
+    .checkbox-only { width: 22px; height: 22px; }
+
+    .filter-row { flex-direction: column; align-items: stretch; padding: 12px; }
+    .filter-row input, .filter-row select, .filter-row .btn { width: 100% !important; min-width: 0 !important; }
+    .card-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .card { padding: 12px; }
+    .card-val { font-size: 24px; }
+
+    #form-create-vendor > div:first-child { grid-template-columns: 1fr !important; }
+    #form-create-vendor [style*="grid-column: span 2"] { grid-column: auto !important; }
+    #matrix-preview { word-break: break-word; }
+
+    /* 表格改為卡片式 */
+    .panel table, .panel tbody, .panel tr, .panel td { display: block; width: 100%; }
+    .panel thead { display: none; }
+    .panel tbody tr { border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.05); }
+    .panel td { display: flex; justify-content: space-between; align-items: center; gap: 12px; border: none !important; padding: 6px 0; text-align: right; word-break: break-word; }
+    .panel td::before { content: attr(data-label); flex-shrink: 0; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .4px; text-align: left; }
+    .panel td:not([data-label])::before, .panel td[data-label=""]::before { display: none; }
+    .panel td.empty-state { display: block; text-align: center; }
+    .panel tbody tr:nth-child(even) td, .panel tbody tr:hover td { background: transparent; }
+    .pagination-bar { flex-direction: column; gap: 10px; text-align: center; }
+    #batch-action-bar, #batch-logs-bar { flex-direction: column; align-items: stretch !important; gap: 8px; }
+    #logs-search { width: 100% !important; }
+
+    .modal-overlay { padding: 8px; align-items: flex-end; }
+    .modal { padding: 16px; border-radius: 14px; max-height: 92vh; max-height: 92dvh; }
+    .pipeline-node { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+    .pipeline-left { min-width: 0; }
+    .pipeline-left > div:last-child { min-width: 0; word-break: break-all; }
+    .step-right { width: 100%; justify-content: space-between; }
+    .vmd-pipeline-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .vmd-flow-card:not(:last-child)::after { display: none; }
+    .flow-summary { padding: 12px; }
+    .fs-metrics { width: 100%; justify-content: space-between; text-align: left; gap: 10px; }
+    .fs-metric b { font-size: 18px; }
+    .gate-chip { padding: 8px 14px 8px 8px; max-width: 100%; }
+    .gate-sub { font-size: 10px; }
+    #modal-detail .modal > div:last-child { flex-wrap: wrap; gap: 10px; }
+    #admin-action-buttons { flex-wrap: wrap; }
+    #status-toast { left: 12px; right: 12px; top: 12px; text-align: center; }
+}
 </style>
 </head>
 <body>
@@ -384,6 +454,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         </div>
         
         <div class="header-actions">
+            <span id="live-pill" class="live-pill off" title="即時同步狀態"><i></i><b>Offline</b></span>
             <button id="btn-delete-mode" class="delete-mode-toggle-btn admin-only hidden" onclick="toggleDeleteMode()">
                 🗑️ 刪除模式 <span id="delete-mode-status-text" style="font-size: 10px; opacity: 0.8;">(關閉)</span>
             </button>
@@ -484,7 +555,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div style="grid-column: span 2;">
                         <label><strong>Supplier Name <span style="color:red;">*</span></strong></label>
-                        <input type="text" id="inp-supplier" required placeholder="例如: 佰進國際物流">
+                        <input type="text" id="inp-supplier" required maxlength="200" placeholder="例如: 佰進國際物流">
                     </div>
                     <div>
                         <label><strong>BU <span style="color:red;">*</span></strong></label>
@@ -521,24 +592,24 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 </div>
 
                 <div style="background: #f8fafc; padding: 16px; margin-top: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    <strong style="color: #003366; font-size: 13px;">審核矩陣準備審查單位列表:</strong>
+                    <strong style="color: #003366; font-size: 13px;">審核流程預覽（依所選 BU 自動帶入）：</strong>
                     <div id="matrix-preview" style="margin-top: 8px; font-size: 13px; color: #475569; font-family: monospace;">請先選擇 BU...</div>
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <label><strong>附件 Attachments</strong> <span style="font-size:12px; color:#64748b;">(VMD Request Form 及相關文件，總計上限 20 MB)</span></label>
-                    <div class="attach-drop" onclick="document.getElementById('inp-files').click()" ondragover="event.preventDefault(); this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="onAttachDrop(event)">
+                    <label><strong>附件 Attachments <span style="color:red;">*</span></strong> <span style="font-size:12px; color:#64748b;">(VMD Request Form 及相關文件，總計上限 20 MB)</span></label>
+                    <div class="attach-drop" id="attach-drop" onclick="document.getElementById('inp-files').click()" ondragover="event.preventDefault(); this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="onAttachDrop(event)">
                         點擊選擇檔案，或將檔案拖曳至此
                         <input type="file" id="inp-files" multiple style="display:none;" onchange="addAttachments(this.files); this.value='';">
                     </div>
                     <div id="attach-list"></div>
-                    <div style="font-size:12px; color:#64748b; margin-top:8px;">有選取附件時，系統會產生含附件的 Outlook 郵件草稿 (.eml)，開啟後直接按傳送即可。</div>
+                    <div style="font-size:12px; color:#64748b; margin-top:8px;">必填。建立後系統會產生含附件的 Outlook 郵件草稿 (.eml)，開啟後直接按傳送即可。</div>
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <label><strong>郵件簽名檔 Signature</strong> <span style="font-size:12px; color:#64748b;">(從 Outlook 複製你的簽名後貼上，系統會依 Requestor Email 記住)</span></label>
-                    <div id="sig-editor" class="sig-editor" contenteditable="true" data-placeholder="在此貼上你的 Outlook 簽名檔…" spellcheck="false"></div>
-                    <div style="font-size:12px; color:#64748b; margin-top:6px;">簽名只存放在這台電腦的瀏覽器中，用於含附件的郵件草稿。未選附件時由 Outlook 開啟新郵件，通常會自行帶入預設簽名。</div>
+                    <label><strong>郵件簽名檔 Signature</strong> <span style="font-size:12px; color:#64748b;">(從 Outlook 複製您的簽名後貼上，系統會依 Requestor Email 記住)</span></label>
+                    <div id="sig-editor" class="sig-editor" contenteditable="true" data-placeholder="在此貼上您的 Outlook 簽名檔…" spellcheck="false"></div>
+                    <div style="font-size:12px; color:#64748b; margin-top:6px;">簽名只存放在這台電腦的瀏覽器中，用於郵件草稿，系統會依 Email 記住。</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="margin-top: 24px; padding: 10px 24px; font-size: 14px;">建立單號並產生郵件</button>
@@ -603,7 +674,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
                 <div>
                     <h3 style="color: #003366; font-size: 20px;">系統日誌</h3>
-                    <p style="font-size: 13px; color: #64748b; margin-top: 4px;">雲端同步稽核紀錄。</p>
+                    <p style="font-size: 13px; color: #64748b; margin-top: 4px;">操作稽核紀錄（僅存放於本機瀏覽器）。</p>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <input type="text" id="logs-search" oninput="renderLogs()" placeholder="搜尋日誌..." style="width: 250px; margin: 0;">
@@ -639,7 +710,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
     <div id="modal-report-config" class="modal-overlay hidden">
         <div class="modal" style="max-width: 450px;">
             <h3 style="color: #003366; margin-bottom: 12px;">產出專業分析報告</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請選擇 Apply Date 區間（Report Date Range）：</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請選擇 Apply Date 區間：</p>
             <div style="margin-bottom: 12px;">
                 <label><strong>Start Date</strong></label>
                 <input type="date" id="rep-start-date">
@@ -659,7 +730,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">管理者權限驗證</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">切換至管理模式請輸入管理者密碼。</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">切換至管理模式，請輸入管理者密碼。</p>
             <input type="password" id="inp-admin-pwd" placeholder="密碼..." style="margin-bottom: 12px; text-align: center; font-size: 16px;">
             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 20px;">
                 <a href="javascript:void(0)" onclick="openForgotModal()" style="color: #003366; text-decoration: underline;">忘記密碼</a>
@@ -714,7 +785,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
             <div class="unified-flow-wrapper">
                 <div>
-                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. Internal Cross-Department Approval Flow :</h4>
+                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 8px; font-weight: bold; text-transform: uppercase;">1. Internal Cross-Department Approval Flow</h4>
                     <div class="pipeline-container" id="det-pipeline"></div>
                 </div>
 
@@ -731,7 +802,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 </div>
 
                 <div>
-                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 6px; font-weight: bold; text-transform: uppercase;">2. VMD Execution Pipeline (4-Stage Linked Pipeline) :</h4>
+                    <h4 style="font-size: 13px; color: #003366; margin-bottom: 6px; font-weight: bold; text-transform: uppercase;">2. VMD Execution Pipeline (4 Stages)</h4>
                     <div class="vmd-pipeline-grid" id="vmd-cards-container"></div>
                 </div>
             </div>
@@ -810,24 +881,26 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             "tpe.omc@cevalogistics.com"
         ];
 
-        const defaultCases = [
-            {
-                id: "CEVA-202606-001", supplierName: "佰進國際物流", bu: "AE", action: "Change", vendorType: "Trade",
-                applyDate: "2026-06-23", completedDate: "N/A", requesterEmail: "Sherry.Chang@cevalogistics.com", status: "Done",
-                steps: [
-                    { role: "OMC", name: "Tristan YANG", title: "Operation Management Control Supervisor", email: "Tristan.Yang@cevalogistics.com", approved: true, time: "2026-06-23" },
-                    { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "2026-06-24" },
-                    { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: true, time: "2026-06-24" },
-                    { role: "A&O Product Head", name: "Warren WANG", title: "Air & Ocean Director", email: "Warren.Wang@cevalogistics.com", approved: true, time: "2026-06-25" },
-                    { role: "確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
-                    { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
-                    { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
-                    { role: "JDE代碼建立中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" }
-                ]
-            }
-        ];
-
-        const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'];
+        // VMD 四階段：標準順序與顯示名稱（舊資料載入時會自動轉換）
+        const VMD_ORDER = ['確認文件', '與供應商確認相關訊息中', '要求相關單位核准中', '供應商資料新建/修改中'];
+        const VMD_LEGACY = ['確認完畢文件', 'JDE代碼建立中', 'JDE建立完成'];
+        const vmdRoleNames = [...VMD_ORDER, ...VMD_LEGACY];
+        const ROLE_RENAME = { '確認完畢文件': '確認文件', 'JDE代碼建立中': '供應商資料新建/修改中', 'JDE建立完成': '供應商資料新建/修改中' };
+        const VMD_LABEL = {
+            '確認文件': ['確認文件中', '確認文件完成'],
+            '與供應商確認相關訊息中': ['與供應商確認相關訊息中', '與供應商確認相關訊息完成'],
+            '要求相關單位核准中': ['要求相關單位核准中', '要求相關單位核准完成'],
+            '供應商資料新建/修改中': ['供應商資料新建/修改中', '供應商資料新建/修改完成']
+        };
+        function vmdDisplay(role, ok) { const l = VMD_LABEL[role]; return l ? l[ok ? 1 : 0] : role; }
+        function canonicalizeCase(c) {
+            if (!c || !Array.isArray(c.steps)) return c;
+            c.steps.forEach(s => { if (ROLE_RENAME[s.role]) s.role = ROLE_RENAME[s.role]; });
+            const internal = c.steps.filter(s => !VMD_ORDER.includes(s.role));
+            const vmd = VMD_ORDER.map(r => c.steps.find(s => s.role === r)).filter(Boolean);
+            c.steps = [...internal, ...vmd];
+            return c;
+        }
 
         // Vendor Type 一律標準化為 "Trade" / "Non-Trade"
         function normalizeVendorType(v) {
@@ -901,116 +974,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             document.getElementById('modal-report-config').classList.add('hidden');
         }
 
-        function generateExecutiveReport() {
-            const startDate = document.getElementById('rep-start-date').value;
-            const endDate = document.getElementById('rep-end-date').value;
-            if(!startDate || !endDate) { alert("請選擇完整的起訖日期區間"); return; }
-            closeReportModal();
-
-            const filteredCases = cases.filter(c => c.applyDate >= startDate && c.applyDate <= endDate);
-            const totalCount = filteredCases.length;
-            const doneCount = filteredCases.filter(c => c.status === 'Done').length;
-            const waitingCount = filteredCases.filter(c => c.status === 'Waiting Internal Approval').length;
-
-            let totalDays = 0;
-            let doneCasesWithDays = filteredCases.filter(c => c.status === 'Done' && c.completedDate && c.completedDate !== 'N/A');
-            doneCasesWithDays.forEach(c => {
-                const info = calcAge(c.applyDate, c.completedDate, c.status);
-                if (info.days >= 0) totalDays += info.days;
-            });
-            const avgLeadTime = doneCasesWithDays.length > 0 ? (totalDays / doneCasesWithDays.length).toFixed(1) : 0;
-
-            let printArea = document.getElementById('pdf-print-area');
-            printArea.innerHTML = `
-                <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; padding: 20px; color: #1e293b; max-width: 800px; margin: 0 auto; background: white; font-size: 12px; line-height: 1.4;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #003366; padding-bottom: 12px; margin-bottom: 16px;">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                <span style="background-color: #dc2626; color: white; font-weight: 900; padding: 2px 6px; border-radius: 3px; font-size: 14px; letter-spacing: 2px;">CEVA</span>
-                                <h1 style="color: #003366; font-size: 16px; margin: 0; font-weight: 700;">CEVA Logistics (Taiwan) Co., Ltd.</h1>
-                            </div>
-                            <p style="font-size: 11px; color: #64748b; margin: 0;">Operation Management Control (OMC) | Vendor Management Executive Report</p>
-                        </div>
-                        <div style="text-align: right; font-size: 11px; color: #475569; line-height: 1.4;">
-                            <div><strong>Report Period:</strong> ${startDate} ~ ${endDate}</div>
-                            <div><strong>Generated Date:</strong> ${new Date().toISOString().slice(0,10)}</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 16px;">
-                        <h3 style="font-size: 13px; color: #003366; margin-bottom: 8px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">1. 營運效能摘要與 KPI 總覽</h3>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px;">
-                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; text-align: center;">
-                                <div style="font-size: 10px; color: #64748b; font-weight: bold;">總申請案件數</div>
-                                <div style="font-size: 20px; font-weight: 800; color: #003366; margin-top: 4px;">${totalCount}</div>
-                            </div>
-                            <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 10px; border-radius: 6px; text-align: center;">
-                                <div style="font-size: 10px; color: #047857; font-weight: bold;">已完成 (Done)</div>
-                                <div style="font-size: 20px; font-weight: 800; color: #047857; margin-top: 4px;">${doneCount}</div>
-                            </div>
-                            <div style="background: #fef3c7; border: 1px solid #fde68a; padding: 10px; border-radius: 6px; text-align: center;">
-                                <div style="font-size: 10px; color: #b45309; font-weight: bold;">審核中 (Waiting)</div>
-                                <div style="font-size: 20px; font-weight: 800; color: #b45309; margin-top: 4px;">${waitingCount}</div>
-                            </div>
-                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; text-align: center;">
-                                <div style="font-size: 10px; color: #64748b; font-weight: bold;">平均 Lead Time</div>
-                                <div style="font-size: 20px; font-weight: 800; color: #003366; margin-top: 4px;">${avgLeadTime} 天</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 16px;">
-                        <h3 style="font-size: 13px; color: #003366; margin-bottom: 8px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 區間供應商審核案件明細</h3>
-                        <table>
-                            <thead>
-                                <tr style="background-color: #003366; color: white;">
-                                    <th style="padding: 6px 8px; text-align: left;">Case ID</th>
-                                    <th style="padding: 6px 8px; text-align: left;">Supplier Name</th>
-                                    <th style="padding: 6px 8px; text-align: left;">BU / Action</th>
-                                    <th style="padding: 6px 8px; text-align: left;">Apply Date</th>
-                                    <th style="padding: 6px 8px; text-align: center;">Status</th>
-                                    <th style="padding: 6px 8px; text-align: right;">SLA Age</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${filteredCases.length > 0 ? filteredCases.map((c, idx) => {
-                                    const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
-                                    return `
-                                        <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-                                            <td style="padding: 6px 8px; font-weight: bold; font-family: monospace; color: #003366;">${c.id}</td>
-                                            <td style="padding: 6px 8px; color: #334155;">${c.supplierName}</td>
-                                            <td style="padding: 6px 8px; color: #475569;">${c.bu} / ${c.action}</td>
-                                            <td style="padding: 6px 8px; font-family: monospace; color: #64748b;">${c.applyDate}</td>
-                                            <td style="padding: 6px 8px; text-align: center;"><strong style="color: ${c.status==='Done'?'#047857':(c.status==='Reject'?'#b91c1c':'#b45309')};">${c.status}</strong></td>
-                                            <td style="padding: 6px 8px; text-align: right; font-family: monospace;">${ageInfo.text}</td>
-                                        </tr>
-                                    `;
-                                }).join('') : `<tr><td colspan="6" style="text-align: center; padding: 20px; color: #64748b;">此日期區間無相關案件紀錄</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            window.print();
-        }
-
-        function handleModeToggle(checkbox) {
-            if (checkbox.checked) {
-                document.getElementById('inp-admin-pwd').value = '';
-                document.getElementById('modal-login').classList.remove('hidden');
-                document.getElementById('inp-admin-pwd').focus();
-            } else {
-                isAdmin = false;
-                isDeleteMode = false;
-                selectedCaseIds = [];
-                document.getElementById('btn-delete-mode').classList.remove('active');
-                document.getElementById('delete-mode-status-text').innerText = "(關閉)";
-                updateUIPermissions();
-                switchTab('dash');
-                showToast("已切回訪客模式");
-            }
-        }
-
         function cancelModeToggle() {
             document.getElementById('mode-toggle-input').checked = false;
             closeLoginModal();
@@ -1024,39 +987,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             document.getElementById('modal-forgot-pwd').classList.remove('hidden');
         }
         function closeForgotModal() { document.getElementById('modal-forgot-pwd').classList.add('hidden'); }
-
-        function submitForgotPwd() {
-            const email = document.getElementById('inp-forgot-email').value;
-            if(!email) { alert("請輸入 Email"); return; }
-            closeForgotModal();
-            const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent("【CEVA System】Admin Password Reset Request")}&body=${encodeURIComponent("請協助重設管理者密碼。申請人: " + email)}`;
-            const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
-            showToast("已透過 Outlook 觸發密碼重設通知信");
-            addSystemLog("Security", "Admin", `發送密碼重設申請至：${email}`);
-        }
-
-        function submitAdminLogin() {
-            const pwd = document.getElementById('inp-admin-pwd').value;
-            if (pwd === currentPassword) {
-                closeLoginModal();
-                const lastDate = new Date(lastPwdChangeDate);
-                const now = new Date();
-                const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
-
-                if (diffDays >= 30) {
-                    alert("密碼已超過一個月未修改，請立即更新密碼");
-                    openChangePwdModal(true);
-                } else {
-                    isAdmin = true;
-                    document.getElementById('mode-toggle-input').checked = true;
-                    updateUIPermissions();
-                    showToast("管理者權限已解鎖");
-                }
-            } else {
-                alert("密碼錯誤");
-                document.getElementById('mode-toggle-input').checked = false;
-            }
-        }
 
         function openChangePwdModal(isForced = false) {
             document.getElementById('inp-new-pwd').value = '';
@@ -1073,23 +1003,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             document.getElementById('modal-change-pwd').classList.remove('hidden');
         }
         function closeChangePwdModal() { document.getElementById('modal-change-pwd').classList.add('hidden'); }
-
-        function submitChangePwd() {
-            const newPwd = document.getElementById('inp-new-pwd').value;
-            const confirmPwd = document.getElementById('inp-confirm-pwd').value;
-            if (!newPwd || newPwd.length < 6) { alert("新密碼長度至少 6 字元"); return; }
-            if (newPwd !== confirmPwd) { alert("兩次輸入密碼不相符"); return; }
-            currentPassword = newPwd;
-            lastPwdChangeDate = new Date().toISOString();
-            localStorage.setItem('ceva_admin_pwd', currentPassword);
-            localStorage.setItem('ceva_pwd_date', lastPwdChangeDate);
-            isAdmin = true;
-            document.getElementById('mode-toggle-input').checked = true;
-            closeChangePwdModal();
-            updateUIPermissions();
-            showToast("密碼更新成功");
-            addSystemLog("Security", "Admin", "管理者修改密碼");
-        }
 
         function updateUIPermissions() {
             const adminElements = document.querySelectorAll('.admin-only');
@@ -1153,23 +1066,9 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                         return item.data;
                     });
                 } else {
-                    cases = [...defaultCases];
-                    for (let c of cases) { await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c }); }
+                    cases = [];
                 }
-            } catch (err) { cases = [...defaultCases]; }
-        }
-
-        async function saveCloudData(updatedCases) {
-            cases = updatedCases;
-            try {
-                for (let c of cases) { await supabaseClient.from('vendor_cases').upsert({ id: c.id, data: c }); }
-                showToast("雲端同步成功");
-            } catch (err) { alert("儲存至雲端失敗"); }
-        }
-
-        async function removeCloudCase(id) {
-            cases = cases.filter(x => x.id !== id);
-            try { await supabaseClient.from('vendor_cases').delete().eq('id', id); } catch (err) {}
+            } catch (err) { console.error(err); }
         }
 
         function loadStoredLogs() {
@@ -1268,10 +1167,10 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 return `
                     <tr>
                         ${deleteColHtml}
-                        <td style="font-size:12px; color:#64748b; font-family:monospace;">${l.time}</td>
-                        <td><strong>${l.type}</strong></td>
-                        <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#003366;">${l.target}</code></td>
-                        <td style="color:#334155;">${l.detail}</td>
+                        <td style="font-size:12px; color:#64748b; font-family:monospace;">${escHtml(l.time)}</td>
+                        <td><strong>${escHtml(l.type)}</strong></td>
+                        <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#003366;">${escHtml(l.target)}</code></td>
+                        <td style="color:#334155;">${escHtml(l.detail)}</td>
                     </tr>
                 `;
             }).join('');
@@ -1299,10 +1198,10 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: false, time: "N/A" },
                 { role: isCL ? "CL Product Head" : "A&O Product Head", name: isCL ? "Barry CHAN" : "Warren WANG", title: isCL ? "Contract Logistics Product Head" : "Air & Ocean Director", email: isCL ? "Barry.Chan@cevalogistics.com" : "Warren.Wang@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "確認文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "JDE代碼建立中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
+                { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "供應商資料新建/修改中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
             ];
         }
 
@@ -1322,57 +1221,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             const diffMs = Math.max(0, end - start);
             const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             return { text: `${days} 天`, days: days, isNA: false };
-        }
-
-        async function handleCreate(e) {
-            e.preventDefault();
-            const bu = document.getElementById('inp-bu').value;
-            const supplierName = document.getElementById('inp-supplier').value;
-            const action = document.getElementById('inp-action').value;
-            const selectedDate = document.getElementById('inp-date').value;
-            const requesterEmail = document.getElementById('inp-cc').value;
-            const vendorType = document.getElementById('inp-type').value;
-
-            const matrixSteps = getMatrix(bu);
-
-            const newCase = {
-                id: nextCaseId(selectedDate),
-                supplierName, bu, action,
-                vendorType: normalizeVendorType(vendorType),
-                applyDate: selectedDate,
-                completedDate: null,
-                requesterEmail: requesterEmail,
-                status: "Waiting Internal Approval",
-                steps: matrixSteps
-            };
-
-            cases.unshift(newCase);
-            await saveCloudData(cases);
-            addSystemLog("Create Case", newCase.id, `新建案件：${supplierName} (${bu})`);
-
-            const toEmails = matrixSteps.filter(s => !vmdRoleNames.includes(s.role)).map(s => s.email).join("; ");
-            const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
-            
-            const subject = `【Seek Approval】Vendor Creation/Amendment - ${supplierName}`;
-            const body = 
-                `Dear Approver,\r\n\r\n` +
-                `We are seeking your approval to proceed with the vendor onboarding/amendment for the following supplier in our system:\r\n\r\n` +
-                `Supplier Name: ${supplierName}\r\n\r\n` +
-                `Please review the attached details and reply to this email with either “Approved” or “Not approved”.\r\n\r\n` +
-                `If you have any questions or require additional information, please feel free to refer to the requester (${requesterEmail}).\r\n\r\n` +
-                `Your confirmation within 3 business days would be greatly appreciated to facilitate a timely setup.`;
-
-            const mailtoUrl = `mailto:${encodeURIComponent(toEmails)}?cc=${encodeURIComponent(ccEmails)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-            alert(`【申請成功】\n\n1. 請務必於彈出的 Outlook 信件中夾帶 VMD Request Form 與相關附件。\n2. 系統已自動設定收件人 (To) 與副本 (CC)。`);
-
-            const a = document.createElement('a'); a.href = mailtoUrl; a.click(); a.remove();
-
-            document.getElementById('form-create-vendor').reset();
-            document.getElementById('inp-date').valueAsDate = new Date();
-            document.getElementById('matrix-preview').innerText = "請先選擇 BU...";
-            switchTab('list');
-            showToast(`Case ${newCase.id} 建立成功`);
         }
 
         function renderDashboardAnalytics() {
@@ -1425,6 +1273,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 return matchKey && matchStatus && matchBu;
             });
 
+            if (!dashSortKey) { filteredTable.sort(defaultCaseSort); }
             if (dashSortKey) {
                 filteredTable.sort((a, b) => {
                     let valA, valB;
@@ -1474,10 +1323,10 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
                 return `
                     <tr>
-                        <td><strong>${c.id}</strong></td>
-                        <td>${c.supplierName}</td>
-                        <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
-                        <td style="font-size:12px; color:#475569; white-space:nowrap;">${c.applyDate}</td>
+                        <td><strong>${escHtml(c.id)}</strong></td>
+                        <td>${escHtml(c.supplierName)}</td>
+                        <td>${escHtml(c.bu)} / <strong>${escHtml(c.action)}</strong> / ${escHtml(c.vendorType)}</td>
+                        <td style="font-size:12px; color:#475569; white-space:nowrap;">${escHtml(c.applyDate)}</td>
                         <td>${getStatusBadge(c.status)}</td>
                         <td><span class="${ageClass}">${ageInfo.text}</span></td>
                     </tr>
@@ -1594,6 +1443,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 return matchKey && matchStatus && matchBu;
             });
 
+            if (!listSortKey) { filteredList.sort(defaultCaseSort); }
             if (listSortKey) {
                 filteredList.sort((a, b) => {
                     let valA, valB;
@@ -1630,24 +1480,24 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
             document.getElementById('list-tbody').innerHTML = paginatedItems.map(c => {
                 const ageInfo = calcAge(c.applyDate, c.completedDate, c.status);
-                let actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>`;
+                let actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${escHtml(c.id)}')">檢視</button>`;
                 let selectCheckboxCell = '';
 
                 if (isAdmin && isDeleteMode) {
                     const isChecked = selectedCaseIds.includes(c.id);
-                    selectCheckboxCell = `<td style="text-align: center;"><input type="checkbox" class="checkbox-only case-checkbox" value="${c.id}" onchange="toggleCaseSelection(this, '${c.id}')" ${isChecked?'checked':''}></td>`;
-                    actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>`;
+                    selectCheckboxCell = `<td style="text-align: center;"><input type="checkbox" class="checkbox-only case-checkbox" value="${escHtml(c.id)}" onchange="toggleCaseSelection(this, '${escHtml(c.id)}')" ${isChecked?'checked':''}></td>`;
+                    actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${escHtml(c.id)}')">檢視</button>`;
                 } else if (isAdmin) {
-                    actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${c.id}')">檢視</button>`;
+                    actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${escHtml(c.id)}')">檢視</button>`;
                 }
 
                 return `
                 <tr>
                     ${selectCheckboxCell}
-                    <td><strong>${c.id}</strong></td>
-                    <td>${c.supplierName}</td>
-                    <td>${c.bu} / <strong>${c.action}</strong> / ${c.vendorType}</td>
-                    <td>${c.requesterEmail}</td>
+                    <td><strong>${escHtml(c.id)}</strong></td>
+                    <td>${escHtml(c.supplierName)}</td>
+                    <td>${escHtml(c.bu)} / <strong>${escHtml(c.action)}</strong> / ${escHtml(c.vendorType)}</td>
+                    <td>${escHtml(c.requesterEmail)}</td>
                     <td>${getStatusBadge(c.status)}</td>
                     <td><span class="${ageInfo.isNA ? 'age-na' : 'age-normal'}">${ageInfo.text}</span></td>
                     <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
@@ -1681,8 +1531,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             activeCaseId = id;
             const c = cases.find(x => x.id === id);
 
-            document.getElementById('det-title').innerText = `${c.supplierName} (${c.id})`;
-            document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | Type: ${c.vendorType} | Apply Date: ${c.applyDate}`;
+            document.getElementById('det-title').innerText = `${escHtml(c.supplierName)} (${escHtml(c.id)})`;
+            document.getElementById('det-sub').innerText = `BU: ${escHtml(c.bu)} | Action: ${escHtml(c.action)} | Type: ${escHtml(c.vendorType)} | Apply Date: ${escHtml(c.applyDate)}`;
             
             document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps);
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
@@ -1739,9 +1589,9 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                         <div class="pipeline-left">
                             <div class="${dotClass}"></div>
                             <div>
-                                <strong style="color: #003366; font-size: 14px;">${s.role}</strong>
-                                <div style="font-size: 12px; color: #334155; font-weight: 600; margin-top: 2px;">${s.name} (${s.title})</div>
-                                <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">${s.email} | 完成: ${s.time || 'N/A'}</div>
+                                <strong style="color: #003366; font-size: 14px;">${escHtml(s.role)}</strong>
+                                <div style="font-size: 12px; color: #334155; font-weight: 600; margin-top: 2px;">${escHtml(s.name)} (${escHtml(s.title)})</div>
+                                <div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">${escHtml(s.email)} | 完成: ${escHtml(s.time || 'N/A')}</div>
                             </div>
                         </div>
                         <div>
@@ -1767,20 +1617,17 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 }
 
                 let displayTitle = s.role;
-                if (s.role === '確認完畢文件') displayTitle = s.approved ? '確認完畢文件完成' : '確認完畢文件中';
-                else if (s.role === '要求相關單位核准中') displayTitle = s.approved ? '要求相關單位核准完成' : '要求相關單位核准中';
-                else if (s.role === '與供應商確認相關訊息中') displayTitle = s.approved ? '與供應商確認相關訊息完成' : '與供應商確認相關訊息中';
-                else if (s.role === 'JDE代碼建立中') displayTitle = s.approved ? 'JDE代碼建立完成' : 'JDE代碼建立中';
+                displayTitle = vmdDisplay(s.role, s.approved);
 
                 const timeText = (s.time && s.time !== 'N/A') ? s.time : (idx === firstPendingVmd ? '進行中' : '待處理');
 
                 return `
                     <div class="${cardClass}" style="--i:${idx}">
-                        <div class="vmd-flow-title">${displayTitle}</div>
+                        <div class="vmd-flow-title">${escHtml(displayTitle)}</div>
                         <div style="margin-bottom: 4px;">
                             <input type="checkbox" class="checkbox-only" ${s.approved ? 'checked' : ''} ${checkboxAttr}>
                         </div>
-                        <div class="vmd-flow-time">${timeText}</div>
+                        <div class="vmd-flow-time">${escHtml(timeText)}</div>
                     </div>`;
             }).join('');
 
@@ -1823,7 +1670,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             const nowStr = new Date().toISOString().substring(0,10);
 
             if (status === 'Done') {
-                if (!c.steps.every(s => s.approved)) { alert("須完成所有內部審核與 VMD 4 階段方可完成"); return; }
+                if (!c.steps.every(s => s.approved)) { alert("須完成所有內部審核與 VMD 四個階段後，才能設為完成"); return; }
                 c.completedDate = (c.completedDate === 'N/A') ? 'N/A' : nowStr;
             } else if (status === 'Reject') {
                 c.completedDate = nowStr;
@@ -1838,90 +1685,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             showToast(`狀態已更新`);
         }
 
-        function exportPDF() {
-            const c = cases.find(x => x.id === activeCaseId);
-            if (!c) { alert("請先開啟案件"); return; }
-            const internalSteps = c.steps.filter(s => !vmdRoleNames.includes(s.role));
-
-            let printArea = document.getElementById('pdf-print-area');
-            printArea.innerHTML = `
-                <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; padding: 15px 20px; color: #1e293b; max-width: 800px; margin: 0 auto; background: white; font-size: 12px; line-height: 1.3;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 14px;">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                <span style="background-color: #dc2626; color: white; font-weight: 900; padding: 2px 6px; border-radius: 3px; font-size: 14px; letter-spacing: 2px;">CEVA</span>
-                                <h1 style="color: #003366; font-size: 16px; margin: 0; font-weight: 700;">CEVA Logistics (Taiwan) Co., Ltd.</h1>
-                            </div>
-                            <p style="font-size: 11px; color: #64748b; margin: 0;">Operation Management Control (OMC) | Vendor Approval Summary Report</p>
-                        </div>
-                        <div style="text-align: right; font-size: 11px; color: #475569; line-height: 1.4;">
-                            <div><strong>Case ID:</strong> <span style="color: #003366; font-family: monospace; font-size: 12px;">${c.id}</span></div>
-                            <div><strong>Date:</strong> ${new Date().toISOString().slice(0,10)}</div>
-                        </div>
-                    </div>
-
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px 14px; margin-bottom: 14px;">
-                        <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">1. 供應商基本與申請資訊 (Vendor Profile)</h3>
-                        <table>
-                            <tr>
-                                <td style="padding: 3px 0; width: 18%; color: #64748b;">Supplier Name:</td>
-                                <td style="padding: 3px 0; width: 32%; font-weight: bold; color: #0f172a;">${c.supplierName}</td>
-                                <td style="padding: 3px 0; width: 18%; color: #64748b;">Business Unit:</td>
-                                <td style="padding: 3px 0; width: 32%; font-weight: bold; color: #0f172a;">${c.bu}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 3px 0; color: #64748b;">Action Type:</td>
-                                <td style="padding: 3px 0; font-weight: bold; color: #0f172a;">${c.action}</td>
-                                <td style="padding: 3px 0; color: #64748b;">Vendor Category:</td>
-                                <td style="padding: 3px 0; font-weight: bold; color: #0f172a;">${c.vendorType}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 3px 0; color: #64748b;">Apply Date:</td>
-                                <td style="padding: 3px 0; font-family: monospace;">${c.applyDate}</td>
-                                <td style="padding: 3px 0; color: #64748b;">Requestor Email:</td>
-                                <td style="padding: 3px 0; font-family: monospace; font-size: 11px;">${c.requesterEmail}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 3px 0; color: #64748b;">Overall Status:</td>
-                                <td style="padding: 3px 0;" colspan="3"><strong style="color: ${c.status==='Done'?'#047857':(c.status==='Reject'?'#b91c1c':'#b45309')};">${c.status}</strong></td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <div style="margin-bottom: 14px;">
-                        <h3 style="font-size: 12px; color: #003366; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">2. 內部跨部門審核軌跡 (Internal Approval Audit Trail)</h3>
-                        <table>
-                            <thead>
-                                <tr style="background-color: #003366; color: white;">
-                                    <th style="padding: 6px 8px; text-align: left; width: 22%;">審核部門</th>
-                                    <th style="padding: 6px 8px; text-align: left; width: 28%;">負責人與職稱</th>
-                                    <th style="padding: 6px 8px; text-align: left; width: 24%;">電子郵件</th>
-                                    <th style="padding: 6px 8px; text-align: center; width: 13%;">狀態</th>
-                                    <th style="padding: 6px 8px; text-align: right; width: 13%;">完成日期</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${internalSteps.map((s, idx) => `
-                                    <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-                                        <td style="padding: 6px 8px; font-weight: bold; color: #475569;">${s.role}</td>
-                                        <td style="padding: 6px 8px; color: #334155;">
-                                            <div style="font-weight: bold; color: #003366;">${s.name}</div>
-                                            <div style="font-size: 10px; color: #64748b;">${s.title}</div>
-                                        </td>
-                                        <td style="padding: 6px 8px; font-family: monospace; color: #334155; font-size: 10px;">${s.email}</td>
-                                        <td style="padding: 6px 8px; text-align: center;">
-                                            ${s.approved ? '<span style="color: #047857; font-weight: bold; background: #d1fae5; padding: 1px 6px; border-radius: 3px; font-size: 10px;">APPROVED</span>' : '<span style="color: #b45309; font-weight: bold; background: #fef3c7; padding: 1px 6px; border-radius: 3px; font-size: 10px;">PENDING</span>'}
-                                        </td>
-                                        <td style="padding: 6px 8px; text-align: right; font-family: monospace; color: #64748b;">${s.time || 'N/A'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            window.print();
-        }
     
         /* ===================== Supabase Auth / RLS 版本（覆蓋上方同名舊函式） ===================== */
         const syncedSnapshot = new Map();
@@ -2045,10 +1808,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         });
     
         /* ===================== Flow v2：進度摘要 ===================== */
-        const vmdProgressText = {
-            '確認完畢文件': '確認完畢文件中', '要求相關單位核准中': '要求相關單位核准中',
-            '與供應商確認相關訊息中': '與供應商確認相關訊息中', 'JDE代碼建立中': 'JDE代碼建立中'
-        };
+        const vmdProgressText = Object.fromEntries(Object.entries(VMD_LABEL).map(([k, v]) => [k, v[0]]));
         let flowPrev = { id: null, pct: 0 };
 
         function animateNumber(el, from, to, ms, fmt) {
@@ -2097,8 +1857,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 <div class="flow-summary">
                     <div class="fs-top">
                         <div>
-                            <div class="fs-title"><span class="fs-dot ${state}"></span>${title}</div>
-                            <div class="fs-sub">${sub}</div>
+                            <div class="fs-title"><span class="fs-dot ${state}"></span>${escHtml(title)}</div>
+                            <div class="fs-sub">${escHtml(sub)}</div>
                         </div>
                         <div class="fs-metrics">
                             <div class="fs-metric"><b class="fs-pct">${from}%</b><span>整體進度</span></div>
@@ -2240,7 +2000,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             'Reject': ['REJECTED', '#b91c1c', '#fee2e2'],
             'Hold': ['ON HOLD', '#475569', '#e2e8f0']
         };
-        const SHORT_ROLE = { '確認完畢文件': '文件確認', '要求相關單位核准中': '單位核准', '與供應商確認相關訊息中': '供應商確認', 'JDE代碼建立中': 'JDE 建立' };
+        const SHORT_ROLE = { '確認文件': '確認文件', '與供應商確認相關訊息中': '供應商確認', '要求相關單位核准中': '單位核准', '供應商資料新建/修改中': '供應商資料' };
         function shortRole(r) { return SHORT_ROLE[r] || String(r).replace('Product Head', 'PH'); }
 
         function rptHeader(title, subtitle, meta, right) {
@@ -2317,7 +2077,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 </div>
                 <div class="rpt-foot">CEVA Logistics (Taiwan) Co., Ltd.  ·  Vendor Approval Confirmation  ·  ${escHtml(c.id)}  ·  Generated by Vendor Approval System</div>
             </div>`;
-            printAs(`Vendor_Approval_Report_${c.id}`);
+            printAs(`Vendor_Approval_Report_${escHtml(c.id)}`);
         }
 
         /* ---- 區間 Executive Analysis Report ---- */
@@ -2436,6 +2196,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         }
         function removeAttachment(i) { attachFiles.splice(i, 1); renderAttachments(); }
         function renderAttachments() {
+            if (attachFiles.length) gid('attach-drop').classList.remove('invalid');
             gid('attach-list').innerHTML = attachFiles.map((f, i) => `
                 <div class="attach-item"><span class="attach-name">${escHtml(f.name)}</span><span class="attach-size">${fmtSize(f.size)}</span>
                 <button type="button" class="attach-x" onclick="removeAttachment(${i})" aria-label="移除">×</button></div>`).join('')
@@ -2466,28 +2227,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 r.readAsDataURL(f);
             });
         }
-        async function buildEml({ to, cc, subject, body, files }) {
-            const bd = '----=_CEVA_' + Date.now().toString(16);
-            const addr = list => list.split(/;\s*/).filter(Boolean).join(',\r\n ');
-            let eml = 'X-Unsent: 1\r\n' + `To: ${addr(to)}\r\n` + (cc ? `Cc: ${addr(cc)}\r\n` : '') +
-                `Subject: ${encWord(subject)}\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="${bd}"\r\n\r\n`;
-            eml += `--${bd}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${wrap76(utf8b64(body))}\r\n`;
-            for (const f of files) {
-                const data = await fileToB64(f);
-                const name = f.name.replace(/"/g, "'");
-                const ext = (name.match(/\.[A-Za-z0-9]{1,8}$/) || [''])[0];
-                let nameP, dispP;
-                if (isAscii(name)) { nameP = `name="${name}"`; dispP = `filename="${name}"`; }
-                else {
-                    const short = new TextEncoder().encode(name).length <= 42;
-                    const fb = short ? '=?UTF-8?B?' + utf8b64(name) + '?=' : 'attachment' + ext;
-                    nameP = `name="${fb}"`;
-                    dispP = `filename="${fb}"; filename*=UTF-8''${encodeURIComponent(name)}`;
-                }
-                eml += `--${bd}\r\nContent-Type: ${f.type || 'application/octet-stream'}; ${nameP}\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; ${dispP}\r\n\r\n${wrap76(data)}\r\n`;
-            }
-            return new Blob([eml + `--${bd}--\r\n`], { type: 'message/rfc822' });
-        }
         function downloadBlob(blob, filename) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2503,8 +2242,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 gid('mr-body').innerHTML = `
                     <div>1. 已下載郵件草稿檔 <b>${escHtml(fname)}</b>。</div>
                     <div>2. 雙擊開啟該檔案，Outlook 會以草稿開啟，<b>收件人、副本、主旨與附件都已填好</b>。</div>
-                    <div>3. 確認內容後按「傳送」。</div><div style="margin-top:6px;font-size:12px;color:#64748b;">草稿底部若沒有你的簽名檔，請在「新建申請」的簽名欄貼上一次，系統會依 Email 記住。</div>
-                    <div style="margin-top:10px;font-size:12px;color:#64748b;">提示：傳統版 Outlook 桌面程式（Windows / Mac）可直接以草稿開啟；若你使用新版 Outlook 或網頁版而只看到唯讀郵件，請按「轉寄」後再送出。</div>`;
+                    <div>3. 確認內容後按「傳送」。</div><div style="margin-top:6px;font-size:12px;color:#64748b;">草稿底部若沒有您的簽名檔，請在「新建申請」的簽名欄貼上一次，系統會依 Email 記住。</div>
+                    <div style="margin-top:10px;font-size:12px;color:#64748b;">提示：傳統版 Outlook 桌面程式（Windows / Mac）可直接以草稿開啟；若您使用新版 Outlook 或網頁版而只看到唯讀郵件，請按「轉寄」後再送出。</div>`;
             } else {
                 gid('mr-sub').textContent = 'Outlook 郵件已開啟';
                 gid('mr-body').innerHTML = `
@@ -2523,8 +2262,16 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
         async function handleCreate(e) {
             e.preventDefault();
+            if (!attachFiles.length) {
+                const dz = gid('attach-drop');
+                dz.classList.add('invalid');
+                dz.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast('請至少附上一份附件（例如 VMD Request Form）');
+                return;
+            }
             const bu = gid('inp-bu').value;
-            const supplierName = gid('inp-supplier').value;
+            const supplierName = gid('inp-supplier').value.trim();
+            if (/[<>]/.test(supplierName)) { alert('供應商名稱不可包含 < 或 > 符號'); return; }
             const action = gid('inp-action').value;
             const selectedDate = gid('inp-date').value;
             const requesterEmail = gid('inp-cc').value;
@@ -2656,6 +2403,103 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 if (saved && !ed.textContent.trim() && !ed.querySelector('img')) ed.innerHTML = saved;
             });
         };
+    
+        /* ===================== v6：排序 / 資料驗證 / 即時同步 / 手機版 ===================== */
+        const STATUS_RANK = { 'Waiting Internal Approval': 0, 'Hold': 1, 'Reject': 2, 'Done': 3 };
+        // 未完成優先：進行中 → 暫停 → 退回 → 完成；未完成者最久的在前，已結案者最新的在前
+        function defaultCaseSort(a, b) {
+            const ra = STATUS_RANK[a.status] ?? 9, rb = STATUS_RANK[b.status] ?? 9;
+            if (ra !== rb) return ra - rb;
+            const da = String(a.applyDate || ''), db = String(b.applyDate || '');
+            if (da !== db) return ra <= 1 ? (da < db ? -1 : 1) : (da < db ? 1 : -1);
+            return String(b.id).localeCompare(String(a.id));
+        }
+
+        // 載入後：只接受格式正確的案件，並轉換舊版階段名稱與順序
+        const CASE_ID_RE = /^CEVA-\d{6}-\d{3,6}$/;
+        const _loadCloudDataV6 = loadCloudData;
+        loadCloudData = async function () {
+            await _loadCloudDataV6();
+            cases = cases
+                .filter(c => c && CASE_ID_RE.test(String(c.id)) && Array.isArray(c.steps))
+                .map(canonicalizeCase);
+        };
+
+        // 手機版：為表格儲存格加上欄位標籤
+        function labelTable(tbodyId) {
+            const tb = gid(tbodyId);
+            if (!tb) return;
+            const table = tb.closest('table');
+            const heads = [...table.querySelectorAll('thead th')]
+                .filter(th => getComputedStyle(th).display !== 'none')
+                .map(th => ((th.childNodes[0] ? th.childNodes[0].textContent : th.textContent) || '').trim());
+            tb.querySelectorAll('tr').forEach(tr => {
+                const tds = [...tr.children];
+                if (tds.length === 1 && tds[0].colSpan > 1) return;
+                tds.forEach((td, i) => { if (heads[i] !== undefined) td.setAttribute('data-label', heads[i]); });
+            });
+        }
+        [['renderDashboard', 'dash-tbody'], ['renderList', 'list-tbody'], ['renderLogs', 'logs-tbody']].forEach(([fn, tb]) => {
+            const orig = window[fn];
+            window[fn] = function () { const r = orig.apply(this, arguments); labelTable(tb); return r; };
+        });
+
+        // ---- 即時同步（Supabase Realtime）：只更新資料與清單，不動表單與輸入框 ----
+        let savingNow = 0, lastLocalWrite = 0, refreshTimer = null, refreshing = false;
+        const _saveCloudDataV6 = saveCloudData;
+        saveCloudData = async function (c) {
+            savingNow++;
+            try { return await _saveCloudDataV6(c); }
+            finally { savingNow--; lastLocalWrite = Date.now(); }
+        };
+
+        function setLive(on) {
+            const p = gid('live-pill');
+            if (!p) return;
+            p.classList.toggle('on', on);
+            p.classList.toggle('off', !on);
+            p.querySelector('b').textContent = on ? 'Live' : 'Offline';
+        }
+        function scheduleRefresh(ms) {
+            clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(refreshFromCloud, ms);
+        }
+        async function refreshFromCloud() {
+            if (refreshing) return;
+            if (savingNow > 0 || Date.now() - lastLocalWrite < 1500) { scheduleRefresh(1600); return; }
+            refreshing = true;
+            try {
+                const prev = cases.find(c => c.id === activeCaseId);
+                const prevJson = prev ? JSON.stringify(prev) : null;
+                await loadCloudData();
+                snapshotCases();
+                renderDashboard();
+                renderList();
+                const modalOpen = !gid('modal-detail').classList.contains('hidden');
+                if (modalOpen && activeCaseId) {
+                    const cur = cases.find(c => c.id === activeCaseId);
+                    if (!cur) { closeDetailModal(); showToast('此案件已被刪除'); }
+                    else if (JSON.stringify(cur) !== prevJson) { openDetail(activeCaseId); showToast('案件內容已即時更新'); }
+                }
+            } catch (e) { console.error(e); }
+            finally { refreshing = false; }
+        }
+        function startRealtime() {
+            try {
+                supabaseClient.channel('vendor_cases_live')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'vendor_cases' }, () => scheduleRefresh(400))
+                    .subscribe(status => {
+                        setLive(status === 'SUBSCRIBED');
+                        if (status === 'SUBSCRIBED') scheduleRefresh(200);
+                    });
+            } catch (e) { setLive(false); }
+            setInterval(() => { if (!document.hidden) scheduleRefresh(100); }, 60000);
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleRefresh(200); });
+            window.addEventListener('online', () => scheduleRefresh(200));
+        }
+
+        const _baseOnloadV6 = window.onload;
+        window.onload = async function () { await _baseOnloadV6(); startRealtime(); };
     </script>
 </body>
 </html>
