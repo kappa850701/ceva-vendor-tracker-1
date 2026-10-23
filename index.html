@@ -1767,9 +1767,9 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 }
 
                 let displayTitle = s.role;
-                if (s.role === '確認完畢文件') displayTitle = s.approved ? '確認文件完成' : '確認文件中';
-                else if (s.role === '與供應商確認相關訊息中') displayTitle = s.approved ? '與供應商確認相關訊息完成' : '與供應商確認相關訊息中';
+                if (s.role === '確認完畢文件') displayTitle = s.approved ? '確認完畢文件完成' : '確認完畢文件中';
                 else if (s.role === '要求相關單位核准中') displayTitle = s.approved ? '要求相關單位核准完成' : '要求相關單位核准中';
+                else if (s.role === '與供應商確認相關訊息中') displayTitle = s.approved ? '與供應商確認相關訊息完成' : '與供應商確認相關訊息中';
                 else if (s.role === 'JDE代碼建立中') displayTitle = s.approved ? 'JDE代碼建立完成' : 'JDE代碼建立中';
 
                 const timeText = (s.time && s.time !== 'N/A') ? s.time : (idx === firstPendingVmd ? '進行中' : '待處理');
@@ -2256,29 +2256,38 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         }
         const todayStr = () => new Date().toISOString().slice(0, 10);
 
-        /* ---- 單一案件 Approval Report ---- */
+        /* ---- 單一案件 Approval Report（僅呈現內部簽核結果） ---- */
         function exportPDF() {
             const c = cases.find(x => x.id === activeCaseId);
             if (!c) { alert('請先開啟案件'); return; }
             const internal = c.steps.filter(s => !vmdRoleNames.includes(s.role));
-            const vmd = c.steps.filter(s => vmdRoleNames.includes(s.role));
-            const done = c.steps.filter(s => s.approved).length, total = c.steps.length;
+            const done = internal.filter(s => s.approved).length, total = internal.length;
+            const allDone = total > 0 && done === total;
             const pct = total ? Math.round(done / total * 100) : 0;
-            const age = calcAge(c.applyDate, c.completedDate, c.status).text;
-            const st = RPT_STATUS[c.status] || RPT_STATUS['Waiting Internal Approval'];
+            const times = internal.map(s => s.time).filter(t => t && t !== 'N/A').sort();
+            const internalDate = allDone && times.length ? times[times.length - 1].substring(0, 10) : '';
+            const endD = internalDate ? new Date(internalDate) : new Date();
+            const leadDays = Math.floor(Math.max(0, endD - new Date(String(c.applyDate).substring(0, 10))) / 86400000);
+
+            let st = ['IN PROGRESS', '#b45309', '#fef3c7'];
+            if (c.status === 'Reject') st = RPT_STATUS['Reject'];
+            else if (c.status === 'Hold') st = RPT_STATUS['Hold'];
+            else if (allDone) st = ['INTERNAL APPROVAL COMPLETE', '#047857', '#d1fae5'];
+            const barColor = c.status === 'Reject' ? '#ef4444' : c.status === 'Hold' ? '#94a3b8' : allDone ? '#10b981' : '#f59e0b';
+
             const pill = ok => ok
                 ? '<span class="chip" style="background:#d1fae5;color:#047857;">APPROVED</span>'
                 : '<span class="chip" style="background:#fef3c7;color:#b45309;">PENDING</span>';
             const dt = s => (s.time && s.time !== 'N/A') ? s.time : '—';
-            const compDate = (c.completedDate && c.completedDate !== 'N/A') ? c.completedDate : '—';
-            const barColor = c.status === 'Done' ? '#10b981' : c.status === 'Reject' ? '#ef4444' : c.status === 'Hold' ? '#94a3b8' : '#f59e0b';
-
-            const overview = c.steps.map((s, i) => `<div class="ov-step ${s.approved ? 'ok' : ''}"><i>${s.approved ? '✓' : i + 1}</i><span>${escHtml(shortRole(s.role))}</span></div>`).join('');
-            const last = internal[internal.length - 1];
+            const banner = (allDone && c.status !== 'Reject' && c.status !== 'Hold')
+                ? `<div style="margin-top:12px;border:1px solid #86efac;background:#f0fdf4;border-radius:8px;padding:10px 14px;color:#047857;"><b>內部及跨部門簽核已全數完成</b><div style="font-size:11px;color:#166534;margin-top:2px;">All required internal approvals have been obtained${internalDate ? ' on ' + internalDate : ''}.</div></div>`
+                : '';
+            const overview = internal.map((s, i) => `<div class="ov-step ${s.approved ? 'ok' : ''}"><i>${s.approved ? '✓' : i + 1}</i><span>${escHtml(shortRole(s.role))}</span></div>`).join('');
 
             gid('pdf-print-area').innerHTML = RPT_CSS + `<div class="rpt">
-                ${rptHeader('Vendor Approval Report', '供應商建立 / 異動核准報告', [['Case ID', escHtml(c.id)], ['Generated', todayStr()], ['Document', 'Internal Approval Record']],
+                ${rptHeader('Vendor Approval Report', '供應商建立 / 異動 · 內部簽核報告', [['Case ID', escHtml(c.id)], ['Generated', todayStr()], ['Document', 'Approval Confirmation']],
                     `<span class="stamp" style="color:${st[1]};border-color:${st[1]};background:${st[2]};">${st[0]}</span>`)}
+                ${banner}
 
                 <div class="rpt-sec"><h2><b>1</b> Vendor Information 供應商資訊</h2>
                     <div class="kv">
@@ -2287,39 +2296,26 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                         <div><small>Action</small><b>${escHtml(c.action)}</b></div>
                         <div><small>Vendor Type</small><b>${escHtml(c.vendorType)}</b></div>
                         <div><small>Apply Date</small><b>${escHtml(c.applyDate)}</b></div>
-                        <div><small>Completed Date</small><b>${compDate}</b></div>
-                        <div><small>SLA Age</small><b>${age}</b></div>
+                        <div><small>Internal Approval Completed</small><b>${internalDate || '—'}</b></div>
+                        <div><small>Approval Lead Time</small><b>${leadDays} 天</b></div>
                         <div style="grid-column:span 4;"><small>Requestor</small><b>${escHtml(c.requesterEmail)}</b></div>
                     </div>
                 </div>
 
-                <div class="rpt-sec"><h2><b>2</b> Process Overview 流程總覽</h2>
+                <div class="rpt-sec"><h2><b>2</b> Approval Overview 簽核總覽</h2>
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
                         <div class="bar" style="flex:1;"><i style="width:${pct}%;background:${barColor};"></i></div>
-                        <b style="color:#003366;">${pct}%  <span style="color:#64748b;font-weight:600;">(${done} / ${total} stages)</span></b>
+                        <b style="color:#003366;">${pct}%  <span style="color:#64748b;font-weight:600;">(${done} / ${total} approvals)</span></b>
                     </div>
                     <div class="ov">${overview}</div>
-                    <div class="ov-groups"><div style="flex:${internal.length};">Internal Approval 內部審核</div><div style="flex:${vmd.length};">VMD Execution VMD 執行</div></div>
+                    <div class="ov-groups"><div style="flex:1;">Internal Cross-Department Approval 內部跨部門簽核</div></div>
                 </div>
 
                 <div class="rpt-sec flow"><h2><b>3</b> Internal Cross-Department Approval 內部跨部門審核</h2>
                     <table><thead><tr><th style="width:5%;">#</th><th style="width:20%;">Function</th><th style="width:27%;">Approver</th><th style="width:24%;">Email</th><th style="width:12%;">Decision</th><th style="width:12%;">Date</th></tr></thead>
                     <tbody>${internal.map((s, i) => `<tr><td>${i + 1}</td><td><b>${escHtml(s.role)}</b></td><td><b style="color:#003366;">${escHtml(s.name)}</b><div style="font-size:10px;color:#64748b;">${escHtml(s.title)}</div></td><td style="font-family:monospace;font-size:10px;">${escHtml(s.email)}</td><td>${pill(s.approved)}</td><td style="font-family:monospace;">${dt(s)}</td></tr>`).join('')}</tbody></table>
                 </div>
-
-                <div class="rpt-sec flow"><h2><b>4</b> VMD Execution Pipeline VMD 執行</h2>
-                    <table><thead><tr><th style="width:5%;">#</th><th style="width:55%;">Stage</th><th style="width:20%;">Status</th><th style="width:20%;">Date</th></tr></thead>
-                    <tbody>${vmd.map((s, i) => `<tr><td>${i + 1}</td><td><b>${escHtml(s.role)}</b></td><td>${s.approved ? '<span class="chip" style="background:#d1fae5;color:#047857;">COMPLETED</span>' : '<span class="chip" style="background:#f1f5f9;color:#64748b;">OPEN</span>'}</td><td style="font-family:monospace;">${dt(s)}</td></tr>`).join('')}</tbody></table>
-                </div>
-
-                <div class="rpt-sec"><h2><b>5</b> Authorization 簽核欄位</h2>
-                    <div class="sign">
-                        <div><b>${escHtml(c.requesterEmail)}</b>Requestor 申請人 · Date: ____________</div>
-                        <div><b>${escHtml(internal[0] ? internal[0].name : '')}</b>OMC Review 營運管控 · Date: ____________</div>
-                        <div><b>${escHtml(last ? last.name : '')}</b>Final Approver 最終核准 · Date: ____________</div>
-                    </div>
-                </div>
-                ${rptFoot(escHtml(c.id))}
+                <div class="rpt-foot">CEVA Logistics (Taiwan) Co., Ltd.  ·  Vendor Approval Confirmation  ·  ${escHtml(c.id)}  ·  Generated by Vendor Approval System</div>
             </div>`;
             printAs(`Vendor_Approval_Report_${c.id}`);
         }
