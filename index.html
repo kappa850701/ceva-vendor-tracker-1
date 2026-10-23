@@ -819,7 +819,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: true, time: "2026-06-24" },
                     { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: true, time: "2026-06-24" },
                     { role: "A&O Product Head", name: "Warren WANG", title: "Air & Ocean Director", email: "Warren.Wang@cevalogistics.com", approved: true, time: "2026-06-25" },
-                    { role: "確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
+                    { role: "確認文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
                     { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
                     { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" },
                     { role: "JDE代碼建立中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: true, time: "2026-06-25" }
@@ -827,7 +827,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             }
         ];
 
-        const vmdRoleNames = ['確認完畢文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'];
+        const vmdRoleNames = ['確認文件', '要求相關單位核准中', '與供應商確認相關訊息中', 'JDE代碼建立中'];
 
         // Vendor Type 一律標準化為 "Trade" / "Non-Trade"
         function normalizeVendorType(v) {
@@ -1299,7 +1299,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: false, time: "N/A" },
                 { role: isCL ? "CL Product Head" : "A&O Product Head", name: isCL ? "Barry CHAN" : "Warren WANG", title: isCL ? "Contract Logistics Product Head" : "Air & Ocean Director", email: isCL ? "Barry.Chan@cevalogistics.com" : "Warren.Wang@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "確認完畢文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
+                { role: "確認文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
                 { role: "JDE代碼建立中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
@@ -1767,7 +1767,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 }
 
                 let displayTitle = s.role;
-                if (s.role === '確認完畢文件') displayTitle = s.approved ? '確認完畢文件完成' : '確認完畢文件中';
+                if (s.role === '確認文件') displayTitle = s.approved ? '確認文件完成' : '確認文件中';
                 else if (s.role === '要求相關單位核准中') displayTitle = s.approved ? '要求相關單位核准完成' : '要求相關單位核准中';
                 else if (s.role === '與供應商確認相關訊息中') displayTitle = s.approved ? '與供應商確認相關訊息完成' : '與供應商確認相關訊息中';
                 else if (s.role === 'JDE代碼建立中') displayTitle = s.approved ? 'JDE代碼建立完成' : 'JDE代碼建立中';
@@ -2046,7 +2046,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
     
         /* ===================== Flow v2：進度摘要 ===================== */
         const vmdProgressText = {
-            '確認完畢文件': '確認完畢文件中', '要求相關單位核准中': '要求相關單位核准中',
+            '確認文件': '確認文件中', '要求相關單位核准中': '要求相關單位核准中',
             '與供應商確認相關訊息中': '與供應商確認相關訊息中', 'JDE代碼建立中': 'JDE代碼建立中'
         };
         let flowPrev = { id: null, pct: 0 };
@@ -2240,7 +2240,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             'Reject': ['REJECTED', '#b91c1c', '#fee2e2'],
             'Hold': ['ON HOLD', '#475569', '#e2e8f0']
         };
-        const SHORT_ROLE = { '確認完畢文件': '文件確認', '要求相關單位核准中': '單位核准', '與供應商確認相關訊息中': '供應商確認', 'JDE代碼建立中': 'JDE 建立' };
+        const SHORT_ROLE = { '確認文件': '文件確認', '要求相關單位核准中': '單位核准', '與供應商確認相關訊息中': '供應商確認', 'JDE代碼建立中': 'JDE 建立' };
         function shortRole(r) { return SHORT_ROLE[r] || String(r).replace('Product Head', 'PH'); }
 
         function rptHeader(title, subtitle, meta, right) {
