@@ -367,9 +367,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
-.sig-editor { min-height: 90px; max-height: 220px; overflow: auto; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; background: #fff; font-size: 13px; margin-top: 6px; line-height: 1.5; }
-.sig-editor:empty::before { content: attr(data-placeholder); color: #94a3b8; }
-.sig-editor:focus { outline: none; border-color: #003366; box-shadow: 0 0 0 3px rgba(0,51,102,.1); }
 
 /* ===== v6：必填 / 即時同步 / 手機版 ===== */
 @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
@@ -438,11 +435,28 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
     #admin-action-buttons { flex-wrap: wrap; }
     #status-toast { left: 12px; right: 12px; top: 12px; text-align: center; }
 }
+
+/* ===== v7：提示 / 載入狀態 ===== */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes topbar { from { background-position: -50% 0; } to { background-position: 150% 0; } }
+@keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+#top-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 3000; opacity: 0; pointer-events: none; transition: opacity .2s;
+    background: linear-gradient(90deg, transparent, #2563eb, #60a5fa, transparent); background-size: 50% 100%; background-repeat: no-repeat; }
+#top-progress.on { opacity: 1; animation: topbar 1s linear infinite; }
+.spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 4px; }
+#status-toast { max-width: min(420px, calc(100vw - 24px)); line-height: 1.5; }
+#status-toast.toast-success { border-left-color: #10b981; }
+#status-toast.toast-info { border-left-color: #60a5fa; }
+#status-toast.toast-error { background: #7f1d1d; border-color: #450a0a; border-left-color: #f87171; }
+.skeleton-row td { padding: 14px 12px !important; }
+.sk { height: 16px; border-radius: 6px; background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: sk 1.4s linear infinite; }
+.btn:disabled { cursor: not-allowed; }
 </style>
 </head>
 <body>
 
-    <div id="status-toast" class="hidden"></div>
+    <div id="top-progress"></div>
+    <div id="status-toast" class="hidden" role="status" aria-live="polite"></div>
 
     <header>
         <div class="logo-title">
@@ -542,7 +556,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                         <th onclick="sortDashTable('age')">SLA Age <span class="sort-indicator" id="sort-ind-age">↕</span></th>
                     </tr>
                 </thead>
-                <tbody id="dash-tbody"></tbody>
+                <tbody id="dash-tbody"><tr class="skeleton-row"><td colspan="6"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="6"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="6"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="6"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="6"><div class="sk"></div></td></tr></tbody>
             </table>
 
             <div id="dash-pagination-container"></div>
@@ -555,7 +569,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div style="grid-column: span 2;">
                         <label><strong>Supplier Name <span style="color:red;">*</span></strong></label>
-                        <input type="text" id="inp-supplier" required maxlength="200" placeholder="例如: 佰進國際物流">
+                        <input type="text" id="inp-supplier" required maxlength="200" placeholder="例如: 仕嘉運通股份有限公司">
                     </div>
                     <div>
                         <label><strong>BU <span style="color:red;">*</span></strong></label>
@@ -604,12 +618,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     </div>
                     <div id="attach-list"></div>
                     <div style="font-size:12px; color:#64748b; margin-top:8px;">必填。建立後系統會產生含附件的 Outlook 郵件草稿 (.eml)，開啟後直接按傳送即可。</div>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <label><strong>郵件簽名檔 Signature</strong> <span style="font-size:12px; color:#64748b;">(從 Outlook 複製您的簽名後貼上，系統會依 Requestor Email 記住)</span></label>
-                    <div id="sig-editor" class="sig-editor" contenteditable="true" data-placeholder="在此貼上您的 Outlook 簽名檔…" spellcheck="false"></div>
-                    <div style="font-size:12px; color:#64748b; margin-top:6px;">簽名只存放在這台電腦的瀏覽器中，用於郵件草稿，系統會依 Email 記住。</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="margin-top: 24px; padding: 10px 24px; font-size: 14px;">建立單號並產生郵件</button>
@@ -663,7 +671,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                         <th style="text-align: right;" id="th-action-col">操作</th>
                     </tr>
                 </thead>
-                <tbody id="list-tbody"></tbody>
+                <tbody id="list-tbody"><tr class="skeleton-row"><td colspan="7"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="7"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="7"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="7"><div class="sk"></div></td></tr><tr class="skeleton-row"><td colspan="7"><div class="sk"></div></td></tr></tbody>
             </table>
 
             <div id="pagination-container"></div>
@@ -767,7 +775,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">密碼救援</h3>
             <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請輸入授權管理者 Email：</p>
-            <input type="email" id="inp-forgot-email" placeholder="Nicolas.Wang@cevalogistics.com" style="margin-bottom: 20px; text-align: center;">
+            <input type="email" id="inp-forgot-email" readonly placeholder="Nicolas.Wang@cevalogistics.com" style="margin-bottom: 20px; text-align: center;">
             <div style="display: flex; justify-content: flex-end; gap: 8px;">
                 <button class="btn btn-secondary" onclick="closeForgotModal()">取消</button>
                 <button class="btn btn-primary" onclick="submitForgotPwd()">發送</button>
@@ -909,14 +917,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         }
 
         // 以現有最大序號 +1 產生案件編號，避免刪除案件後撞號覆蓋舊資料
-        function nextCaseId(dateStr) {
-            const prefix = "CEVA-" + dateStr.substring(0, 7).replace('-', '') + "-";
-            const max = cases
-                .filter(c => c.id.startsWith(prefix))
-                .reduce((m, c) => Math.max(m, parseInt(c.id.slice(prefix.length), 10) || 0), 0);
-            return prefix + String(max + 1).padStart(3, '0');
-        }
-
         window.onload = async function() {
             document.getElementById('inp-date').valueAsDate = new Date();
             
@@ -939,13 +939,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             renderList();
             renderLogs();
         };
-
-        function showToast(msg) {
-            const toast = document.getElementById('status-toast');
-            toast.innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
-        }
 
         function toggleDeleteMode() {
             isDeleteMode = !isDeleteMode;
@@ -1208,7 +1201,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         function updateMatrixPreview() {
             const bu = document.getElementById('inp-bu').value;
             if(!bu) return;
-            const roles = getMatrix(bu).map(m => m.role);
+            const roles = [...getMatrix(bu).filter(m => !vmdRoleNames.includes(m.role)).map(m => m.role), 'VMD Team'];
             document.getElementById('matrix-preview').innerHTML = roles.join(' / ');
         }
 
@@ -1638,53 +1631,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
         function closeDetailModal() { document.getElementById('modal-detail').classList.add('hidden'); }
 
-        async function toggleStepApproval(stepIndex, isChecked) {
-            if(!isAdmin) { alert("權限不足"); return; }
-            const c = cases.find(x => x.id === activeCaseId);
-            const nowStr = new Date().toISOString().substring(0,10);
-            const stepName = c.steps[stepIndex].role;
-
-            if (isChecked) {
-                c.steps[stepIndex].approved = true;
-                c.steps[stepIndex].time = nowStr;
-                if (c.steps.every(s => s.approved)) {
-                    c.status = "Done";
-                    c.completedDate = nowStr;
-                }
-            } else {
-                c.steps[stepIndex].approved = false;
-                c.steps[stepIndex].time = "N/A";
-                c.status = "Waiting Internal Approval";
-                c.completedDate = null;
-            }
-
-            await saveCloudData(cases);
-            addSystemLog("Approval", c.id, `階段 [${stepName}] 更新`);
-            lastToggledRole = isChecked ? stepName : null;
-            openDetail(activeCaseId); renderDashboard(); renderList();
-        }
-
-        async function setGlobalStatus(status) {
-            if(!isAdmin) return;
-            const c = cases.find(x => x.id === activeCaseId);
-            const nowStr = new Date().toISOString().substring(0,10);
-
-            if (status === 'Done') {
-                if (!c.steps.every(s => s.approved)) { alert("須完成所有內部審核與 VMD 四個階段後，才能設為完成"); return; }
-                c.completedDate = (c.completedDate === 'N/A') ? 'N/A' : nowStr;
-            } else if (status === 'Reject') {
-                c.completedDate = nowStr;
-            } else {
-                c.completedDate = null;
-            }
-
-            c.status = status;
-            await saveCloudData(cases);
-            addSystemLog("Status", c.id, `變更狀態：${status}`);
-            openDetail(activeCaseId); renderDashboard(); renderList();
-            showToast(`狀態已更新`);
-        }
-
     
         /* ===================== Supabase Auth / RLS 版本（覆蓋上方同名舊函式） ===================== */
         const syncedSnapshot = new Map();
@@ -1705,10 +1651,10 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
         async function submitAdminLogin() {
             const pwd = document.getElementById('inp-admin-pwd').value;
-            if (!pwd) { alert("請輸入密碼"); return; }
+            if (!pwd) { showToast('請輸入密碼', 'error'); return; }
             const { error } = await supabaseClient.auth.signInWithPassword({ email: ADMIN_EMAIL, password: pwd });
             if (error) {
-                alert("登入失敗：帳號或密碼錯誤");
+                showToast('登入失敗：帳號或密碼錯誤', 'error');
                 document.getElementById('mode-toggle-input').checked = false;
                 return;
             }
@@ -1738,7 +1684,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         }
 
         async function submitForgotPwd() {
-            const email = document.getElementById('inp-forgot-email').value.trim();
+            const email = ADMIN_EMAIL;
             if (!email) { alert("請輸入 Email"); return; }
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
             closeForgotModal();
@@ -1786,7 +1732,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         async function removeCloudCase(id) {
             const { data, error } = await supabaseClient.from('vendor_cases').delete().eq('id', id).select();
             if (error || !data || data.length === 0) {
-                alert("刪除失敗：" + ((error && error.message) || "權限不足（請重新登入管理者）"));
+                showToast('刪除失敗：' + friendlyError(error || {}), 'error');
                 return;
             }
             cases = cases.filter(x => x.id !== id);
@@ -2242,7 +2188,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 gid('mr-body').innerHTML = `
                     <div>1. 已下載郵件草稿檔 <b>${escHtml(fname)}</b>。</div>
                     <div>2. 雙擊開啟該檔案，Outlook 會以草稿開啟，<b>收件人、副本、主旨與附件都已填好</b>。</div>
-                    <div>3. 確認內容後按「傳送」。</div><div style="margin-top:6px;font-size:12px;color:#64748b;">草稿底部若沒有您的簽名檔，請在「新建申請」的簽名欄貼上一次，系統會依 Email 記住。</div>
+                    <div>3. 確認內容後按「傳送」。</div>
                     <div style="margin-top:10px;font-size:12px;color:#64748b;">提示：傳統版 Outlook 桌面程式（Windows / Mac）可直接以草稿開啟；若您使用新版 Outlook 或網頁版而只看到唯讀郵件，請按「轉寄」後再送出。</div>`;
             } else {
                 gid('mr-sub').textContent = 'Outlook 郵件已開啟';
@@ -2260,7 +2206,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             else { const a = document.createElement('a'); a.href = lastMail.url; a.click(); a.remove(); }
         }
 
-        async function handleCreate(e) {
+        async function handleCreateCore(e) {
             e.preventDefault();
             if (!attachFiles.length) {
                 const dz = gid('attach-drop');
@@ -2279,7 +2225,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             const matrixSteps = getMatrix(bu);
 
             const newCase = {
-                id: nextCaseId(selectedDate),
+                id: null,
                 supplierName, bu, action,
                 vendorType: normalizeVendorType(vendorType),
                 applyDate: selectedDate,
@@ -2289,8 +2235,18 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 steps: matrixSteps
             };
 
+            try {
+                const { data: created, error } = await supabaseClient.rpc('create_vendor_case', { p_data: newCase });
+                if (error) throw error;
+                Object.assign(newCase, canonicalizeCase(created));
+            } catch (err) {
+                console.error(err);
+                showToast('建立失敗：' + friendlyError(err), 'error');
+                return;
+            }
+            lastLocalWrite = Date.now();
             cases.unshift(newCase);
-            await saveCloudData(cases);
+            snapshotCases();
             const files = attachFiles.slice();
             addSystemLog("Create Case", newCase.id, `新建案件：${supplierName} (${bu})` + (files.length ? `，附件 ${files.length} 份` : ''));
 
@@ -2306,8 +2262,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 `Your confirmation within 3 business days would be greatly appreciated to facilitate a timely setup.`;
 
             if (files.length) {
-                const sigHtml = currentSigHtml();
-                const blob = await buildEml({ to: toEmails, cc: ccEmails, subject, body: body + (sigHtml ? '\r\n\r\n' + htmlToText(sigHtml) : ''), files, html: bodyToHtml(body, sigHtml) });
+                const blob = await buildEml({ to: toEmails, cc: ccEmails, subject, body, files, html: bodyToHtml(body, '') });
                 const fname = `Approval_Request_${newCase.id}.eml`;
                 downloadBlob(blob, fname);
                 lastMail = { kind: 'eml', blob, fname };
@@ -2319,7 +2274,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 showMailReady(newCase.id, 'mailto', 0, '');
             }
 
-            saveSig(requesterEmail, currentSigHtml());
             gid('form-create-vendor').reset();
             gid('inp-date').valueAsDate = new Date();
             gid('matrix-preview').innerText = "請先選擇 BU...";
@@ -2331,36 +2285,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         const _baseOnloadV3 = window.onload;
         window.onload = async function () { await _baseOnloadV3(); applyLogo(); };
     
-        /* ===================== v4：簽名檔 + HTML 郵件內文 ===================== */
-        const SIG_KEY = 'ceva_signatures_v1';
-        function loadSigMap() { try { return JSON.parse(localStorage.getItem(SIG_KEY) || '{}'); } catch (e) { return {}; } }
-        function saveSig(email, html) {
-            if (!email) return;
-            const m = loadSigMap(), k = email.trim().toLowerCase();
-            if (html) m[k] = html; else delete m[k];
-            try { localStorage.setItem(SIG_KEY, JSON.stringify(m)); } catch (e) {}
-        }
-        function sanitizeSig(html) {
-            const doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
-            doc.querySelectorAll('script,iframe,object,embed,link,meta,style,form,base').forEach(n => n.remove());
-            doc.querySelectorAll('*').forEach(n => {
-                [...n.attributes].forEach(a => {
-                    const nm = a.name.toLowerCase(), v = String(a.value).trim().toLowerCase();
-                    if (nm.startsWith('on') || ((nm === 'href' || nm === 'src') && v.startsWith('javascript:'))) n.removeAttribute(a.name);
-                });
-            });
-            return doc.body.firstChild.innerHTML;
-        }
-        function currentSigHtml() {
-            const el = gid('sig-editor');
-            if (!el) return '';
-            return (el.textContent.trim() || el.querySelector('img')) ? sanitizeSig(el.innerHTML) : '';
-        }
-        function htmlToText(html) {
-            const d = document.createElement('div');
-            d.innerHTML = html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|tr|li)>/gi, '</$1>\n');
-            return (d.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
-        }
+        /* ===================== v4：HTML 郵件內文 ===================== */
         function bodyToHtml(text, sig) {
             const f = "font-family:Calibri,'Segoe UI',Arial,sans-serif;";
             return `<html><head><meta charset="utf-8"></head><body><div style="${f}font-size:11pt;">${escHtml(text).replace(/\r?\n/g, '<br>')}</div>` +
@@ -2394,16 +2319,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             return new Blob([eml + `--${bd}--\r\n`], { type: 'message/rfc822' });
         }
 
-        const _baseOnloadV4 = window.onload;
-        window.onload = async function () {
-            await _baseOnloadV4();
-            const em = gid('inp-cc'), ed = gid('sig-editor');
-            em.addEventListener('change', () => {
-                const saved = loadSigMap()[em.value.trim().toLowerCase()];
-                if (saved && !ed.textContent.trim() && !ed.querySelector('img')) ed.innerHTML = saved;
-            });
-        };
-    
+            
         /* ===================== v6：排序 / 資料驗證 / 即時同步 / 手機版 ===================== */
         const STATUS_RANK = { 'Waiting Internal Approval': 0, 'Hold': 1, 'Reject': 2, 'Done': 3 };
         // 未完成優先：進行中 → 暫停 → 退回 → 完成；未完成者最久的在前，已結案者最新的在前
@@ -2500,6 +2416,100 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
         const _baseOnloadV6 = window.onload;
         window.onload = async function () { await _baseOnloadV6(); startRealtime(); };
+    
+        /* ===================== v7：資料庫端原子更新 / 友善提示 / 載入狀態 ===================== */
+        let busyCount = 0, toastTimer = null;
+        function setBusy(on) {
+            busyCount = Math.max(0, busyCount + (on ? 1 : -1));
+            const b = gid('top-progress');
+            if (b) b.classList.toggle('on', busyCount > 0);
+        }
+        function showToast(msg, type, ms) {
+            type = type || 'success';
+            const t = gid('status-toast');
+            t.textContent = (type === 'error' ? '✕' : type === 'info' ? 'ℹ' : '✓') + '  ' + msg;
+            t.className = 'toast-' + type;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.add('hidden'), ms || (type === 'error' ? 5000 : 2600));
+        }
+        function friendlyError(err) {
+            const m = String((err && (err.message || err.error_description)) || err || '');
+            if ((err && err.code === '42501' && !/row-level security/i.test(m)) || /not permitted|permission denied|JWT|not authorized/i.test(m)) return '權限不足或登入已逾時，請重新登入管理者';
+            if (/row-level security/i.test(m)) return '申請內容不符合系統規則，請檢查欄位後再試';
+            if (/Failed to fetch|NetworkError|network/i.test(m)) return '網路連線異常，請稍後再試';
+            return '操作失敗，請稍後再試' + (m ? '（' + m.slice(0, 60) + '）' : '');
+        }
+
+        // 呼叫資料庫函式只改「單一欄位」，同時間其他人的變更不會被覆蓋
+        async function rpcCase(fn, args) {
+            savingNow++; setBusy(true);
+            try {
+                const { data, error } = await supabaseClient.rpc(fn, args);
+                if (error) throw error;
+                const updated = canonicalizeCase(data);
+                const idx = cases.findIndex(c => c.id === updated.id);
+                if (idx >= 0) cases[idx] = updated; else cases.unshift(updated);
+                syncedSnapshot.set(updated.id, JSON.stringify(updated));
+                return updated;
+            } finally { savingNow--; lastLocalWrite = Date.now(); setBusy(false); }
+        }
+
+        async function toggleStepApproval(stepIndex, isChecked) {
+            if (!isAdmin) { showToast('需要管理者權限', 'error'); return; }
+            const c = cases.find(x => x.id === activeCaseId);
+            if (!c) return;
+            const stepName = c.steps[stepIndex].role;
+            lastToggledRole = isChecked ? stepName : null;
+            try {
+                await rpcCase('set_step_approval', { p_case_id: c.id, p_role: stepName, p_approved: isChecked });
+                addSystemLog('Approval', c.id, `階段 [${stepName}] 更新`);
+                showToast(isChecked ? '已記錄核准' : '已取消核准');
+            } catch (err) {
+                console.error(err);
+                lastToggledRole = null;
+                showToast(friendlyError(err), 'error');
+                scheduleRefresh(300);
+            }
+            openDetail(activeCaseId); renderDashboard(); renderList();
+        }
+
+        async function setGlobalStatus(status) {
+            if (!isAdmin) return;
+            const c = cases.find(x => x.id === activeCaseId);
+            if (!c) return;
+            if (status === 'Done' && !c.steps.every(s => s.approved)) {
+                showToast('須完成所有內部審核與 VMD 四個階段後，才能設為完成', 'error');
+                return;
+            }
+            try {
+                await rpcCase('set_case_status', { p_case_id: c.id, p_status: status });
+                addSystemLog('Status', c.id, `變更狀態：${status}`);
+                showToast('狀態已更新');
+            } catch (err) {
+                console.error(err);
+                showToast(friendlyError(err), 'error');
+                scheduleRefresh(300);
+            }
+            openDetail(activeCaseId); renderDashboard(); renderList();
+        }
+
+        // 建立申請：按鈕顯示「建立中」並防止重複送出
+        async function handleCreate(e) {
+            e.preventDefault();
+            const btn = e.target && e.target.querySelector ? e.target.querySelector('button[type="submit"]') : null;
+            const label = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span> 建立中…'; }
+            setBusy(true);
+            try { await handleCreateCore(e); }
+            catch (err) { console.error(err); showToast(friendlyError(err), 'error'); }
+            finally { setBusy(false); if (btn) { btn.disabled = false; btn.innerHTML = label; } }
+        }
+
+        const _submitAdminLoginV7 = submitAdminLogin;
+        submitAdminLogin = async function () {
+            setBusy(true);
+            try { await _submitAdminLoginV7(); } finally { setBusy(false); }
+        };
     </script>
 </body>
 </html>
