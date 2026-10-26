@@ -573,7 +573,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             <button class="tab-btn admin-only hidden" id="btn-tab-logs" onclick="switchTab('logs')">
                 <svg class="tab-icon" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> 系統日誌
             </button>
-            <button class="tab-btn admin-only hidden" id="btn-tab-roster" onclick="switchTab('roster')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> 簽核人設定</button>
+            <button class="tab-btn admin-only hidden" id="btn-tab-roster" onclick="switchTab('roster')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> 簽核人 / 選項</button>
             <button class="tab-btn admin-only hidden" id="btn-tab-trash" onclick="switchTab('trash')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg> 資源回收桶</button>
             <button class="tab-btn admin-only hidden" id="btn-tab-admins" onclick="switchTab('admins')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg> 管理者</button>
         </div>
@@ -781,6 +781,27 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             <table>
                 <thead><tr><th>Email</th><th>備註</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
                 <tbody id="cc-tbody"></tbody>
+            </table>
+
+            <div style="margin:36px 0 6px;">
+                <h3 style="color:#003366; font-size:20px;">新建申請的下拉選項</h3>
+                <p style="font-size:13px; color:#64748b; margin-top:4px;">管理「新建 / 修改供應商申請」裡的 BU 與 Action 選項。「停用」代表新申請不能再選，<b>既有案件不受影響</b>；代碼建立後不可修改。Vendor Type 固定為 Trade / Non-Trade（大小寫規範），不開放修改。新增 BU 後，請到上方確認該 BU 有簽核人（適用 BU 填 ALL，或加入新代碼）。</p>
+            </div>
+            <div style="margin:8px 0; display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#003366; font-size:15px;">BU</h4>
+                <button class="btn btn-sm btn-outline-primary" onclick="addOptionRow('bu')">＋ 新增 BU</button>
+            </div>
+            <table>
+                <thead><tr><th>代碼</th><th>顯示名稱</th><th style="width:90px;">順序</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
+                <tbody id="opt-bu-tbody"></tbody>
+            </table>
+            <div style="margin:24px 0 8px; display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#003366; font-size:15px;">Action</h4>
+                <button class="btn btn-sm btn-outline-primary" onclick="addOptionRow('action')">＋ 新增 Action</button>
+            </div>
+            <table>
+                <thead><tr><th>代碼</th><th>顯示名稱</th><th style="width:90px;">順序</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
+                <tbody id="opt-action-tbody"></tbody>
             </table>
         </div>
 
@@ -2697,7 +2718,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         };
     
         /* ===================== v8：逾期 / 儀表板 / 簽核人設定 / 退回原因 / 標記刪除 ===================== */
-        const BU_CODES = ['AE', 'AI', 'OE', 'OI', 'CL', 'PL', 'HR', 'QHSE', 'ADM'];
+        let BU_CODES = ['AE', 'AI', 'OE', 'OI', 'CL', 'PL', 'HR', 'QHSE', 'ADM'];
         let deletedCases = [];
         let rosterCache = [];
         let rosterNew = [];
@@ -3446,6 +3467,123 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 renderRoster();
             } finally { setBusy(false); }
         }
+    
+        /* ===================== v15：新建申請的下拉選項（BU / Action）由管理者維護 ===================== */
+        const DEFAULT_OPTIONS = [
+            ['bu', 'AE', 'AE (Air Export)'], ['bu', 'AI', 'AI (Air Import)'], ['bu', 'OE', 'OE (Ocean Export)'], ['bu', 'OI', 'OI (Ocean Import)'],
+            ['bu', 'CL', 'CL (Contract Logistics)'], ['bu', 'PL', 'PL (Project Logistics)'], ['bu', 'HR', 'HR'], ['bu', 'QHSE', 'QHSE'], ['bu', 'ADM', 'ADM (Admin)'],
+            ['action', 'New', 'New'], ['action', 'Change', 'Change']
+        ].map(([kind, value, label], i) => ({ id: null, kind, value, label, sort: (i + 1) * 10, active: true }));
+        let optionsCache = DEFAULT_OPTIONS.slice();
+        let optionsNew = [];
+        const OPT_VALUE_RE = /^[A-Za-z0-9&_-]{1,16}$/;
+
+        async function loadFormOptions() {
+            try {
+                const { data, error } = await supabaseClient.from('form_options').select('*').order('sort', { ascending: true });
+                if (!error && data && data.some(o => o.active)) optionsCache = data;
+            } catch (e) { console.error(e); }
+            applyFormOptions();
+        }
+
+        function fillSelect(sel, items, placeholder, keepValue) {
+            if (!sel) return;
+            const cur = keepValue ? sel.value : '';
+            sel.innerHTML = (placeholder != null ? `<option value="">${escHtml(placeholder)}</option>` : '') +
+                items.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join('');
+            if (cur && items.some(o => o.value === cur)) sel.value = cur;
+        }
+
+        function applyFormOptions() {
+            const act = kind => optionsCache.filter(o => o.kind === kind && o.active).sort((a, b) => a.sort - b.sort);
+            BU_CODES = [...new Set(optionsCache.filter(o => o.kind === 'bu').map(o => o.value))];
+            fillSelect(gid('inp-bu'), act('bu'), '請選擇 BU', true);
+            fillSelect(gid('inp-action'), act('action'), null, true);
+            // 篩選器：啟用中的 BU ＋ 既有案件仍在使用但已停用的 BU
+            const used = [...new Set([...cases, ...deletedCases].map(c => c.bu).filter(Boolean))];
+            const extra = used.filter(b => !act('bu').some(o => o.value === b)).map(b => {
+                const o = optionsCache.find(x => x.kind === 'bu' && x.value === b);
+                return { value: b, label: (o ? o.label : b) + '（已停用）' };
+            });
+            ['dash-filter-bu', 'list-filter-bu'].forEach(id => fillSelect(gid(id), [...act('bu'), ...extra], '所有 BU', true));
+        }
+
+        function optRowHtml(o) {
+            const k = escHtml(o.key), isNew = !o.id;
+            const status = isNew ? '<span class="status-badge status-hold">未儲存</span>' : `<span class="status-badge ${o.active ? 'status-done' : 'status-hold'}">${o.active ? '啟用中' : '已停用'}</span>`;
+            const btns = `<button class="btn btn-sm btn-primary" onclick="saveOption('${k}')">儲存</button> ` + (isNew
+                ? `<button class="btn btn-sm btn-secondary" onclick="cancelOptionNew('${k}')">取消</button>`
+                : `<button class="btn btn-sm btn-outline-danger" onclick="toggleOption('${k}')">${o.active ? '停用' : '啟用'}</button>`);
+            return `<tr data-okey="${k}" data-kind="${escHtml(o.kind)}">
+                <td><input data-f="value" value="${escHtml(o.value || '')}" maxlength="16" ${isNew ? 'placeholder="例如 SCM"' : 'readonly style="background:#f1f5f9;"'}></td>
+                <td><input data-f="label" value="${escHtml(o.label || '')}" maxlength="40" placeholder="例如 SCM (Supply Chain)"></td>
+                <td><input data-f="sort" type="number" value="${escHtml(String(o.sort == null ? 100 : o.sort))}"></td>
+                <td>${status}</td>
+                <td style="text-align:right; white-space:nowrap;">${btns}</td></tr>`;
+        }
+        function renderOptions() {
+            ['bu', 'action'].forEach(kind => {
+                const tb = gid('opt-' + kind + '-tbody'); if (!tb) return;
+                const rows = [...optionsCache.filter(o => o.kind === kind).map(o => ({ ...o, key: o.id == null ? 'def-' + o.value : String(o.id) })), ...optionsNew.filter(o => o.kind === kind)];
+                tb.innerHTML = rows.map(optRowHtml).join('') || '<tr><td colspan="5" class="empty-state">尚無選項</td></tr>';
+                labelTable('opt-' + kind + '-tbody');
+            });
+        }
+        const _renderRosterV12 = renderRoster;
+        renderRoster = function () { _renderRosterV12(); renderOptions(); };
+
+        function addOptionRow(kind) { optionsNew.push({ key: 'new-' + Date.now(), kind, value: '', label: '', sort: 100, active: true }); renderOptions(); }
+        function cancelOptionNew(key) { optionsNew = optionsNew.filter(o => o.key !== key); renderOptions(); }
+
+        async function saveOption(key) {
+            const tr = document.querySelector(`tr[data-okey="${key}"]`); if (!tr) return;
+            const v = f => tr.querySelector(`[data-f="${f}"]`).value.trim();
+            const kind = tr.dataset.kind, isNew = key.startsWith('new-');
+            const value = v('value'), label = v('label'), sort = parseInt(v('sort'), 10) || 100;
+            if (!OPT_VALUE_RE.test(value)) { showToast('代碼只能用英文、數字、& _ -，最長 16 字', 'error'); return; }
+            if (!label || label.length > 40 || /[<>]/.test(label)) { showToast('顯示名稱必填（40 字內，不可含 < >）', 'error'); return; }
+            if (isNew && optionsCache.some(o => o.kind === kind && o.value.toLowerCase() === value.toLowerCase())) { showToast('此代碼已存在', 'error'); return; }
+            if (!isNew && String(key).startsWith('def-')) { showToast('尚未連線到資料庫，無法儲存', 'error'); return; }
+            setBusy(true);
+            try {
+                const q = isNew ? supabaseClient.from('form_options').insert({ kind, value, label, sort, active: true })
+                                : supabaseClient.from('form_options').update({ label, sort, updated_at: new Date().toISOString() }).eq('id', key);
+                const { error } = await q; if (error) throw error;
+                optionsNew = optionsNew.filter(o => o.key !== key);
+                await loadFormOptions(); renderOptions();
+                addSystemLog('Options', kind.toUpperCase(), `${isNew ? '新增' : '更新'}選項：${value}`);
+                let msg = '已儲存，新申請表單立即生效';
+                if (isNew && kind === 'bu') {
+                    const covered = rosterCache.some(x => x.kind === 'approver' && x.active && (!x.bu_scope || !x.bu_scope.length || x.bu_scope.includes(value)));
+                    if (!covered) msg = `已儲存。注意：${value} 目前沒有任何簽核人，請先到上方「簽核人」設定，否則申請會失敗`;
+                }
+                showToast(msg, msg.startsWith('已儲存。注意') ? 'error' : undefined);
+            } catch (err) { showToast('儲存失敗：' + friendlyError(err), 'error'); }
+            finally { setBusy(false); }
+        }
+
+        async function toggleOption(key) {
+            const o = optionsCache.find(x => String(x.id) === key); if (!o) return;
+            const next = !o.active;
+            if (!next && optionsCache.filter(x => x.kind === o.kind && x.active).length <= 1) { showToast('至少要保留一個啟用中的選項', 'error'); return; }
+            if (!next) {
+                const inUse = cases.filter(c => c[o.kind === 'bu' ? 'bu' : 'action'] === o.value).length;
+                const ok = await askConfirm({ title: '停用選項', text: `停用「${o.label}」後，新申請將不能再選此項。\n${inUse ? `目前已有 ${inUse} 件案件使用它，這些案件不受影響。` : '目前沒有案件使用它。'}`, okText: '停用', danger: true });
+                if (!ok) return;
+            }
+            setBusy(true);
+            try {
+                const { error } = await supabaseClient.from('form_options').update({ active: next, updated_at: new Date().toISOString() }).eq('id', o.id);
+                if (error) throw error;
+                await loadFormOptions(); renderOptions();
+                addSystemLog('Options', o.kind.toUpperCase(), `${next ? '啟用' : '停用'}選項：${o.value}`);
+                showToast(next ? '已啟用' : '已停用，新申請表單立即生效');
+            } catch (err) { showToast('操作失敗：' + friendlyError(err), 'error'); }
+            finally { setBusy(false); }
+        }
+
+        const _baseOnloadV15 = window.onload;
+        window.onload = async function () { await _baseOnloadV15(); await loadFormOptions(); };
     </script>
 </body>
 </html>
