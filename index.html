@@ -506,6 +506,13 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 .st-cell .od-chip { margin-left: 0; padding: 2px 10px; font-size: 11px; line-height: 1.5; }
 .fs-sub .od-chip { margin-left: 8px; }
 @media (max-width: 768px) { .st-cell { align-items: flex-end; } }
+
+        .drag-h { display:inline-flex; align-items:center; justify-content:center; width:26px; height:30px; margin-right:4px; border-radius:6px; color:#64748b; font-size:18px; line-height:1; cursor:grab; user-select:none; touch-action:none; vertical-align:middle; }
+        .drag-h:hover, .drag-h:focus-visible { background:#e2e8f0; color:#003366; outline:none; }
+        #roster-tbody tr.dragging { background:#eff6ff; box-shadow:0 6px 18px rgba(15,23,42,.18); position:relative; z-index:2; }
+        #roster-tbody tr.dragging .drag-h { cursor:grabbing; }
+        #roster-tbody td:first-child { white-space:nowrap; }
+        #roster-tbody td:first-child input { width:64px; display:inline-block; }
 </style>
 </head>
 <body>
@@ -677,7 +684,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <label><strong>附件 Attachments <span style="color:red;">*</span></strong> <span style="font-size:12px; color:#64748b;">(VMD Request Form 及相關文件，總計上限 20 MB)</span></label>
+                    <label><strong>附件 Attachments <span style="color:red;">*</span></strong> <span style="font-size:12px; color:#64748b;">(VMD Request Form 及相關文件，總計上限 100 MB)</span></label>
                     <div class="attach-drop" id="attach-drop" onclick="document.getElementById('inp-files').click()" ondragover="event.preventDefault(); this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="onAttachDrop(event)">
                         點擊選擇檔案，或將檔案拖曳至此
                         <input type="file" id="inp-files" multiple style="display:none;" onchange="addAttachments(this.files); this.value='';">
@@ -753,7 +760,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 <button class="btn btn-primary" onclick="addRosterRow('approver')">＋ 新增簽核人</button>
             </div>
             <table>
-                <thead><tr><th style="width:80px;">順序</th><th>角色 Function</th><th>姓名</th><th>職稱</th><th>Email</th><th>適用 BU</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
+                <thead><tr><th style="width:120px;">順序（可拖移）</th><th>角色 Function</th><th>姓名</th><th>職稱</th><th>Email</th><th>適用 BU</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
                 <tbody id="roster-tbody"></tbody>
             </table>
             <div style="margin:28px 0 8px; display:flex; justify-content:space-between; align-items:center;">
@@ -2274,7 +2281,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         /* ---- 附件 + Outlook .eml 草稿 ---- */
         let attachFiles = [];
         let lastMail = null;
-        const MAX_ATTACH = 20 * 1024 * 1024;
+        const MAX_ATTACH = 100 * 1024 * 1024;   // v13：總量上限 100 MB（原 20 MB）
+        const MAIL_WARN = 25 * 1024 * 1024;     // 超過此大小，公司信箱可能無法寄出
         const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
         const attachTotal = () => attachFiles.reduce((s, f) => s + f.size, 0);
 
@@ -2285,7 +2293,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             }
             let dropped = false;
             while (attachTotal() > MAX_ATTACH && attachFiles.length > before) { attachFiles.pop(); dropped = true; }
-            if (dropped) alert('附件總大小超過 20 MB，超出的檔案未加入。');
+            if (dropped) alert('附件總大小超過 100 MB，超出的檔案未加入。');
             renderAttachments();
         }
         function onAttachDrop(ev) {
@@ -2299,7 +2307,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             gid('attach-list').innerHTML = attachFiles.map((f, i) => `
                 <div class="attach-item"><span class="attach-name">${escHtml(f.name)}</span><span class="attach-size">${fmtSize(f.size)}</span>
                 <button type="button" class="attach-x" onclick="removeAttachment(${i})" aria-label="移除">×</button></div>`).join('')
-                + (attachFiles.length ? `<div style="font-size:12px;color:#64748b;margin-top:6px;">共 ${attachFiles.length} 份，${fmtSize(attachTotal())} / 20 MB</div>` : '');
+                + (attachFiles.length ? `<div style="font-size:12px;color:#64748b;margin-top:6px;">共 ${attachFiles.length} 份，${fmtSize(attachTotal())} / 100 MB</div>`
+                    + (attachTotal() > MAIL_WARN ? `<div style="font-size:12px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:6px 10px;margin-top:6px;">⚠ 總大小超過 25 MB，Outlook / 公司信箱可能無法寄出。建議大檔改放 SharePoint / OneDrive，再於信中附連結。</div>` : '') : '');
         }
 
         function utf8b64(s) {
@@ -2325,6 +2334,15 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 r.onerror = () => rej(r.error);
                 r.readAsDataURL(f);
             });
+        }
+        // v13：大檔分段轉 Base64（每段 3,135,000 bytes＝57 的倍數，剛好整行 76 字元），避免一次吃光記憶體
+        async function b64Chunks(f) {
+            const CH = 57 * 55000, out = [];
+            for (let off = 0; off < f.size; off += CH) {
+                const b64 = await fileToB64(f.slice(off, Math.min(off + CH, f.size)));
+                out.push((off > 0 ? '\r\n' : '') + b64.replace(/(.{76})(?!$)/g, '$1\r\n'));
+            }
+            return out;
         }
         function downloadBlob(blob, filename) {
             const url = URL.createObjectURL(blob);
@@ -2456,8 +2474,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             eml += `--${alt}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${wrap76(utf8b64(body))}\r\n`;
             if (html) eml += `--${alt}\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${wrap76(utf8b64(html))}\r\n`;
             eml += `--${alt}--\r\n`;
+            const parts = [eml];
             for (const f of files) {
-                const data = await fileToB64(f);
                 const name = f.name.replace(/"/g, "'");
                 const ext = (name.match(/\.[A-Za-z0-9]{1,8}$/) || [''])[0];
                 let nameP, dispP;
@@ -2468,9 +2486,9 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     nameP = `name="${fb}"`;
                     dispP = `filename="${fb}"; filename*=UTF-8''${encodeURIComponent(name)}`;
                 }
-                eml += `--${bd}\r\nContent-Type: ${f.type || 'application/octet-stream'}; ${nameP}\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; ${dispP}\r\n\r\n${wrap76(data)}\r\n`;
+                parts.push(`--${bd}\r\nContent-Type: ${f.type || 'application/octet-stream'}; ${nameP}\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; ${dispP}\r\n\r\n`, ...(await b64Chunks(f)), '\r\n');
             }
-            return new Blob([eml + `--${bd}--\r\n`], { type: 'message/rfc822' });
+            return new Blob([...parts, `--${bd}--\r\n`], { type: 'message/rfc822' });
         }
 
             
@@ -3330,6 +3348,73 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 _toggleBaseV10(checkbox);
             }
         };
+    
+        /* ===================== v12：簽核人順序可拖移（滑鼠 / 觸控 / 鍵盤 ↑↓） ===================== */
+        const _renderRosterV11 = renderRoster;
+        renderRoster = function () { _renderRosterV11(); decorateRosterDrag(); };
+
+        function decorateRosterDrag() {
+            const tb = gid('roster-tbody'); if (!tb) return;
+            tb.querySelectorAll('tr[data-kind="approver"]').forEach(tr => {
+                if (String(tr.dataset.key).startsWith('new-')) return;
+                const td = tr.firstElementChild; if (!td || td.querySelector('.drag-h')) return;
+                td.insertAdjacentHTML('afterbegin', '<span class="drag-h" role="button" tabindex="0" title="拖移調整順序（也可用鍵盤 ↑ ↓）" aria-label="拖移調整順序">⠿</span>');
+                const h = td.firstElementChild;
+                h.addEventListener('pointerdown', ev => startRosterDrag(ev, tr, h));
+                h.addEventListener('keydown', ev => {
+                    if (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') return;
+                    ev.preventDefault();
+                    const sib = ev.key === 'ArrowUp' ? tr.previousElementSibling : tr.nextElementSibling;
+                    if (!sib || sib.dataset.kind !== 'approver' || String(sib.dataset.key).startsWith('new-')) return;
+                    ev.key === 'ArrowUp' ? tr.parentNode.insertBefore(tr, sib) : tr.parentNode.insertBefore(sib, tr);
+                    h.focus();
+                    clearTimeout(decorateRosterDrag._t); decorateRosterDrag._t = setTimeout(persistRosterOrder, 500);
+                });
+            });
+        }
+
+        function startRosterDrag(ev, tr, handle) {
+            if (ev.button != null && ev.button !== 0) return;
+            ev.preventDefault();
+            const tb = tr.parentNode;
+            tr.classList.add('dragging');
+                        const move = e => {
+                const cands = [...tb.querySelectorAll('tr[data-kind="approver"]')].filter(r => r !== tr && !String(r.dataset.key).startsWith('new-'));
+                let before = null;
+                for (const r of cands) { const b = r.getBoundingClientRect(); if (e.clientY < b.top + b.height / 2) { before = r; break; } }
+                if (before) { if (tr.nextElementSibling !== before) tb.insertBefore(tr, before); }
+                else if (cands.length) { const last = cands[cands.length - 1]; if (last.nextElementSibling !== tr) tb.insertBefore(tr, last.nextElementSibling); }
+                const vh = window.innerHeight; if (e.clientY < 60) window.scrollBy(0, -12); else if (e.clientY > vh - 60) window.scrollBy(0, 12);
+            };
+            const up = () => {
+                window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+                tr.classList.remove('dragging');
+                persistRosterOrder();
+            };
+            window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+        }
+
+        async function persistRosterOrder() {
+            const tb = gid('roster-tbody'); if (!tb || !isAdmin) return;
+            const keys = [...tb.querySelectorAll('tr[data-kind="approver"]')].map(r => String(r.dataset.key)).filter(k => !k.startsWith('new-'));
+            const changes = [];
+            keys.forEach((k, i) => { const r = rosterCache.find(x => String(x.id) === k); const ns = (i + 1) * 10; if (r && r.sort !== ns) changes.push([r, ns]); });
+            if (!changes.length) return;
+            setBusy(true);
+            try {
+                const res = await Promise.all(changes.map(([r, ns]) => supabaseClient.from('approver_roster').update({ sort: ns, updated_at: new Date().toISOString() }).eq('id', r.id)));
+                const bad = res.find(x => x && x.error); if (bad) throw bad.error;
+                changes.forEach(([r, ns]) => { r.sort = ns; });
+                rosterCache.sort((a, b) => (a.sort || 0) - (b.sort || 0));
+                keys.forEach((k, i) => { const tr = tb.querySelector(`tr[data-key="${CSS.escape(k)}"] [data-f="sort"]`); if (tr) tr.value = (i + 1) * 10; });
+                addSystemLog('Roster', 'ORDER', '調整簽核人順序');
+                showToast('順序已更新（只影響之後新建的申請）');
+            } catch (err) {
+                showToast('調整順序失敗：' + friendlyError(err), 'error');
+                try { await loadRoster(); } catch (e) {}
+                renderRoster();
+            } finally { setBusy(false); }
+        }
     </script>
 </body>
 </html>
