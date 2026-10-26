@@ -513,6 +513,17 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         #roster-tbody tr.dragging .drag-h { cursor:grabbing; }
         #roster-tbody td:first-child { white-space:nowrap; }
         #roster-tbody td:first-child input { width:64px; display:inline-block; }
+
+        #dl-hint { position:fixed; top:58px; right:14px; z-index:10080; max-width:300px; pointer-events:none; animation:dlIn .35s ease-out both; }
+        #dl-hint.hidden { display:none; }
+        #dl-hint .dl-card { background:#fff7ed; border:2px solid #f97316; color:#7c2d12; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.55; box-shadow:0 10px 28px rgba(194,65,12,.35); margin-top:34px; position:relative; }
+        #dl-hint .dl-card b { color:#c2410c; }
+        #dl-hint .dl-card::before { content:""; position:absolute; top:-9px; right:34px; width:16px; height:16px; background:#fff7ed; border-left:2px solid #f97316; border-top:2px solid #f97316; transform:rotate(45deg); }
+        #dl-hint .dl-arrow { position:absolute; top:-6px; right:26px; font-size:30px; line-height:1; color:#f97316; animation:dlBounce 0.9s ease-in-out infinite; text-shadow:0 2px 6px rgba(0,0,0,.25); }
+        @keyframes dlBounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-9px); } }
+        @keyframes dlIn { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:none; } }
+        .mr-dl { margin:12px 0 4px; padding:10px 12px; background:#fff7ed; border:1px solid #fdba74; border-radius:8px; color:#9a3412; font-weight:600; }
+        @media (max-width:768px){ #dl-hint { left:12px; right:12px; max-width:none; } #dl-hint .dl-arrow, #dl-hint .dl-card::before { display:none; } #dl-hint .dl-card { margin-top:0; } }
 </style>
 </head>
 <body>
@@ -967,6 +978,15 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 下載提示（指向瀏覽器右上角的下載圖示） -->
+    <div id="dl-hint" class="hidden" role="status" aria-live="polite">
+        <div class="dl-arrow">↗</div>
+        <div class="dl-card">
+            <div style="font-size:14px;"><b>⬇ 郵件草稿已下載</b></div>
+            <div id="dl-hint-text" style="margin-top:2px;"></div>
         </div>
     </div>
 
@@ -2358,6 +2378,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 gid('mr-sub').textContent = `郵件草稿已產生，含 ${fileCount} 份附件`;
                 gid('mr-body').innerHTML = `
                     <div>1. 已下載郵件草稿檔 <b>${escHtml(fname)}</b>。</div>
+                    <div class="mr-dl">⬇ 請點瀏覽器<b>右上角的「下載」圖示</b>，再點該檔案即可開啟（找不到可按下方「再次開啟 / 下載」）。</div>
                     <div>2. 雙擊開啟該檔案，Outlook 會以草稿開啟，<b>收件人、副本、主旨與附件都已填好</b>。</div>
                     <div>3. 確認內容後按「傳送」。</div>
                     <div style="margin-top:10px;font-size:12px;color:#64748b;">提示：傳統版 Outlook 桌面程式（Windows / Mac）可直接以草稿開啟；若您使用新版 Outlook 或網頁版而只看到唯讀郵件，請按「轉寄」後再送出。</div>`;
@@ -2369,11 +2390,21 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     <div style="margin-top:10px;font-size:12px;color:#64748b;">下次可在「新建申請」直接選取附件，系統會產生已含附件的郵件草稿。</div>`;
             }
             gid('modal-mail-ready').classList.remove('hidden');
+            if (kind === 'eml') showDlHint(fname); else hideDlHint();
         }
-        function closeMailReady() { gid('modal-mail-ready').classList.add('hidden'); }
+        function showDlHint(fname) {
+            const mobile = window.matchMedia('(max-width:768px)').matches;
+            gid('dl-hint-text').innerHTML = mobile
+                ? `請到瀏覽器的<b>下載清單</b>點選 <b>${escHtml(fname)}</b> 開啟（手機建議改用電腦開啟，附件才會完整帶入）。`
+                : `請點瀏覽器<b>右上角的下載圖示</b>，再點 <b>${escHtml(fname)}</b>，Outlook 會以草稿開啟。`;
+            gid('dl-hint').classList.remove('hidden');
+            clearTimeout(showDlHint._t); showDlHint._t = setTimeout(hideDlHint, 30000);
+        }
+        function hideDlHint() { gid('dl-hint').classList.add('hidden'); clearTimeout(showDlHint._t); }
+        function closeMailReady() { gid('modal-mail-ready').classList.add('hidden'); hideDlHint(); }
         function reopenMail() {
             if (!lastMail) return;
-            if (lastMail.kind === 'eml') downloadBlob(lastMail.blob, lastMail.fname);
+            if (lastMail.kind === 'eml') { downloadBlob(lastMail.blob, lastMail.fname); showDlHint(lastMail.fname); }
             else { const a = document.createElement('a'); a.href = lastMail.url; a.click(); a.remove(); }
         }
 
