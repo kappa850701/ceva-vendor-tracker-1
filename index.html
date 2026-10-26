@@ -954,6 +954,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             <h3 id="det-title" style="color: #003366; font-size: 20px;">Case Detail</h3>
             <p id="det-sub" style="font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;"></p>
 
+            <div id="det-jde" class="hidden" style="margin:-8px 0 14px; padding:8px 12px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; font-size:13px; color:#065f46;"></div>
             <div id="flow-summary"></div>
 
             <div class="unified-flow-wrapper">
@@ -992,6 +993,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     <button class="btn btn-success" id="btn-approve-action" onclick="setGlobalStatus('Done')">Approve</button>
                     <button class="btn btn-danger" onclick="setGlobalStatus('Reject')">Reject</button>
                     <button class="btn btn-secondary" onclick="setGlobalStatus('Hold')">Hold</button>
+                    <button class="btn btn-outline-primary" id="btn-reply-jde" style="display:none;" onclick="openJdeModal(activeCaseId)">✉ 回信給申請人（JDE Code）</button>
                     <button class="btn btn-outline-danger" style="color:#b91c1c;border:1px solid #fca5a5;background:#fff;" onclick="askDeleteCase(activeCaseId, true)">刪除</button>
                 </div>
                 <div style="display: flex; gap: 8px; margin-left: auto;">
@@ -1008,6 +1010,28 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         <div class="dl-card">
             <div style="font-size:14px;"><b>⬇ 郵件草稿已下載</b></div>
             <div id="dl-hint-text" style="margin-top:2px;"></div>
+        </div>
+    </div>
+
+    <!-- JDE Code 回信視窗 -->
+    <div id="modal-jde" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="jde-title" style="z-index:10040;">
+        <div class="modal" style="max-width: 560px;">
+            <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px;">
+                <div class="mail-check">✓</div>
+                <div>
+                    <h3 id="jde-title" style="color:#003366; font-size:18px;">全部流程已完成，回信給申請人</h3>
+                    <p id="jde-sub" style="font-size:12px; color:#64748b; margin-top:2px;"></p>
+                </div>
+            </div>
+            <label><strong>JDE Code <span style="color:red;">*</span></strong></label>
+            <input type="text" id="jde-code" maxlength="20" placeholder="例如 1234567" autocomplete="off" style="font-size:16px; letter-spacing:.5px;" oninput="jdeRefreshBody()">
+            <label style="margin-top:12px; display:block;"><strong>信件內容</strong> <span style="font-size:12px; color:#64748b;">（可直接修改；JDE Code 會自動帶入）</span></label>
+            <textarea id="jde-body" rows="9" style="font-size:13px; line-height:1.6;" oninput="jdeBodyEdited=true"></textarea>
+            <div style="font-size:12px; color:#64748b; margin-top:6px;">收件人：<span id="jde-to"></span><br>副本：<span id="jde-cc"></span></div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="closeJdeModal()">稍後再處理</button>
+                <button class="btn btn-primary" id="jde-send" onclick="submitJde()">儲存並開啟 Outlook 回信</button>
+            </div>
         </div>
     </div>
 
@@ -1735,8 +1759,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             activeCaseId = id;
             const c = cases.find(x => x.id === id);
 
-            document.getElementById('det-title').innerText = `${escHtml(c.supplierName)} (${escHtml(c.id)})`;
-            document.getElementById('det-sub').innerText = `BU: ${escHtml(c.bu)} | Action: ${escHtml(c.action)} | Type: ${escHtml(c.vendorType)} | Apply Date: ${escHtml(c.applyDate)}`;
+            document.getElementById('det-title').innerText = `${c.supplierName} (${c.id})`;
+            document.getElementById('det-sub').innerText = `BU: ${c.bu} | Action: ${c.action} | Type: ${c.vendorType} | Apply Date: ${c.applyDate}`;
             
             document.getElementById('mail-to-text').innerText = getApproversToEmails(c.steps);
             document.getElementById('mail-cc-text').innerText = getFullCCList(c.requesterEmail);
@@ -3584,6 +3608,79 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
         const _baseOnloadV15 = window.onload;
         window.onload = async function () { await _baseOnloadV15(); await loadFormOptions(); };
+    
+        /* ===================== v16：全部完成 → 輸入 JDE Code → 回信給申請人 ===================== */
+        const JDE_RE = /^[A-Za-z0-9-]{1,20}$/;
+        let jdeCaseId = null, jdeBodyEdited = false;
+
+        const _rpcCaseV15 = rpcCase;
+        rpcCase = async function (fn, args) {
+            const before = (cases.find(c => c.id === (args && args.p_case_id)) || {}).status;
+            const updated = await _rpcCaseV15(fn, args);
+            if (fn !== 'set_jde_code' && before !== 'Done' && updated && updated.status === 'Done' && isAdmin) {
+                setTimeout(() => openJdeModal(updated.id), 450);   // 全部完成：自動跳出
+            }
+            return updated;
+        };
+
+        function jdeBodyText(c, code) {
+            return `Dear Requester,\r\n\r\n` +
+                `The vendor creation/amendment request below has been completed.\r\n\r\n` +
+                `Supplier Name: ${c.supplierName}\r\nCase ID: ${c.id}\r\nJDE Code: ${code || '[JDE Code]'}\r\n\r\n` +
+                `Please let us know if you need any further assistance.`;
+        }
+        function jdeRefreshBody() {
+            if (jdeBodyEdited) return;
+            const c = cases.find(x => x.id === jdeCaseId); if (!c) return;
+            gid('jde-body').value = jdeBodyText(c, gid('jde-code').value.trim());
+        }
+        function openJdeModal(id) {
+            if (!isAdmin) return;
+            const c = cases.find(x => x.id === id); if (!c) return;
+            if (c.status !== 'Done') { showToast('案件尚未完成，無法回信', 'error'); return; }
+            jdeCaseId = id; jdeBodyEdited = false;
+            gid('jde-sub').textContent = `${c.id}　${c.supplierName}`;
+            gid('jde-code').value = c.jdeCode || '';
+            gid('jde-to').textContent = c.requesterEmail;
+            gid('jde-cc').textContent = [...new Set(FIXED_CC_LIST)].join('; ') || '（無）';
+            gid('jde-send').textContent = c.jdeCode ? '開啟 Outlook 回信' : '儲存並開啟 Outlook 回信';
+            jdeRefreshBody();
+            gid('modal-jde').classList.remove('hidden');
+            setTimeout(() => gid('jde-code').focus(), 60);
+        }
+        function closeJdeModal() { gid('modal-jde').classList.add('hidden'); jdeCaseId = null; }
+
+        async function submitJde() {
+            const c = cases.find(x => x.id === jdeCaseId); if (!c) return;
+            const code = gid('jde-code').value.trim();
+            if (!JDE_RE.test(code)) { showToast('請輸入 JDE Code（英數字與 - ，最長 20 碼）', 'error'); gid('jde-code').focus(); return; }
+            const body = gid('jde-body').value;
+            if (!body.includes(code)) { showToast('信件內容必須包含 JDE Code', 'error'); return; }
+            const to = c.requesterEmail, cc = [...new Set(FIXED_CC_LIST)].join(';');
+            const subject = `【Vendor Setup Completed】${c.id} - ${c.supplierName}`;
+            setBusy(true);
+            try {
+                if (c.jdeCode !== code) { await rpcCase('set_jde_code', { p_case_id: c.id, p_code: code }); addSystemLog('JDE', c.id, `登錄 JDE Code：${code}`); }
+                const url = `mailto:${encodeURIComponent(to)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                const a = document.createElement('a'); a.href = url; a.click(); a.remove();
+                addSystemLog('JDE', c.id, `開啟回信草稿給申請人 ${to}`);
+                closeJdeModal();
+                showToast('已開啟 Outlook 回信草稿，確認後請按「傳送」');
+                renderList(); renderDashboard();
+                if (!gid('modal-detail').classList.contains('hidden') && activeCaseId === c.id) openDetail(c.id);
+            } catch (err) { showToast('儲存失敗：' + friendlyError(err), 'error'); }
+            finally { setBusy(false); }
+        }
+
+        const _openDetailV15 = openDetail;
+        openDetail = function (id) {
+            _openDetailV15(id);
+            const c = cases.find(x => x.id === id); if (!c) return;
+            const btn = gid('btn-reply-jde'); if (btn) btn.style.display = (isAdmin && c.status === 'Done') ? '' : 'none';
+            const line = gid('det-jde');
+            if (c.jdeCode) { line.textContent = `JDE Code：${c.jdeCode}` + (c.jdeAt ? `（登錄於 ${c.jdeAt}）` : ''); line.classList.remove('hidden'); }
+            else line.classList.add('hidden');
+        };
     </script>
 </body>
 </html>
