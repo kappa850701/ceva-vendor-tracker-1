@@ -524,8 +524,9 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         
         <div class="header-actions">
             <span id="live-pill" class="live-pill off" title="即時同步狀態"><i></i><b>Offline</b></span>
+            <button type="button" id="btn-logout" class="btn btn-sm btn-secondary admin-only hidden" style="padding:4px 12px; font-size:12px;" onclick="adminLogout()">登出</button>
             <button type="button" id="btn-help" class="help-btn" onclick="startTour(true)" title="操作導覽" aria-label="操作導覽">?</button>
-            <button id="btn-delete-mode" class="delete-mode-toggle-btn admin-only hidden" onclick="toggleDeleteMode()">
+            <button id="btn-delete-mode" class="delete-mode-toggle-btn hidden" style="display:none !important" tabindex="-1" aria-hidden="true" onclick="toggleDeleteMode()">
                 🗑️ 刪除模式 <span id="delete-mode-status-text" style="font-size: 10px; opacity: 0.8;">(關閉)</span>
             </button>
 
@@ -556,6 +557,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             </button>
             <button class="tab-btn admin-only hidden" id="btn-tab-roster" onclick="switchTab('roster')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> 簽核人設定</button>
             <button class="tab-btn admin-only hidden" id="btn-tab-trash" onclick="switchTab('trash')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg> 資源回收桶</button>
+            <button class="tab-btn admin-only hidden" id="btn-tab-admins" onclick="switchTab('admins')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg> 管理者</button>
         </div>
 
         <!-- Dashboard Panel -->
@@ -764,11 +766,31 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             </table>
         </div>
 
+        <!-- Admins Panel -->
+        <div id="panel-admins" class="panel hidden">
+            <div style="margin-bottom:16px;">
+                <h3 style="color:#003366; font-size:20px;">管理者設定</h3>
+                <p style="font-size:13px; color:#64748b; margin-top:4px;">可新增共同管理者，或把管理者權限「轉移」給接任者（轉移後您會自動登出並失去管理權限）。對方須先有登入帳號（由 Supabase 後台 Authentication → Users 建立），否則系統會拒絕，避免無人能管理。</p>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:18px;">
+                <input type="email" id="inp-new-admin" placeholder="對方的 Email，例如 name@cevalogistics.com" style="flex:1; min-width:240px; margin:0; font-size:16px;">
+                <button class="btn btn-primary" onclick="addAdminUi()">新增管理者</button>
+                <button class="btn btn-danger" onclick="transferAdminUi()">轉移管理者權限</button>
+            </div>
+            <table>
+                <thead><tr><th>管理者 Email</th><th>加入時間</th><th>加入者</th><th style="text-align:right;">操作</th></tr></thead>
+                <tbody id="admins-tbody"></tbody>
+            </table>
+        </div>
+
         <!-- Trash Panel -->
         <div id="panel-trash" class="panel hidden">
-            <div style="margin-bottom:16px;">
-                <h3 style="color:#003366; font-size:20px;">資源回收桶</h3>
-                <p style="font-size:13px; color:#64748b; margin-top:4px;">被刪除的案件會先放在這裡，一般使用者看不到。按「還原」即可恢復，資料不會遺失。</p>
+            <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h3 style="color:#003366; font-size:20px;">資源回收桶</h3>
+                    <p style="font-size:13px; color:#64748b; margin-top:4px;">被刪除的案件會先放在這裡，一般使用者看不到。「還原」可恢復；「永久刪除」會從資料庫移除，<b style="color:#b91c1c;">無法復原</b>。</p>
+                </div>
+                <button class="btn btn-danger" id="btn-purge-all" onclick="purgeAll()">清空回收桶</button>
             </div>
             <table>
                 <thead><tr><th>Case ID</th><th>Supplier Name</th><th>BU / Action / Type</th><th>刪除時間</th><th>刪除者</th><th style="text-align:right;">操作</th></tr></thead>
@@ -837,8 +859,13 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">管理者權限驗證</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">切換至管理模式，請輸入管理者密碼。</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">切換至管理模式，請輸入管理者 Email 與密碼。</p>
+            <input type="email" id="inp-admin-email" placeholder="管理者 Email" autocomplete="username" style="margin-bottom: 8px; text-align: center; font-size: 16px;">
             <input type="password" id="inp-admin-pwd" placeholder="密碼..." style="margin-bottom: 12px; text-align: center; font-size: 16px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#475569; margin:0 0 10px; justify-content:center; cursor:pointer;">
+                <input type="checkbox" id="inp-remember" checked style="width:auto; margin:0;"> 記住登入（此裝置）
+            </label>
+            <p style="font-size:11px; color:#94a3b8; margin:-4px 0 10px;">共用電腦請取消勾選，或用完按右上角「登出」。</p>
             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 20px;">
                 <a href="javascript:void(0)" onclick="openForgotModal()" style="color: #003366; text-decoration: underline;">忘記密碼</a>
             </div>
@@ -873,8 +900,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
     <div id="modal-forgot-pwd" class="modal-overlay hidden">
         <div class="modal" style="max-width: 400px; text-align: center;">
             <h3 style="color: #003366; margin-bottom: 12px;">密碼救援</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請輸入授權管理者 Email：</p>
-            <input type="email" id="inp-forgot-email" readonly placeholder="Nicolas.Wang@cevalogistics.com" style="margin-bottom: 20px; text-align: center;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">請輸入管理者 Email，系統會寄送重設密碼信：</p>
+            <input type="email" id="inp-forgot-email" placeholder="管理者 Email" style="margin-bottom: 20px; text-align: center;">
             <div style="display: flex; justify-content: flex-end; gap: 8px;">
                 <button class="btn btn-secondary" onclick="closeForgotModal()">取消</button>
                 <button class="btn btn-primary" onclick="submitForgotPwd()">發送</button>
@@ -926,11 +953,24 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     <button class="btn btn-success" id="btn-approve-action" onclick="setGlobalStatus('Done')">Approve</button>
                     <button class="btn btn-danger" onclick="setGlobalStatus('Reject')">Reject</button>
                     <button class="btn btn-secondary" onclick="setGlobalStatus('Hold')">Hold</button>
+                    <button class="btn btn-outline-danger" style="color:#b91c1c;border:1px solid #fca5a5;background:#fff;" onclick="askDeleteCase(activeCaseId, true)">刪除</button>
                 </div>
                 <div style="display: flex; gap: 8px; margin-left: auto;">
                     <button class="btn btn-outline-primary" onclick="exportPDF()">匯出 Approval Report (PDF)</button>
                     <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認視窗 -->
+    <div id="modal-confirm" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="cf-title" style="z-index:10050;">
+        <div class="modal" style="max-width: 440px;">
+            <h3 id="cf-title" style="color:#003366; font-size:18px;"></h3>
+            <p id="cf-text" style="font-size:14px; color:#334155; margin:10px 0 0; white-space:pre-line; line-height:1.6;"></p>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+                <button class="btn btn-secondary" onclick="closeConfirm(false)">取消</button>
+                <button class="btn btn-primary" id="cf-ok" onclick="closeConfirm(true)">確認</button>
             </div>
         </div>
     </div>
@@ -987,11 +1027,18 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         const ADMIN_EMAIL = "Nicolas.Wang@cevalogistics.com";
         
         let isAdmin = false;
-        let isDeleteMode = false;
+        /* isDeleteMode：v10 起由 isAdmin 推導（見檔尾） */
 
         const SUPABASE_URL = "https://vwuctilkidzpkrtkkrmb.supabase.co";
         const SUPABASE_KEY = "sb_publishable_dECiL9hVTrJacMm1Hdfd8w_-5rx8_pk";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        /* v11：登入狀態儲存位置依「記住登入」決定（勾選＝本機長期保留；未勾＝只留到關閉分頁） */
+        const rememberOn = () => { try { return localStorage.getItem('ceva_remember') !== '0'; } catch (e) { return true; } };
+        const authStorage = {
+            getItem(k) { try { return localStorage.getItem(k) ?? sessionStorage.getItem(k); } catch (e) { return null; } },
+            setItem(k, v) { try { const keep = rememberOn() ? localStorage : sessionStorage, drop = rememberOn() ? sessionStorage : localStorage; keep.setItem(k, v); drop.removeItem(k); } catch (e) {} },
+            removeItem(k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
+        };
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, storage: authStorage } });
 
         let activeCaseId = null;
         let lastToggledRole = null;
@@ -1131,7 +1178,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
             if (isAdmin) {
                 adminElements.forEach(el => el.classList.remove('hidden'));
-                subtitle.innerText = "Vendor Approval & Management Console (管理者 - Nicolas Wang)";
+                subtitle.innerText = "Vendor Approval & Management Console (管理者模式)";
                 lblVisitor.classList.remove('active');
                 lblAdmin.classList.add('active');
             } else {
@@ -1296,8 +1343,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         }
 
         function switchTab(tab) {
-            if (!isAdmin && ['logs', 'roster', 'trash'].includes(tab)) { showToast('需要管理者權限', 'error'); return; }
-            ['dash', 'create', 'list', 'logs', 'roster', 'trash'].forEach(t => {
+            if (!isAdmin && ['logs', 'roster', 'trash', 'admins'].includes(tab)) { showToast('需要管理者權限', 'error'); return; }
+            ['dash', 'create', 'list', 'logs', 'roster', 'trash', 'admins'].forEach(t => {
                 const panel = document.getElementById('panel-' + t);
                 const btn = document.getElementById('btn-tab-' + t);
                 if(panel) panel.classList.add('hidden');
@@ -1310,6 +1357,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             if (tab === 'logs') renderLogs();
             if (tab === 'roster') renderRoster();
             if (tab === 'trash') renderTrash();
+            if (tab === 'admins') renderAdmins();
         }
 
         function updateMatrixPreview() {
@@ -1598,6 +1646,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     actionButtons = `<button class="btn btn-sm btn-primary" onclick="openDetail('${escHtml(c.id)}')">檢視</button>`;
                 }
 
+                if (isAdmin) actionButtons += ` <button class="btn btn-sm btn-danger" onclick="askDeleteCase('${escHtml(c.id)}')">刪除</button>`;
                 return `
                 <tr>
                     ${selectCheckboxCell}
@@ -1815,7 +1864,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             const { data, error } = await supabaseClient.auth.updateUser({ password: newPwd });
             if (error) { alert("更新失敗：" + error.message); return; }
             closeChangePwdModal();
-            if (isAdminUser(data && data.user)) enterAdminMode();
+            if (await checkIsAdmin()) enterAdminMode();
             showToast("密碼更新成功");
             addSystemLog("Security", "Admin", "管理者修改密碼");
         }
@@ -1849,7 +1898,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             await _baseOnload();
             snapshotCases();
             const { data } = await supabaseClient.auth.getSession();
-            if (data && data.session && isAdminUser(data.session.user)) {
+            if (data && data.session && await checkIsAdmin()) {
                 enterAdminMode();
             }
         };
@@ -3015,6 +3064,271 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             restoreDraft();
             document.addEventListener('keydown', e => { if (e.key === 'Escape' && !gid('tour-overlay').classList.contains('hidden')) endTour(); });
             setTimeout(() => { if (!isAdmin && !tourSeen()) startTour(false); }, 1200);
+        };
+    
+        /* ===================== v10：刪除流程 / 永久刪除 / 管理者轉移 ===================== */
+        Object.defineProperty(window, 'isDeleteMode', { get() { return isAdmin; }, set(v) { /* 固定跟隨管理者模式 */ }, configurable: true });
+
+        let _confirmRes = null;
+        function askConfirm({ title, text, okText = '確認', danger = false }) {
+            return new Promise(res => {
+                if (_confirmRes) { _confirmRes(false); }
+                _confirmRes = res;
+                gid('cf-title').textContent = title;
+                gid('cf-text').textContent = text;
+                const ok = gid('cf-ok'); ok.textContent = okText; ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+                gid('modal-confirm').classList.remove('hidden');
+            });
+        }
+        function closeConfirm(v) {
+            gid('modal-confirm').classList.add('hidden');
+            if (_confirmRes) { const r = _confirmRes; _confirmRes = null; r(v); }
+        }
+
+        function adminErr(err) {
+            const m = String((err && err.message) || err || '');
+            if (/no login account/i.test(m)) return '對方尚未有登入帳號，請先到 Supabase 後台 Authentication → Users 建立';
+            if (/invalid email/i.test(m)) return 'Email 格式不正確';
+            if (/cannot transfer to yourself/i.test(m)) return '不能轉移給自己';
+            if (/cannot remove yourself/i.test(m)) return '不能移除自己；若要交接請用「轉移管理者權限」';
+            if (/last admin/i.test(m)) return '至少要保留一位管理者';
+            if (/not in trash/i.test(m)) return '只能永久刪除回收桶內的案件';
+            return friendlyError(err);
+        }
+
+        async function askDeleteCase(id, fromDetail) {
+            if (!isAdmin) return;
+            const c = cases.find(x => x.id === id);
+            if (!c) return;
+            const ok = await askConfirm({ title: '刪除案件', text: `將 ${c.id}（${c.supplierName}）移至資源回收桶？\n之後可在「資源回收桶」還原或永久刪除。`, okText: '移至回收桶', danger: true });
+            if (!ok) return;
+            if (await removeCloudCase(id)) {
+                addSystemLog('Delete Case', id, '移至資源回收桶');
+                selectedCaseIds = selectedCaseIds.filter(x => x !== id);
+                if (fromDetail) closeDetailModal();
+                renderDashboard(); renderList(); renderTrash(); updateBatchActionBar();
+                showToast('已移至資源回收桶，可在「資源回收桶」還原');
+            }
+        }
+
+        async function batchDeleteCases() {
+            if (!isAdmin || selectedCaseIds.length === 0) return;
+            const ids = selectedCaseIds.slice();
+            const ok = await askConfirm({ title: '批次刪除', text: `將選取的 ${ids.length} 項案件移至資源回收桶？\n之後可在「資源回收桶」還原或永久刪除。`, okText: '移至回收桶', danger: true });
+            if (!ok) return;
+            let done = 0;
+            for (const id of ids) { if (await removeCloudCase(id)) { done++; addSystemLog('Delete Case', id, '移至資源回收桶'); } }
+            selectedCaseIds = [];
+            const all = gid('chk-select-all'); if (all) all.checked = false;
+            renderDashboard(); renderList(); renderTrash(); updateBatchActionBar();
+            showToast(`已將 ${done} 項案件移至資源回收桶`);
+        }
+
+        function renderTrash() {
+            const tb = gid('trash-tbody');
+            if (!tb) return;
+            const list = [...deletedCases].sort((a, b) => String(b.deletedAt).localeCompare(String(a.deletedAt)));
+            const pb = gid('btn-purge-all'); if (pb) pb.style.display = list.length ? '' : 'none';
+            tb.innerHTML = list.length ? list.map(c => `
+                <tr>
+                    <td><strong>${escHtml(c.id)}</strong></td>
+                    <td>${escHtml(c.supplierName)}</td>
+                    <td>${escHtml(c.bu)} / <strong>${escHtml(c.action)}</strong> / ${escHtml(c.vendorType)}</td>
+                    <td style="font-family:monospace; font-size:12px;">${escHtml(c.deletedAt)}</td>
+                    <td style="font-size:12px;">${escHtml(c.deletedBy || '')}</td>
+                    <td style="text-align:right; white-space:nowrap;">
+                        <button class="btn btn-sm btn-primary" onclick="restoreCase('${escHtml(c.id)}')">還原</button>
+                        <button class="btn btn-sm btn-danger" onclick="purgeCase('${escHtml(c.id)}')">永久刪除</button>
+                    </td>
+                </tr>`).join('')
+                : '<tr><td colspan="6" class="empty-state"><div class="empty-state-icon">🗑️</div><div class="empty-state-title">資源回收桶是空的</div></td></tr>';
+            labelTable('trash-tbody');
+        }
+
+        async function purgeCase(id) {
+            if (!isAdmin) return;
+            const c = deletedCases.find(x => x.id === id);
+            if (!c) return;
+            const ok = await askConfirm({ title: '永久刪除', text: `${c.id}（${c.supplierName}）將從資料庫永久移除，無法復原。`, okText: '永久刪除', danger: true });
+            if (!ok) return;
+            setBusy(true);
+            try {
+                const { error } = await supabaseClient.rpc('purge_case', { p_case_id: id });
+                if (error) throw error;
+                deletedCases = deletedCases.filter(x => x.id !== id);
+                addSystemLog('Purge Case', id, '自資源回收桶永久刪除');
+                showToast('已永久刪除');
+                renderTrash();
+            } catch (err) { showToast('永久刪除失敗：' + adminErr(err), 'error'); }
+            finally { setBusy(false); }
+        }
+
+        async function purgeAll() {
+            if (!isAdmin) return;
+            const n = deletedCases.length;
+            if (!n) { showToast('資源回收桶是空的'); return; }
+            const ok = await askConfirm({ title: '清空資源回收桶', text: `回收桶內 ${n} 項案件將全部永久刪除，無法復原。`, okText: `永久刪除 ${n} 項`, danger: true });
+            if (!ok) return;
+            setBusy(true);
+            try {
+                const { data, error } = await supabaseClient.rpc('purge_all_deleted');
+                if (error) throw error;
+                deletedCases = [];
+                addSystemLog('Purge Case', 'ALL', `清空資源回收桶（${data} 筆）`);
+                showToast(`已永久刪除 ${data} 項案件`);
+                renderTrash();
+            } catch (err) { showToast('清空失敗：' + adminErr(err), 'error'); }
+            finally { setBusy(false); }
+        }
+
+        /* ---- 管理者帳號：以資料庫名單判定，不再寫死在前端 ---- */
+        let myAdminEmail = '';
+        async function checkIsAdmin() {
+            try {
+                const { data, error } = await supabaseClient.rpc('is_admin');
+                if (error || data !== true) return false;
+                const s = await supabaseClient.auth.getSession();
+                myAdminEmail = ((s.data && s.data.session && s.data.session.user && s.data.session.user.email) || '').toLowerCase();
+                return true;
+            } catch (e) { return false; }
+        }
+
+        async function submitAdminLogin() {
+            const email = gid('inp-admin-email').value.trim().toLowerCase();
+            const pwd = gid('inp-admin-pwd').value;
+            if (!email || !pwd) { alert('請輸入 Email 與密碼'); return; }
+            const fail = (msg) => { alert(msg); gid('mode-toggle-input').checked = false; };
+            try { localStorage.setItem('ceva_remember', gid('inp-remember').checked ? '1' : '0'); } catch (e) {}
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pwd });
+            if (error) { fail('登入失敗：帳號或密碼錯誤'); return; }
+            if (!(await checkIsAdmin())) { await supabaseClient.auth.signOut(); fail('此帳號不具管理者權限'); return; }
+            try { localStorage.setItem('ceva_admin_email', email); } catch (e) {}
+            gid('inp-admin-pwd').value = '';
+            closeLoginModal();
+            enterAdminMode();
+            showToast('管理者權限已解鎖');
+            addSystemLog('Security', 'Admin', '管理者登入');
+        }
+
+        const _handleModeToggleV9 = handleModeToggle;
+        handleModeToggle = function (checkbox) {
+            _handleModeToggleV9(checkbox);
+            if (checkbox.checked) {
+                let saved = '';
+                try { saved = localStorage.getItem('ceva_admin_email') || ''; } catch (e) {}
+                gid('inp-admin-email').value = saved;
+                gid('inp-remember').checked = rememberOn();
+                setTimeout(() => gid(saved ? 'inp-admin-pwd' : 'inp-admin-email').focus(), 30);
+            }
+        };
+
+        function openForgotModal() {
+            const v = gid('inp-admin-email').value.trim();
+            closeLoginModal();
+            gid('inp-forgot-email').value = v;
+            gid('modal-forgot-pwd').classList.remove('hidden');
+        }
+        async function submitForgotPwd() {
+            const email = gid('inp-forgot-email').value.trim();
+            if (!email) { alert('請輸入 Email'); return; }
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
+            closeForgotModal();
+            if (error) { alert('發送失敗：' + error.message); return; }
+            showToast('若此帳號存在，重設密碼信已寄出');
+            addSystemLog('Security', 'Admin', '發送密碼重設申請');
+        }
+
+        let adminList = [];
+        async function renderAdmins() {
+            const tb = gid('admins-tbody');
+            if (!tb || !isAdmin) return;
+            const { data, error } = await supabaseClient.from('app_admins').select('*').order('added_at', { ascending: true });
+            if (error) { showToast('讀取管理者名單失敗：' + adminErr(error), 'error'); return; }
+            adminList = data || [];
+            tb.innerHTML = adminList.map(a => {
+                const me = String(a.email).toLowerCase() === myAdminEmail;
+                return `<tr>
+                    <td><strong>${escHtml(a.email)}</strong>${me ? ' <span class="od-chip" style="background:#e0f2fe;color:#075985;border-color:#bae6fd;">目前登入</span>' : ''}</td>
+                    <td style="font-size:12px;font-family:monospace;">${escHtml(String(a.added_at || '').slice(0, 16).replace('T', ' '))}</td>
+                    <td style="font-size:12px;">${escHtml(a.added_by || '')}</td>
+                    <td style="text-align:right;">${me ? '' : `<button class="btn btn-sm btn-danger" onclick="removeAdminUi('${escHtml(a.email)}')">移除</button>`}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="4" class="empty-state">尚無資料</td></tr>';
+            labelTable('admins-tbody');
+        }
+        function readNewAdminEmail() {
+            const e = gid('inp-new-admin').value.trim().toLowerCase();
+            if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(e)) { showToast('請輸入正確的 Email', 'error'); return null; }
+            return e;
+        }
+        async function addAdminUi() {
+            const e = readNewAdminEmail(); if (!e) return;
+            const ok = await askConfirm({ title: '新增管理者', text: `${e} 將擁有與您相同的完整管理權限（含刪除與永久刪除）。`, okText: '新增' });
+            if (!ok) return;
+            setBusy(true);
+            try {
+                const { error } = await supabaseClient.rpc('add_admin', { p_email: e });
+                if (error) throw error;
+                gid('inp-new-admin').value = '';
+                addSystemLog('Security', 'Admin', `新增管理者：${e}`);
+                showToast('已新增管理者');
+                renderAdmins();
+            } catch (err) { showToast('新增失敗：' + adminErr(err), 'error'); }
+            finally { setBusy(false); }
+        }
+        async function removeAdminUi(email) {
+            const ok = await askConfirm({ title: '移除管理者', text: `${email} 將失去管理權限。`, okText: '移除', danger: true });
+            if (!ok) return;
+            setBusy(true);
+            try {
+                const { error } = await supabaseClient.rpc('remove_admin', { p_email: email });
+                if (error) throw error;
+                addSystemLog('Security', 'Admin', `移除管理者：${email}`);
+                showToast('已移除');
+                renderAdmins();
+            } catch (err) { showToast('移除失敗：' + adminErr(err), 'error'); }
+            finally { setBusy(false); }
+        }
+        async function transferAdminUi() {
+            const e = readNewAdminEmail(); if (!e) return;
+            const ok = await askConfirm({ title: '轉移管理者權限', text: `權限將轉移給 ${e}。\n轉移完成後，您（${myAdminEmail}）會立即登出並失去管理權限，無法自行取回。`, okText: '確認轉移', danger: true });
+            if (!ok) return;
+            setBusy(true);
+            try {
+                const { error } = await supabaseClient.rpc('transfer_admin', { p_email: e });
+                if (error) throw error;
+                addSystemLog('Security', 'Admin', `管理者權限已轉移給：${e}`);
+                gid('inp-new-admin').value = '';
+                await adminLogout();
+                showToast(`管理者權限已轉移給 ${e}`);
+            } catch (err) { showToast('轉移失敗：' + adminErr(err), 'error'); }
+            finally { setBusy(false); }
+        }
+    
+        /* ===================== v11：記住登入 / 訪客檢視不登出 / 登出按鈕 ===================== */
+        const _toggleBaseV10 = handleModeToggle;
+        async function adminLogout() {
+            myAdminEmail = '';
+            const t = gid('mode-toggle-input'); t.checked = false;
+            _toggleBaseV10(t);            // 原流程：signOut + 還原訪客畫面
+            try { await supabaseClient.auth.signOut(); } catch (e) {}
+        }
+        handleModeToggle = async function (checkbox) {
+            if (checkbox.checked) {
+                // 已有有效登入 → 免輸入密碼直接進入
+                try {
+                    const s = await supabaseClient.auth.getSession();
+                    if (s.data && s.data.session && await checkIsAdmin()) { enterAdminMode(); showToast('已恢復管理者模式'); return; }
+                } catch (e) {}
+                _toggleBaseV10(checkbox);
+            } else if (rememberOn() && myAdminEmail) {
+                // 只切回訪客檢視，保留登入；要結束請按「登出」
+                isAdmin = false; selectedCaseIds = []; selectedLogIndices = [];
+                updateUIPermissions(); switchTab('dash');
+                showToast('已切回訪客檢視（登入已保留，再切回管理即可，免輸入密碼）');
+            } else {
+                _toggleBaseV10(checkbox);
+            }
         };
     </script>
 </body>
