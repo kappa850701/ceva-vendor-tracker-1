@@ -451,6 +451,61 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 .skeleton-row td { padding: 14px 12px !important; }
 .sk { height: 16px; border-radius: 6px; background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: sk 1.4s linear infinite; }
 .btn:disabled { cursor: not-allowed; }
+
+/* ===== v8：逾期 / 儀表板 / 簽核人 / 回收桶 ===== */
+.od-chip { display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; letter-spacing: .2px; white-space: nowrap; vertical-align: middle; }
+.od-chip.over { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.od-chip.warn { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.card-grid .card { cursor: pointer; }
+.card-grid .card.card-active { outline: 2px solid #003366; outline-offset: 1px; }
+#dash-insights { margin-bottom: 18px; }
+.in-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.in-kpi { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; background: #fff; cursor: pointer; transition: transform .2s, box-shadow .2s; border-top: 3px solid #003366; }
+.in-kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(15,23,42,.08); }
+.in-kpi small { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+.in-kpi b { display: block; font-size: 26px; font-weight: 800; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.in-kpi.over { border-top-color: #dc2626; } .in-kpi.over b { color: #dc2626; }
+.in-kpi.warn { border-top-color: #f59e0b; } .in-kpi.warn b { color: #b45309; }
+.in-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.in-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; background: #fff; }
+.in-card h4 { font-size: 13px; color: #003366; margin-bottom: 10px; }
+.in-bar { display: grid; grid-template-columns: minmax(70px, 120px) 1fr 28px; gap: 8px; align-items: center; margin: 6px 0; font-size: 12px; }
+.in-k { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #475569; }
+.bar-track { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+.bar-track i { display: block; height: 100%; border-radius: 99px; transition: width .8s cubic-bezier(.22,1,.36,1); }
+.in-bar b { text-align: right; color: #1e293b; }
+.in-empty { color: #94a3b8; font-size: 12px; padding: 6px 0; }
+.top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; cursor: pointer; font-size: 12.5px; }
+.top-row:hover { background: #f1f5f9; }
+.top-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#panel-roster input { padding: 7px 9px; font-size: 13px; margin-top: 0; }
+@media (max-width: 768px) {
+    .in-kpis { grid-template-columns: repeat(2, 1fr); }
+    .in-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== v9：新手導覽 / 草稿 ===== */
+@keyframes tour-pulse { 0%,100% { box-shadow: 0 0 0 4px #fbbf24, 0 0 14px rgba(251,191,36,.5); } 50% { box-shadow: 0 0 0 6px #fbbf24, 0 0 26px rgba(251,191,36,.8); } }
+.help-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; transition: background .2s; }
+.help-btn:hover { background: rgba(255,255,255,.18); }
+.draft-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; }
+#tour-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(15,23,42,.58); animation: fade-in .25s ease; }
+.tour-card { position: absolute; top: 190px; left: 50%; transform: translateX(-50%); width: min(440px, calc(100vw - 24px)); background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 25px 60px -12px rgba(0,0,0,.45); animation: modal-in .3s cubic-bezier(.2,.8,.2,1); }
+.tour-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.tour-step { font-size: 12px; font-weight: 800; color: #003366; background: #e0ebf7; padding: 2px 10px; border-radius: 999px; }
+.tour-skip { border: none; background: none; color: #64748b; font-size: 13px; cursor: pointer; }
+.tour-skip:hover { color: #003366; text-decoration: underline; }
+.tour-card h3 { font-size: 18px; color: #003366; margin-bottom: 6px; }
+.tour-card p { font-size: 14px; color: #334155; line-height: 1.7; }
+.tour-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.tour-hl { position: relative; z-index: 3100; background: #fff !important; border-radius: 8px; animation: tour-pulse 1.4s ease-in-out infinite; }
+@media (max-width: 768px) { .tour-card { top: auto; bottom: 12px; } }
+
+/* ===== v9.1：狀態欄排版 ===== */
+.st-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.st-cell .od-chip { margin-left: 0; padding: 2px 10px; font-size: 11px; line-height: 1.5; }
+.fs-sub .od-chip { margin-left: 8px; }
+@media (max-width: 768px) { .st-cell { align-items: flex-end; } }
 </style>
 </head>
 <body>
@@ -469,6 +524,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         
         <div class="header-actions">
             <span id="live-pill" class="live-pill off" title="即時同步狀態"><i></i><b>Offline</b></span>
+            <button type="button" id="btn-help" class="help-btn" onclick="startTour(true)" title="操作導覽" aria-label="操作導覽">?</button>
             <button id="btn-delete-mode" class="delete-mode-toggle-btn admin-only hidden" onclick="toggleDeleteMode()">
                 🗑️ 刪除模式 <span id="delete-mode-status-text" style="font-size: 10px; opacity: 0.8;">(關閉)</span>
             </button>
@@ -498,6 +554,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             <button class="tab-btn admin-only hidden" id="btn-tab-logs" onclick="switchTab('logs')">
                 <svg class="tab-icon" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg> 系統日誌
             </button>
+            <button class="tab-btn admin-only hidden" id="btn-tab-roster" onclick="switchTab('roster')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> 簽核人設定</button>
+            <button class="tab-btn admin-only hidden" id="btn-tab-trash" onclick="switchTab('trash')"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg> 資源回收桶</button>
         </div>
 
         <!-- Dashboard Panel -->
@@ -533,6 +591,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 <div class="card"><div class="card-title">暫停</div><div id="cnt-hold" class="card-val">0</div></div>
             </div>
 
+            <div id="dash-insights"></div>
+
             <!-- KPI Cards -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
                 <div class="card" style="border-left-color: #003366;">
@@ -565,6 +625,10 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         <!-- Create Case Panel -->
         <div id="panel-create" class="panel hidden">
             <h2 style="margin-bottom: 20px; color: #003366; font-size: 20px;">新建 / 修改供應商申請</h2>
+            <div id="draft-banner" class="draft-banner hidden">
+                <span>已還原上次未送出的草稿（<b id="draft-time"></b>）。附件需要重新選取。</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="discardDraft()">清除草稿</button>
+            </div>
             <form id="form-create-vendor" onsubmit="handleCreate(event)">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div style="grid-column: span 2;">
@@ -654,7 +718,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                 <span style="font-size: 13px; color: #b91c1c; font-weight: bold;" id="selected-count-text">已選取 0 項案件</span>
                 <div style="display: flex; gap: 8px;">
                     <button class="btn btn-sm btn-secondary" onclick="cancelBatchSelection()">取消選取</button>
-                    <button class="btn btn-sm btn-danger" onclick="batchDeleteCases()">批次刪除選取案件</button>
+                    <button class="btn btn-sm btn-danger" onclick="batchDeleteCases()">移至資源回收桶</button>
                 </div>
             </div>
 
@@ -675,6 +739,41 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             </table>
 
             <div id="pagination-container"></div>
+        </div>
+
+        <!-- Roster Panel -->
+        <div id="panel-roster" class="panel hidden">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                <div>
+                    <h3 style="color:#003366; font-size:20px;">簽核人設定</h3>
+                    <p style="font-size:13px; color:#64748b; margin-top:4px;">調整後只影響「之後新建」的申請，已建立的案件維持原簽核人。適用 BU 填 ALL 代表全部，多個請用逗號分隔，例如 AE,AI,OE,OI。</p>
+                </div>
+                <button class="btn btn-primary" onclick="addRosterRow('approver')">＋ 新增簽核人</button>
+            </div>
+            <table>
+                <thead><tr><th style="width:80px;">順序</th><th>角色 Function</th><th>姓名</th><th>職稱</th><th>Email</th><th>適用 BU</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
+                <tbody id="roster-tbody"></tbody>
+            </table>
+            <div style="margin:28px 0 8px; display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#003366; font-size:15px;">固定副本 (CC)</h4>
+                <button class="btn btn-sm btn-outline-primary" onclick="addRosterRow('cc')">＋ 新增副本</button>
+            </div>
+            <table>
+                <thead><tr><th>Email</th><th>備註</th><th>狀態</th><th style="text-align:right;">操作</th></tr></thead>
+                <tbody id="cc-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Trash Panel -->
+        <div id="panel-trash" class="panel hidden">
+            <div style="margin-bottom:16px;">
+                <h3 style="color:#003366; font-size:20px;">資源回收桶</h3>
+                <p style="font-size:13px; color:#64748b; margin-top:4px;">被刪除的案件會先放在這裡，一般使用者看不到。按「還原」即可恢復，資料不會遺失。</p>
+            </div>
+            <table>
+                <thead><tr><th>Case ID</th><th>Supplier Name</th><th>BU / Action / Type</th><th>刪除時間</th><th>刪除者</th><th style="text-align:right;">操作</th></tr></thead>
+                <tbody id="trash-tbody"></tbody>
+            </table>
         </div>
 
         <!-- Logs Panel -->
@@ -832,6 +931,33 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     <button class="btn btn-outline-primary" onclick="exportPDF()">匯出 Approval Report (PDF)</button>
                     <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新手導覽 -->
+    <div id="tour-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+        <div class="tour-card">
+            <div class="tour-top"><span id="tour-step" class="tour-step"></span><button type="button" class="tour-skip" onclick="endTour()">略過</button></div>
+            <h3 id="tour-title"></h3>
+            <p id="tour-text"></p>
+            <div class="tour-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="tour-prev" onclick="tourPrev()">上一步</button>
+                <button type="button" class="btn btn-primary" id="tour-next" onclick="tourNext()">下一步</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 原因 Modal -->
+    <div id="modal-reason" class="modal-overlay hidden">
+        <div class="modal" style="max-width: 480px;">
+            <h3 id="rs-title" style="color:#003366; font-size:18px;">原因</h3>
+            <p id="rs-sub" style="font-size:13px; color:#64748b; margin:4px 0 12px;"></p>
+            <textarea id="rs-text" rows="4" maxlength="300" placeholder="請輸入原因（必填，最多 300 字）" oninput="gid('rs-count').textContent = this.value.length + ' / 300'"></textarea>
+            <div id="rs-count" style="font-size:12px; color:#94a3b8; text-align:right; margin-top:4px;">0 / 300</div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                <button class="btn btn-secondary" onclick="cancelReason()">取消</button>
+                <button class="btn btn-primary" onclick="submitReason()">確認</button>
             </div>
         </div>
     </div>
@@ -1170,8 +1296,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         }
 
         function switchTab(tab) {
-            if (!isAdmin && tab === 'logs') { alert("需要管理者權限"); return; }
-            ['dash', 'create', 'list', 'logs'].forEach(t => {
+            if (!isAdmin && ['logs', 'roster', 'trash'].includes(tab)) { showToast('需要管理者權限', 'error'); return; }
+            ['dash', 'create', 'list', 'logs', 'roster', 'trash'].forEach(t => {
                 const panel = document.getElementById('panel-' + t);
                 const btn = document.getElementById('btn-tab-' + t);
                 if(panel) panel.classList.add('hidden');
@@ -1182,20 +1308,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             if (tab === 'dash') renderDashboard();
             if (tab === 'list') renderList();
             if (tab === 'logs') renderLogs();
-        }
-
-        function getMatrix(bu) {
-            const isCL = (bu === 'CL');
-            return [
-                { role: "OMC", name: "Tristan YANG", title: "Operation Management Control Supervisor", email: "Tristan.Yang@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "Compliance", name: "Chris ZHANG", title: "Ethics and Compliance Specialist", email: "Chris.Zhang@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "Local Finance", name: "Will YU", title: "Business Controlling Manager Taiwan", email: "Will.Yu@Cevalogistics.com", approved: false, time: "N/A" },
-                { role: isCL ? "CL Product Head" : "A&O Product Head", name: isCL ? "Barry CHAN" : "Warren WANG", title: isCL ? "Contract Logistics Product Head" : "Air & Ocean Director", email: isCL ? "Barry.Chan@cevalogistics.com" : "Warren.Wang@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "確認文件", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "與供應商確認相關訊息中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "要求相關單位核准中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" },
-                { role: "供應商資料新建/修改中", name: "VMD Team", title: "Vendor Master Data Team", email: "vmd@cevalogistics.com", approved: false, time: "N/A" }
-            ];
+            if (tab === 'roster') renderRoster();
+            if (tab === 'trash') renderTrash();
         }
 
         function updateMatrixPreview() {
@@ -1320,7 +1434,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                         <td>${escHtml(c.supplierName)}</td>
                         <td>${escHtml(c.bu)} / <strong>${escHtml(c.action)}</strong> / ${escHtml(c.vendorType)}</td>
                         <td style="font-size:12px; color:#475569; white-space:nowrap;">${escHtml(c.applyDate)}</td>
-                        <td>${getStatusBadge(c.status)}</td>
+                        <td><div class="st-cell">${getStatusBadge(c.status)}${overdueChip(c)}</div></td>
                         <td><span class="${ageClass}">${ageInfo.text}</span></td>
                     </tr>
                 `;
@@ -1387,16 +1501,16 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
 
         async function batchDeleteCases() {
             if(!isAdmin || !isDeleteMode || selectedCaseIds.length === 0) return;
-            if(confirm(`確定批次刪除選取的 ${selectedCaseIds.length} 項案件？`)) {
+            if(confirm(`確定將選取的 ${selectedCaseIds.length} 項案件移至資源回收桶？（可在「資源回收桶」還原）`)) {
                 for(let id of selectedCaseIds) {
                     await removeCloudCase(id);
-                    addSystemLog("Delete Case", id, `批次刪除案件`);
+                    addSystemLog("Delete Case", id, `移至資源回收桶`);
                 }
                 selectedCaseIds = [];
                 document.getElementById('chk-select-all').checked = false;
                 renderDashboard();
                 renderList();
-                showToast("批次刪除案件成功");
+                showToast('已移至資源回收桶');
             }
         }
 
@@ -1491,7 +1605,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     <td>${escHtml(c.supplierName)}</td>
                     <td>${escHtml(c.bu)} / <strong>${escHtml(c.action)}</strong> / ${escHtml(c.vendorType)}</td>
                     <td>${escHtml(c.requesterEmail)}</td>
-                    <td>${getStatusBadge(c.status)}</td>
+                    <td><div class="st-cell">${getStatusBadge(c.status)}${overdueChip(c)}</div></td>
                     <td><span class="${ageInfo.isNA ? 'age-na' : 'age-normal'}">${ageInfo.text}</span></td>
                     <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
                 </tr>`;
@@ -1729,16 +1843,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             }
         }
 
-        async function removeCloudCase(id) {
-            const { data, error } = await supabaseClient.from('vendor_cases').delete().eq('id', id).select();
-            if (error || !data || data.length === 0) {
-                showToast('刪除失敗：' + friendlyError(error || {}), 'error');
-                return;
-            }
-            cases = cases.filter(x => x.id !== id);
-            syncedSnapshot.delete(id);
-        }
-
         // 載入後建立同步快照、還原管理者 session、處理密碼重設連結
         const _baseOnload = window.onload;
         window.onload = async function () {
@@ -1768,8 +1872,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         }
 
         function flowHeadline(c, internal, vmd) {
-            if (c.status === 'Reject') return ['此案件已退回', '流程已終止，請確認退回原因後重新申請'];
-            if (c.status === 'Hold') return ['此案件暫停中', '待管理者恢復後繼續流程'];
+            if (c.status === 'Reject') return ['此案件已退回', c.reason ? '退回原因：' + c.reason : '流程已終止，請確認退回原因後重新申請'];
+            if (c.status === 'Hold') return ['此案件暫停中', c.reason ? '暫停原因：' + c.reason : '待管理者恢復後繼續流程'];
             if (c.status === 'Done') {
                 const d = (c.completedDate && c.completedDate !== 'N/A') ? c.completedDate : '—';
                 return ['審核流程全部完成', `完成日期：${d}`];
@@ -1804,7 +1908,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
                     <div class="fs-top">
                         <div>
                             <div class="fs-title"><span class="fs-dot ${state}"></span>${escHtml(title)}</div>
-                            <div class="fs-sub">${escHtml(sub)}</div>
+                            <div class="fs-sub">${escHtml(sub)}${overdueChip(c)}</div>
                         </div>
                         <div class="fs-metrics">
                             <div class="fs-metric"><b class="fs-pct">${from}%</b><span>整體進度</span></div>
@@ -1993,7 +2097,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             gid('pdf-print-area').innerHTML = RPT_CSS + `<div class="rpt">
                 ${rptHeader('Vendor Approval Report', '供應商建立 / 異動 · 內部簽核報告', [['Case ID', escHtml(c.id)], ['Generated', todayStr()], ['Document', 'Approval Confirmation']],
                     `<span class="stamp" style="color:${st[1]};border-color:${st[1]};background:${st[2]};">${st[0]}</span>`)}
-                ${banner}
+                ${banner}${(c.reason && (c.status === 'Reject' || c.status === 'Hold')) ? `<div style="margin-top:12px;border:1px solid #fecaca;background:#fef2f2;border-radius:8px;padding:10px 14px;color:#991b1b;"><b>${c.status === 'Reject' ? '退回原因 Reason for rejection' : '暫停原因 Reason for hold'}</b><div style="margin-top:3px;">${escHtml(c.reason)}</div></div>` : ''}
 
                 <div class="rpt-sec"><h2><b>1</b> Vendor Information 供應商資訊</h2>
                     <div class="kv">
@@ -2250,7 +2354,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             const files = attachFiles.slice();
             addSystemLog("Create Case", newCase.id, `新建案件：${supplierName} (${bu})` + (files.length ? `，附件 ${files.length} 份` : ''));
 
-            const toEmails = matrixSteps.filter(s => !vmdRoleNames.includes(s.role)).map(s => s.email).join("; ");
+            const toEmails = newCase.steps.filter(s => !vmdRoleNames.includes(s.role)).map(s => s.email).join("; ");
             const ccEmails = [...new Set([requesterEmail, ...FIXED_CC_LIST])].join("; ");
             const subject = `【Seek Approval】Vendor Creation/Amendment - ${supplierName}`;
             const body =
@@ -2280,6 +2384,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             attachFiles = []; renderAttachments();
             switchTab('list');
             showToast(`Case ${newCase.id} 建立成功`);
+            clearDraft();
         }
 
         const _baseOnloadV3 = window.onload;
@@ -2436,6 +2541,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             const m = String((err && (err.message || err.error_description)) || err || '');
             if ((err && err.code === '42501' && !/row-level security/i.test(m)) || /not permitted|permission denied|JWT|not authorized/i.test(m)) return '權限不足或登入已逾時，請重新登入管理者';
             if (/row-level security/i.test(m)) return '申請內容不符合系統規則，請檢查欄位後再試';
+            if (/no approvers configured/i.test(m)) return '此 BU 尚未設定簽核人，請聯絡 OMC';
+            if (/reason too long/i.test(m)) return '原因請在 300 字以內';
             if (/Failed to fetch|NetworkError|network/i.test(m)) return '網路連線異常，請稍後再試';
             return '操作失敗，請稍後再試' + (m ? '（' + m.slice(0, 60) + '）' : '');
         }
@@ -2473,26 +2580,6 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
             openDetail(activeCaseId); renderDashboard(); renderList();
         }
 
-        async function setGlobalStatus(status) {
-            if (!isAdmin) return;
-            const c = cases.find(x => x.id === activeCaseId);
-            if (!c) return;
-            if (status === 'Done' && !c.steps.every(s => s.approved)) {
-                showToast('須完成所有內部審核與 VMD 四個階段後，才能設為完成', 'error');
-                return;
-            }
-            try {
-                await rpcCase('set_case_status', { p_case_id: c.id, p_status: status });
-                addSystemLog('Status', c.id, `變更狀態：${status}`);
-                showToast('狀態已更新');
-            } catch (err) {
-                console.error(err);
-                showToast(friendlyError(err), 'error');
-                scheduleRefresh(300);
-            }
-            openDetail(activeCaseId); renderDashboard(); renderList();
-        }
-
         // 建立申請：按鈕顯示「建立中」並防止重複送出
         async function handleCreate(e) {
             e.preventDefault();
@@ -2509,6 +2596,425 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px s
         submitAdminLogin = async function () {
             setBusy(true);
             try { await _submitAdminLoginV7(); } finally { setBusy(false); }
+        };
+    
+        /* ===================== v8：逾期 / 儀表板 / 簽核人設定 / 退回原因 / 標記刪除 ===================== */
+        const BU_CODES = ['AE', 'AI', 'OE', 'OI', 'CL', 'PL', 'HR', 'QHSE', 'ADM'];
+        let deletedCases = [];
+        let rosterCache = [];
+        let rosterNew = [];
+
+        // ---- 逾期：申請日起滿 1 個月仍在「等待審核」即逾期；到期前 7 天提醒 ----
+        const OVERDUE_MONTHS = 1, WARN_DAYS = 7;
+        function dueDate(c) {
+            const d = new Date(String(c.applyDate).substring(0, 10) + 'T00:00:00');
+            const day = d.getDate();
+            d.setMonth(d.getMonth() + OVERDUE_MONTHS);
+            if (d.getDate() !== day) d.setDate(0);
+            return d;
+        }
+        function overdueInfo(c) {
+            if (!c || c.status !== 'Waiting Internal Approval') return null;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const left = Math.round((dueDate(c) - today) / 86400000);
+            return { left, level: left < 0 ? 'over' : left <= WARN_DAYS ? 'warn' : 'ok' };
+        }
+        function overdueChip(c) {
+            const o = overdueInfo(c);
+            if (!o || o.level === 'ok') return '';
+            if (o.level === 'over') return `<span class="od-chip over">逾期 ${-o.left} 天</span>`;
+            return `<span class="od-chip warn">${o.left === 0 ? '今日到期' : '剩 ' + o.left + ' 天到期'}</span>`;
+        }
+
+        // ---- 載入：標記刪除的案件另外存放 ----
+        const _loadCloudDataV8 = loadCloudData;
+        loadCloudData = async function () {
+            await _loadCloudDataV8();
+            deletedCases = cases.filter(c => c.deletedAt);
+            cases = cases.filter(c => !c.deletedAt);
+        };
+
+        // ---- 簽核人名單（資料庫為準，連線失敗時使用內建預設） ----
+        const DEFAULT_ROSTER = [
+            { kind: 'approver', role: 'OMC', name: 'Tristan YANG', title: 'Operation Management Control Supervisor', email: 'Tristan.Yang@cevalogistics.com', bu_scope: null, sort: 10, active: true },
+            { kind: 'approver', role: 'Compliance', name: 'Chris ZHANG', title: 'Ethics and Compliance Specialist', email: 'Chris.Zhang@cevalogistics.com', bu_scope: null, sort: 20, active: true },
+            { kind: 'approver', role: 'Local Finance', name: 'Will YU', title: 'Business Controlling Manager Taiwan', email: 'Will.Yu@Cevalogistics.com', bu_scope: null, sort: 30, active: true },
+            { kind: 'approver', role: 'A&O Product Head', name: 'Warren WANG', title: 'Air & Ocean Director', email: 'Warren.Wang@cevalogistics.com', bu_scope: ['AE', 'AI', 'OE', 'OI', 'PL', 'HR', 'QHSE', 'ADM'], sort: 40, active: true },
+            { kind: 'approver', role: 'CL Product Head', name: 'Barry CHAN', title: 'Contract Logistics Product Head', email: 'Barry.Chan@cevalogistics.com', bu_scope: ['CL'], sort: 40, active: true }
+        ];
+        async function loadRoster() {
+            const { data, error } = await supabaseClient.from('approver_roster').select('*').order('sort', { ascending: true });
+            if (error || !data || !data.length) return false;
+            rosterCache = data;
+            FIXED_CC_LIST.length = 0;
+            data.filter(r => r.kind === 'cc' && r.active).forEach(r => FIXED_CC_LIST.push(r.email));
+            return true;
+        }
+        function getMatrix(bu) {
+            const src = rosterCache.length ? rosterCache : DEFAULT_ROSTER;
+            const internal = src
+                .filter(r => r.kind === 'approver' && r.active !== false && (!r.bu_scope || !r.bu_scope.length || r.bu_scope.includes(bu)))
+                .sort((a, b) => a.sort - b.sort)
+                .map(r => ({ role: r.role, name: r.name, title: r.title || '', email: r.email, approved: false, time: 'N/A' }));
+            const vmd = VMD_ORDER.map(role => ({ role, name: 'VMD Team', title: 'Vendor Master Data Team', email: 'vmd@cevalogistics.com', approved: false, time: 'N/A' }));
+            return [...internal, ...vmd];
+        }
+
+        function rosterRowHtml(r) {
+            const k = escHtml(r.key), act = r.active !== false;
+            const inp = (f, v, extra) => `<input data-f="${f}" value="${escHtml(v == null ? '' : v)}" ${extra || ''}>`;
+            const status = `<span class="status-badge ${act ? 'status-done' : 'status-hold'}">${act ? '啟用中' : '已停用'}</span>`;
+            const btns = `<button class="btn btn-sm btn-primary" onclick="saveRosterRow('${k}')">儲存</button> ` +
+                (r.id ? `<button class="btn btn-sm btn-outline-danger" onclick="toggleRosterActive('${k}')">${act ? '停用' : '啟用'}</button>`
+                      : `<button class="btn btn-sm btn-secondary" onclick="cancelRosterNew('${k}')">取消</button>`);
+            const tail = `<td>${status}</td><td style="text-align:right; white-space:nowrap;">${btns}</td>`;
+            if (r.kind === 'cc') return `<tr data-key="${k}" data-kind="cc" data-active="${act}"><td>${inp('email', r.email)}</td><td>${inp('name', r.name)}</td>${tail}</tr>`;
+            const scope = r.bu_scope && r.bu_scope.length ? r.bu_scope.join(',') : 'ALL';
+            return `<tr data-key="${k}" data-kind="approver" data-active="${act}"><td>${inp('sort', r.sort, 'type="number"')}</td><td>${inp('role', r.role)}</td><td>${inp('name', r.name)}</td><td>${inp('title', r.title)}</td><td>${inp('email', r.email)}</td><td>${inp('scope', scope)}</td>${tail}</tr>`;
+        }
+        function renderRoster() {
+            if (!gid('roster-tbody')) return;
+            const rows = kind => [...rosterCache.filter(r => r.kind === kind).map(r => ({ ...r, key: r.id })), ...rosterNew.filter(r => r.kind === kind)];
+            const apr = rows('approver'), cc = rows('cc');
+            gid('roster-tbody').innerHTML = apr.length ? apr.map(rosterRowHtml).join('') : '<tr><td colspan="8" class="empty-state">尚未設定簽核人</td></tr>';
+            gid('cc-tbody').innerHTML = cc.length ? cc.map(rosterRowHtml).join('') : '<tr><td colspan="4" class="empty-state">尚未設定固定副本</td></tr>';
+            labelTable('roster-tbody'); labelTable('cc-tbody');
+        }
+        function addRosterRow(kind) {
+            rosterNew.push({ key: 'new-' + Date.now(), kind, role: '', name: '', title: '', email: '', bu_scope: null, sort: 100, active: true });
+            renderRoster();
+        }
+        function cancelRosterNew(key) { rosterNew = rosterNew.filter(r => r.key !== key); renderRoster(); }
+
+        async function saveRosterRow(key) {
+            const tr = document.querySelector(`tr[data-key="${key}"]`);
+            if (!tr) return;
+            const v = f => { const el = tr.querySelector(`[data-f="${f}"]`); return el ? el.value.trim() : ''; };
+            const kind = tr.dataset.kind, email = v('email');
+            if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) { showToast('Email 格式不正確', 'error'); return; }
+            const row = { kind, email, active: tr.dataset.active !== 'false' };
+            if (kind === 'approver') {
+                const role = v('role'), name = v('name');
+                if (!role || !name) { showToast('角色與姓名為必填', 'error'); return; }
+                if (/[<>]/.test(role + name + v('title'))) { showToast('欄位不可包含 < 或 > 符號', 'error'); return; }
+                const raw = v('scope').toUpperCase().replace(/\s+/g, '');
+                let scope = null;
+                if (raw && raw !== 'ALL') {
+                    scope = raw.split(',').filter(Boolean);
+                    const bad = scope.filter(x => !BU_CODES.includes(x));
+                    if (bad.length) { showToast('BU 代碼不正確：' + bad.join(', '), 'error'); return; }
+                }
+                Object.assign(row, { role, name, title: v('title') || null, bu_scope: scope, sort: parseInt(v('sort'), 10) || 100 });
+            } else {
+                if (/[<>]/.test(v('name'))) { showToast('欄位不可包含 < 或 > 符號', 'error'); return; }
+                Object.assign(row, { name: v('name') || null, role: null, title: null, bu_scope: null, sort: 100 });
+            }
+            const isNew = key.startsWith('new-');
+            setBusy(true);
+            try {
+                const q = isNew ? supabaseClient.from('approver_roster').insert(row)
+                                : supabaseClient.from('approver_roster').update({ ...row, updated_at: new Date().toISOString() }).eq('id', key);
+                const { error } = await q;
+                if (error) throw error;
+                rosterNew = rosterNew.filter(r => r.key !== key);
+                await loadRoster(); renderRoster();
+                addSystemLog('Roster', kind === 'cc' ? 'CC' : row.role, `${isNew ? '新增' : '更新'}：${row.name || row.email}`);
+                showToast('已儲存（只影響之後新建的申請）');
+            } catch (err) { showToast('儲存失敗：' + friendlyError(err), 'error'); }
+            finally { setBusy(false); }
+        }
+        async function toggleRosterActive(key) {
+            const r = rosterCache.find(x => x.id === key);
+            if (!r) return;
+            const next = !r.active;
+            if (!next && r.kind === 'approver') {
+                const left = rosterCache.filter(x => x.kind === 'approver' && x.active && x.id !== key);
+                const uncovered = BU_CODES.filter(bu => !left.some(x => !x.bu_scope || !x.bu_scope.length || x.bu_scope.includes(bu)));
+                if (uncovered.length) { showToast('停用後這些 BU 將沒有簽核人：' + uncovered.join(', '), 'error'); return; }
+            }
+            setBusy(true);
+            try {
+                const { error } = await supabaseClient.from('approver_roster').update({ active: next, updated_at: new Date().toISOString() }).eq('id', key);
+                if (error) throw error;
+                await loadRoster(); renderRoster();
+                addSystemLog('Roster', r.role || 'CC', `${next ? '啟用' : '停用'}：${r.name || r.email}`);
+                showToast(next ? '已啟用' : '已停用');
+            } catch (err) { showToast('操作失敗：' + friendlyError(err), 'error'); }
+            finally { setBusy(false); }
+        }
+
+        // ---- 退回 / 暫停原因 ----
+        let reasonResolver = null;
+        function askReason(status) {
+            return new Promise(resolve => {
+                reasonResolver = resolve;
+                gid('rs-title').textContent = status === 'Reject' ? '退回原因' : '暫停原因';
+                gid('rs-sub').textContent = (status === 'Reject' ? '請填寫退回原因' : '請填寫暫停原因') + '，申請人可在案件詳情看到。';
+                const t = gid('rs-text'); t.value = ''; gid('rs-count').textContent = '0 / 300';
+                gid('modal-reason').classList.remove('hidden');
+                setTimeout(() => t.focus(), 60);
+            });
+        }
+        function closeReason(val) {
+            gid('modal-reason').classList.add('hidden');
+            if (reasonResolver) { reasonResolver(val); reasonResolver = null; }
+        }
+        function submitReason() {
+            const val = gid('rs-text').value.trim();
+            if (!val) { showToast('請填寫原因', 'error'); return; }
+            closeReason(val);
+        }
+        function cancelReason() { closeReason(null); }
+
+        async function setGlobalStatus(status) {
+            if (!isAdmin) return;
+            const c = cases.find(x => x.id === activeCaseId);
+            if (!c) return;
+            if (status === 'Done' && !c.steps.every(s => s.approved)) {
+                showToast('須完成所有內部審核與 VMD 四個階段後，才能設為完成', 'error');
+                return;
+            }
+            let reason = null;
+            if (status === 'Reject' || status === 'Hold') {
+                reason = await askReason(status);
+                if (!reason) return;
+            }
+            try {
+                await rpcCase('set_case_status', { p_case_id: c.id, p_status: status, p_reason: reason });
+                addSystemLog('Status', c.id, `變更狀態：${status}` + (reason ? `（原因：${reason}）` : ''));
+                showToast('狀態已更新');
+            } catch (err) {
+                console.error(err);
+                showToast(friendlyError(err), 'error');
+                scheduleRefresh(300);
+            }
+            openDetail(activeCaseId); renderDashboard(); renderList();
+        }
+
+        // ---- 標記刪除 / 資源回收桶 ----
+        async function removeCloudCase(id) {
+            const { data, error } = await supabaseClient.rpc('soft_delete_case', { p_case_id: id });
+            if (error) { showToast('移至回收桶失敗：' + friendlyError(error), 'error'); return false; }
+            cases = cases.filter(x => x.id !== id);
+            syncedSnapshot.delete(id);
+            deletedCases.unshift(canonicalizeCase(data));
+            return true;
+        }
+        function renderTrash() {
+            const tb = gid('trash-tbody');
+            if (!tb) return;
+            const list = [...deletedCases].sort((a, b) => String(b.deletedAt).localeCompare(String(a.deletedAt)));
+            tb.innerHTML = list.length ? list.map(c => `
+                <tr>
+                    <td><strong>${escHtml(c.id)}</strong></td>
+                    <td>${escHtml(c.supplierName)}</td>
+                    <td>${escHtml(c.bu)} / <strong>${escHtml(c.action)}</strong> / ${escHtml(c.vendorType)}</td>
+                    <td style="font-family:monospace; font-size:12px;">${escHtml(c.deletedAt)}</td>
+                    <td style="font-size:12px;">${escHtml(c.deletedBy || '')}</td>
+                    <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="restoreCase('${escHtml(c.id)}')">還原</button></td>
+                </tr>`).join('')
+                : '<tr><td colspan="6" class="empty-state"><div class="empty-state-icon">🗑️</div><div class="empty-state-title">資源回收桶是空的</div></td></tr>';
+            labelTable('trash-tbody');
+        }
+        async function restoreCase(id) {
+            setBusy(true);
+            try {
+                const { data, error } = await supabaseClient.rpc('restore_case', { p_case_id: id });
+                if (error) throw error;
+                deletedCases = deletedCases.filter(c => c.id !== id);
+                const c = canonicalizeCase(data);
+                cases.unshift(c);
+                syncedSnapshot.set(c.id, JSON.stringify(c));
+                addSystemLog('Restore Case', id, '自資源回收桶還原');
+                showToast('案件已還原');
+                renderTrash(); renderDashboard(); renderList();
+            } catch (err) { showToast('還原失敗：' + friendlyError(err), 'error'); }
+            finally { setBusy(false); }
+        }
+
+        // ---- 儀表板強化 ----
+        const STATUS_BY_CARD = ['Waiting Internal Approval', 'Done', 'Reject', 'Hold'];
+        function dashPick(status) {
+            const sel = gid('dash-filter-status');
+            sel.value = sel.value === status ? '' : status;
+            dashCurrentPage = 1;
+            renderDashboard();
+        }
+        function barRows(rows, color) {
+            const max = rows.length ? Math.max(...rows.map(r => r[1])) : 1;
+            return rows.length ? rows.map(([k, n]) => `<div class="in-bar"><span class="in-k" title="${escHtml(k)}">${escHtml(k)}</span><div class="bar-track"><i style="width:${Math.max(4, Math.round(n / max * 100))}%; background:${color};"></i></div><b>${n}</b></div>`).join('')
+                : '<div class="in-empty">目前沒有資料</div>';
+        }
+        function renderDashInsights() {
+            const box = gid('dash-insights');
+            if (!box) return;
+            const waiting = cases.filter(c => c.status === 'Waiting Internal Approval');
+            const info = waiting.map(c => ({ c, o: overdueInfo(c) }));
+            const nOver = info.filter(x => x.o.level === 'over').length, nWarn = info.filter(x => x.o.level === 'warn').length;
+            const now = new Date(), ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const nNew = cases.filter(c => String(c.applyDate).startsWith(ym)).length;
+            const nDone = cases.filter(c => c.status === 'Done' && String(c.completedDate || '').startsWith(ym)).length;
+
+            const stage = {};
+            waiting.forEach(c => {
+                const p = c.steps.find(s => !s.approved);
+                const k = p ? (VMD_LABEL[p.role] ? VMD_LABEL[p.role][0] : p.role) : '—';
+                stage[k] = (stage[k] || 0) + 1;
+            });
+            const bu = {};
+            cases.forEach(c => { bu[c.bu] = (bu[c.bu] || 0) + 1; });
+            const top = info.sort((a, b) => a.o.left - b.o.left).slice(0, 5);
+
+            box.innerHTML = `
+                <div class="in-kpis">
+                    <div class="in-kpi over" onclick="dashPick('Waiting Internal Approval')"><small>逾期案件（滿 1 個月）</small><b>${nOver}</b></div>
+                    <div class="in-kpi warn" onclick="dashPick('Waiting Internal Approval')"><small>${WARN_DAYS} 天內到期</small><b>${nWarn}</b></div>
+                    <div class="in-kpi"><small>本月新增</small><b>${nNew}</b></div>
+                    <div class="in-kpi"><small>本月完成</small><b>${nDone}</b></div>
+                </div>
+                <div class="in-grid">
+                    <div class="in-card"><h4>目前卡在哪一關</h4>${barRows(Object.entries(stage).sort((a, b) => b[1] - a[1]), '#f59e0b')}</div>
+                    <div class="in-card"><h4>各 BU 案件數</h4>${barRows(Object.entries(bu).sort((a, b) => b[1] - a[1]), '#003366')}</div>
+                    <div class="in-card"><h4>最需要優先處理</h4>${top.length ? top.map(({ c, o }) => `
+                        <div class="top-row" onclick="openDetail('${escHtml(c.id)}')"><span><b>${escHtml(c.id)}</b>　${escHtml(c.supplierName)}</span>${overdueChip(c) || '<span style="color:#94a3b8;font-size:11px;">剩 ' + o.left + ' 天</span>'}</div>`).join('') : '<div class="in-empty">目前沒有等待中的案件</div>'}</div>
+                </div>`;
+        }
+        function wireDashCards() {
+            document.querySelectorAll('#panel-dash .card-grid .card').forEach((el, i) => {
+                el.setAttribute('title', '點一下篩選，再點一次取消');
+                el.addEventListener('click', () => dashPick(STATUS_BY_CARD[i]));
+            });
+        }
+        {
+            const orig = window.renderDashboard;
+            window.renderDashboard = function () {
+                const r = orig.apply(this, arguments);
+                renderDashInsights();
+                const cur = gid('dash-filter-status').value;
+                document.querySelectorAll('#panel-dash .card-grid .card').forEach((el, i) => el.classList.toggle('card-active', cur === STATUS_BY_CARD[i]));
+                return r;
+            };
+        }
+
+        // ---- 登入 / 登出與更新時同步管理者專屬資料 ----
+        const _enterAdminV8 = enterAdminMode;
+        enterAdminMode = function () {
+            _enterAdminV8();
+            loadCloudData().then(() => { snapshotCases(); renderDashboard(); renderList(); renderTrash(); }).catch(console.error);
+            loadRoster().then(renderRoster).catch(console.error);
+        };
+        const _toggleModeV8 = handleModeToggle;
+        handleModeToggle = function (cb) {
+            _toggleModeV8(cb);
+            if (!cb.checked) { deletedCases = []; rosterNew = []; rosterCache = rosterCache.filter(r => r.active); }
+        };
+        const _refreshV8 = refreshFromCloud;
+        refreshFromCloud = async function () {
+            await _refreshV8();
+            try { await loadRoster(); if (isAdmin) { renderRoster(); renderTrash(); } } catch (e) { console.error(e); }
+        };
+        const _createWrapV8 = handleCreate;
+        handleCreate = async function (e) {
+            try { await loadRoster(); } catch (err) { console.error(err); }
+            return _createWrapV8(e);
+        };
+
+        const _baseOnloadV8 = window.onload;
+        window.onload = async function () {
+            await _baseOnloadV8();
+            wireDashCards();
+            loadRoster().then(() => { if (isAdmin) renderRoster(); });
+            renderDashInsights();
+        };
+    
+        /* ===================== v9：草稿自動保留 / 新手導覽 ===================== */
+        const DRAFT_KEY = 'ceva_draft_v1', DRAFT_TTL = 8 * 3600 * 1000;
+        const DRAFT_FIELDS = ['inp-supplier', 'inp-bu', 'inp-action', 'inp-type', 'inp-date', 'inp-cc'];
+        let draftTimer = null;
+
+        function readDraft() {
+            try {
+                const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+                if (!d || !d.data || Date.now() - d.ts > DRAFT_TTL) { localStorage.removeItem(DRAFT_KEY); return null; }
+                return d;
+            } catch (e) { return null; }
+        }
+        function saveDraftNow() {
+            const data = {};
+            DRAFT_FIELDS.forEach(id => { data[id] = gid(id).value; });
+            try {
+                if (!data['inp-supplier'].trim() && !data['inp-bu'] && !data['inp-cc'].trim()) { localStorage.removeItem(DRAFT_KEY); return; }
+                localStorage.setItem(DRAFT_KEY, JSON.stringify({ ts: Date.now(), data }));
+            } catch (e) { /* 儲存空間不可用時略過 */ }
+        }
+        function scheduleDraftSave() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraftNow, 400); }
+        function clearDraft() {
+            clearTimeout(draftTimer);
+            try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+            gid('draft-banner').classList.add('hidden');
+        }
+        function restoreDraft() {
+            const d = readDraft();
+            if (!d) return;
+            DRAFT_FIELDS.forEach(id => { if (typeof d.data[id] === 'string') gid(id).value = d.data[id]; });
+            if (gid('inp-bu').value) updateMatrixPreview();
+            const t = new Date(d.ts);
+            gid('draft-time').textContent = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0');
+            gid('draft-banner').classList.remove('hidden');
+        }
+        function discardDraft() {
+            clearDraft();
+            gid('form-create-vendor').reset();
+            gid('inp-date').valueAsDate = new Date();
+            gid('matrix-preview').innerText = '請先選擇 BU...';
+            attachFiles = [];
+            renderAttachments();
+            showToast('已清除草稿', 'info');
+        }
+
+        const TOUR_KEY = 'ceva_tour_done_v1';
+        const TOUR_STEPS = [
+            { target: 'btn-tab-create', title: '① 建立申請', text: '點「新建申請」填寫供應商資料，並附上附件（必填）。送出後，系統會幫您準備好 Outlook 郵件草稿。' },
+            { target: 'btn-tab-list', title: '② 查看進度', text: '到「案件清單」輸入單號或供應商名稱，按「檢視」就能看到卡在哪一關。綠色代表完成，橘色閃動是目前這一關。' },
+            { target: 'btn-tab-dash', title: '③ 看整體狀況', text: '「儀表板」可以看到逾期案件與各關卡等待件數。右上角出現綠色 Live，代表畫面正在即時同步。' }
+        ];
+        let tourIdx = 0;
+        function tourSeen() { try { return localStorage.getItem(TOUR_KEY) === '1'; } catch (e) { return true; } }
+        function startTour(force) {
+            if (!force && tourSeen()) return;
+            tourIdx = 0;
+            gid('tour-overlay').classList.remove('hidden');
+            renderTour();
+        }
+        function renderTour() {
+            const s = TOUR_STEPS[tourIdx];
+            document.querySelectorAll('.tour-hl').forEach(el => el.classList.remove('tour-hl'));
+            const t = gid(s.target);
+            if (t) { t.classList.add('tour-hl'); if (t.scrollIntoView) t.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+            gid('tour-step').textContent = `${tourIdx + 1} / ${TOUR_STEPS.length}`;
+            gid('tour-title').textContent = s.title;
+            gid('tour-text').textContent = s.text;
+            gid('tour-prev').style.visibility = tourIdx === 0 ? 'hidden' : 'visible';
+            gid('tour-next').textContent = tourIdx === TOUR_STEPS.length - 1 ? '開始使用' : '下一步';
+        }
+        function tourNext() { if (tourIdx >= TOUR_STEPS.length - 1) endTour(); else { tourIdx++; renderTour(); } }
+        function tourPrev() { if (tourIdx > 0) { tourIdx--; renderTour(); } }
+        function endTour() {
+            gid('tour-overlay').classList.add('hidden');
+            document.querySelectorAll('.tour-hl').forEach(el => el.classList.remove('tour-hl'));
+            try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) {}
+        }
+
+        const _baseOnloadV9 = window.onload;
+        window.onload = async function () {
+            await _baseOnloadV9();
+            const f = gid('form-create-vendor');
+            f.addEventListener('input', scheduleDraftSave);
+            f.addEventListener('change', scheduleDraftSave);
+            window.addEventListener('beforeunload', saveDraftNow);
+            restoreDraft();
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && !gid('tour-overlay').classList.contains('hidden')) endTour(); });
+            setTimeout(() => { if (!isAdmin && !tourSeen()) startTour(false); }, 1200);
         };
     </script>
 </body>
